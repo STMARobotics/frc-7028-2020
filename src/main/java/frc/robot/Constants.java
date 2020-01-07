@@ -16,4 +16,21 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+    public final class DriveTrain {
+        public static final int DEVICE_ID_LEFT_MASTER = 0;
+        public static final int DEVICE_ID_LEFT_SLAVE = 1;
+        public static final int DEVICE_ID_RIGHT_MASTER = 2;
+        public static final int DEVICE_ID_RIGHT_SLAVE = 3;
+
+        public static final int SENSOR_UNITS_PER_ROTATION = 4096;
+        public static final double WHEEL_DIAMETER_INCHES = 6d; // assumes KOP wheels
+        public static final double WHEEL_CIRCUMFERENCE_INCHES = WHEEL_DIAMETER_INCHES * Math.PI;
+    }
+
+    public final class Controller {
+        public static final int PORT_ID_DRIVER_CONTROLLER = 0;
+        public static final int PORT_ID_OPERATOR_CONSOLE = 1;
+    }
+
 }
