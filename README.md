@@ -1,4 +1,5 @@
 # FRC 7028 - Binary Battalion 2020
+[![Build Status](https://travis-ci.com/STMARobotics/frc-7028-2020.svg?branch=master)](https://travis-ci.com/STMARobotics/frc-7028-2020)
 
 ## Workstation setup
 1) Remove any old FRC stuff you have installed (NI Update, CTRE Pheonix, NavX, etc.)
