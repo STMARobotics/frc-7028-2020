@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrainSubsystem;
 /**
@@ -17,6 +17,7 @@ public class TeleDriveCommand extends CommandBase {
   private final XboxController driverController;
   private final DriveTrainSubsystem driveTrainSubsystem;
   private boolean slowMode = false;
+  private boolean reverseMode = false;
 
   public TeleDriveCommand(XboxController driverController, DriveTrainSubsystem driveTrainSubsystem) {
     this.driverController = driverController;
@@ -25,7 +26,11 @@ public class TeleDriveCommand extends CommandBase {
 
   @Override
   public void execute() {
-    driveTrainSubsystem.arcadeDrive(getSpeed(), getRotation(), true);
+    double speed = getSpeed();
+    if (getReverseMode()) {
+      speed = -speed;
+    }
+    driveTrainSubsystem.arcadeDrive(speed, getRotation(), true);
   }
 
   private double getSpeed() {
@@ -53,6 +58,13 @@ public class TeleDriveCommand extends CommandBase {
       slowMode = !slowMode;
     }
     return slowMode;
+  }
+
+  private boolean getReverseMode() {
+    if (driverController.getAButtonPressed()) {
+      reverseMode = !reverseMode;
+    }
+    return reverseMode;
   }
 
   @Override
