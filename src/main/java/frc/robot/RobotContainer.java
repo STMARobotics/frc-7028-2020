@@ -32,6 +32,8 @@ public class RobotContainer {
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
+  private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
+
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
@@ -60,5 +62,9 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
     return autoChooser.getSelected();
+  }
+
+  public TeleDriveCommand getTeleDriveCommand() {
+    return teleDriveCommand;
   }
 }
