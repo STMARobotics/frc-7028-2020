@@ -3,7 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.DriveTrainSubsystem;
+import frc.robot.subsystems.DrivetrainSubsystem;
 /**
  * TeleDriveCommand
  */
@@ -15,13 +15,13 @@ public class TeleDriveCommand extends CommandBase {
   public static final double SLOW_MODE_ROTATION_MULTIPLIER = .9;
 
   private final XboxController driverController;
-  private final DriveTrainSubsystem driveTrainSubsystem;
+  private final DrivetrainSubsystem driveTrainSubsystem;
   private boolean slowMode = false;
   private boolean reverseMode = false;
 
-  public TeleDriveCommand(XboxController driverController, DriveTrainSubsystem driveTrainSubsystem) {
+  public TeleDriveCommand(XboxController driverController, DrivetrainSubsystem drivetrainSubsystem) {
     this.driverController = driverController;
-    this.driveTrainSubsystem = driveTrainSubsystem;
+    this.driveTrainSubsystem = drivetrainSubsystem;
   }
 
   @Override

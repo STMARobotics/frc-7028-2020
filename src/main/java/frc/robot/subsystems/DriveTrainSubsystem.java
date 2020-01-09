@@ -1,5 +1,12 @@
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_MASTER;
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_SLAVE;
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
+import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_INCHES;
+
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
@@ -7,12 +14,11 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static frc.robot.Constants.DriveTrain.*;
 
 /**
- * DriveTrainSubsystem
+ * DrivetrainSubsystem
  */
-public class DriveTrainSubsystem extends SubsystemBase {
+public class DrivetrainSubsystem extends SubsystemBase {
 
     private final WPI_TalonSRX leftMaster = new WPI_TalonSRX(DEVICE_ID_LEFT_MASTER);
     private final WPI_VictorSPX leftSlave = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE);
@@ -22,7 +28,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
         new SpeedControllerGroup(leftMaster, leftSlave),
         new SpeedControllerGroup(rightMaster, rightSlave));
 
-    public DriveTrainSubsystem() {
+    public DrivetrainSubsystem() {
 
     }
 
