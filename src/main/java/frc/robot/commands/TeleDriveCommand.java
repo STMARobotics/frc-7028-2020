@@ -15,13 +15,13 @@ public class TeleDriveCommand extends CommandBase {
   public static final double SLOW_MODE_ROTATION_MULTIPLIER = .9;
 
   private final XboxController driverController;
-  private final DrivetrainSubsystem drivetrainSubsystem;
+  private final DrivetrainSubsystem driveTrainSubsystem;
   private boolean slowMode = false;
   private boolean reverseMode = false;
 
   public TeleDriveCommand(XboxController driverController, DrivetrainSubsystem drivetrainSubsystem) {
     this.driverController = driverController;
-    this.drivetrainSubsystem = drivetrainSubsystem;
+    this.driveTrainSubsystem = drivetrainSubsystem;
   }
 
   @Override
@@ -30,7 +30,7 @@ public class TeleDriveCommand extends CommandBase {
     if (getReverseMode()) {
       speed = -speed;
     }
-    drivetrainSubsystem.arcadeDrive(speed, getRotation(), true);
+    driveTrainSubsystem.arcadeDrive(speed, getRotation(), true);
   }
 
   private double getSpeed() {
@@ -74,7 +74,7 @@ public class TeleDriveCommand extends CommandBase {
 
   @Override
   public void end(boolean interrupted) {
-    drivetrainSubsystem.arcadeDrive(0, 0);
+    driveTrainSubsystem.arcadeDrive(0, 0);
   }
 
 }
