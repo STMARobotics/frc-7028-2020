@@ -22,6 +22,7 @@ public class TeleDriveCommand extends CommandBase {
   public TeleDriveCommand(XboxController driverController, DriveTrainSubsystem driveTrainSubsystem) {
     this.driverController = driverController;
     this.driveTrainSubsystem = driveTrainSubsystem;
+    addRequirements(driveTrainSubsystem);
   }
 
   @Override
