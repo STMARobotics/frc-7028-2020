@@ -37,15 +37,11 @@ public class RobotContainer {
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
-  private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
-
-  private final DifferentialDriveOdometry differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(gyroSubsystem.getGyroPosition()));
+  private final DifferentialDriveOdometry differentialDriveOdometry = 
+    new DifferentialDriveOdometry(Rotation2d.fromDegrees(gyroSubsystem.getGyroPosition()));
 
   public RobotContainer() {
     // Configure the button bindings
-
-    // SmartDashboard.putData("Auto Chooser", autoChooser);
-
     configureButtonBindings();
     configureSubsystemCommands();
   }
@@ -63,7 +59,6 @@ public class RobotContainer {
     driveTrainSubsystem.setDefaultCommand(new TeleDriveCommand(driverController, driveTrainSubsystem));
   }
 
-
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
@@ -75,7 +70,10 @@ public class RobotContainer {
   }
   
   public void updateOdometry() {
-    differentialDriveOdometry.update(Rotation2d.fromDegrees(gyroSubsystem.getGyroPosition()), driveTrainSubsystem.getLeftEncoderPosition(), driveTrainSubsystem.getRightEncoderPosition());
+    differentialDriveOdometry.update(Rotation2d.fromDegrees(
+      gyroSubsystem.getGyroPosition()), 
+      driveTrainSubsystem.getLeftEncoderPosition(), 
+      driveTrainSubsystem.getRightEncoderPosition());
   }
 
   public void zeroDriveTrainEncoders() {
@@ -83,11 +81,13 @@ public class RobotContainer {
   }
 
   public void printOdometry() {
-    System.out.println(differentialDriveOdometry.getPoseMeters().getTranslation().div(4096));
+    SmartDashboard.putString(
+      "Pose Meters",
+      differentialDriveOdometry.getPoseMeters().getTranslation().div(4096).toString());
   }
 
   public void printGyroPosition() {
-    System.out.println(gyroSubsystem.getGyroPosition());
+    SmartDashboard.putNumber("Gyro Position", gyroSubsystem.getGyroPosition());
   }
 
   public void zeroGyroPosition() {
