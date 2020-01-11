@@ -128,6 +128,27 @@ public class DriveTrainSubsystem extends SubsystemBase {
     }
 
     /**
+     * returns left encoder position
+     * @return left encoder position
+     */
+    public double getLeftEncoderPosition() {
+        return leftMaster.getSelectedSensorPosition(0);
+    }
+
+    /**
+     * returns right encoder position
+     * @return right encoder position
+     */
+    public double getRightEncoderPosition() {
+        return rightMaster.getSelectedSensorPosition(0);
+    }
+
+    public void zeroDriveTrainEncoders() {
+        leftMaster.setSelectedSensorPosition(0);
+        rightMaster.setSelectedSensorPosition(0);
+    }
+
+    /**
      * Converts inches to wheel revolutions
      * @param inches inches
      * @return wheel revolutions
