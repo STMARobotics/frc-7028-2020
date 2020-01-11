@@ -1,13 +1,21 @@
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_MASTER;
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_SLAVE;
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
+import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_INCHES;
+
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static frc.robot.Constants.DriveTrain.*;
 
 /**
  * DriveTrainSubsystem
@@ -18,12 +26,40 @@ public class DriveTrainSubsystem extends SubsystemBase {
     private final WPI_VictorSPX leftSlave = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE);
     private final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
     private final WPI_VictorSPX rightSlave = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE);
+
     private final DifferentialDrive differentialDrive = new DifferentialDrive(
         new SpeedControllerGroup(leftMaster, leftSlave),
         new SpeedControllerGroup(rightMaster, rightSlave));
 
     public DriveTrainSubsystem() {
+        TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
+        talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
+        talonConfig.neutralDeadband =  0.001;
+        talonConfig.slot0.kF = 1023.0/6800.0;
+        talonConfig.slot0.kP = 1.0;
+        talonConfig.slot0.kI = 0.0;
+        talonConfig.slot0.kD = 0.0;
+        talonConfig.slot0.integralZone = 400;
+        talonConfig.slot0.closedLoopPeakOutput = 1.0;
+        talonConfig.openloopRamp = .25;
 
+        rightMaster.configAllSettings(talonConfig);
+        leftMaster.configAllSettings(talonConfig);
+
+        leftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+        rightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+
+        setNeutralMode(NeutralMode.Brake);
+
+        rightMaster.setInverted(true);
+        rightSlave.setInverted(true);
+        rightMaster.setSensorPhase(true);
+        leftMaster.setSensorPhase(true);
+
+        leftSlave.follow(leftMaster);
+        rightSlave.follow(rightMaster);
+        
+        differentialDrive.setRightSideInverted(false);
     }
 
     /**
@@ -73,6 +109,22 @@ public class DriveTrainSubsystem extends SubsystemBase {
         leftSlave.setNeutralMode(neutralMode);
         rightMaster.setNeutralMode(neutralMode);
         rightSlave.setNeutralMode(neutralMode);
+    }
+
+    public void setUseDifferentialDrive(boolean useDifferentialDrive) {
+        differentialDrive.setSafetyEnabled(useDifferentialDrive);
+        if (!useDifferentialDrive) {
+            leftSlave.follow(leftMaster);
+            rightSlave.follow(rightMaster);
+        }
+    }
+
+    public WPI_TalonSRX getLeftTalonSRX() {
+        return leftMaster;
+    }
+
+    public WPI_TalonSRX getRightTalonSRX() {
+        return rightMaster;
     }
 
     /**
