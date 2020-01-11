@@ -1,5 +1,12 @@
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_MASTER;
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_SLAVE;
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
+import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
+import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_INCHES;
+
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
@@ -7,7 +14,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static frc.robot.Constants.DriveTrain.*;
 
 /**
  * DriveTrainSubsystem
@@ -23,7 +29,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
         new SpeedControllerGroup(rightMaster, rightSlave));
 
     public DriveTrainSubsystem() {
-
+        rightMaster.setSensorPhase(true);
     }
 
     /**
@@ -73,6 +79,27 @@ public class DriveTrainSubsystem extends SubsystemBase {
         leftSlave.setNeutralMode(neutralMode);
         rightMaster.setNeutralMode(neutralMode);
         rightSlave.setNeutralMode(neutralMode);
+    }
+
+    /**
+     * returns left encoder position
+     * @return left encoder position
+     */
+    public double getLeftEncoderPosition() {
+        return leftMaster.getSelectedSensorPosition(0);
+    }
+
+    /**
+     * returns right encoder position
+     * @return right encoder position
+     */
+    public double getRightEncoderPosition() {
+        return rightMaster.getSelectedSensorPosition(0);
+    }
+
+    public void zeroDriveTrainEncoders() {
+        leftMaster.setSelectedSensorPosition(0);
+        rightMaster.setSelectedSensorPosition(0);
     }
 
     /**

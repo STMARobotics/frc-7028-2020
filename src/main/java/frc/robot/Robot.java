@@ -19,11 +19,19 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     robotContainer = new RobotContainer();
+
+    robotContainer.zeroDriveTrainEncoders();
+    robotContainer.zeroGyroPosition();
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+
+    robotContainer.updateOdometry();
+    robotContainer.printOdometry();
+    robotContainer.printGyroPosition();
+    robotContainer.updateEncoderPositions();
   }
 
   @Override
@@ -52,8 +60,6 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
-
-    robotContainer.getTeleDriveCommand().schedule();
   }
 
   @Override
