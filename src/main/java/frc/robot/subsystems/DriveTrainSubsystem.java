@@ -85,7 +85,9 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    differentialDriveOdometry.update(Rotation2d.fromDegrees(gyro.getAngle()), stepsToMeters(getLeftEncoderPosition()),
+    differentialDriveOdometry.update(
+        Rotation2d.fromDegrees(gyro.getAngle()),
+        stepsToMeters(getLeftEncoderPosition()),
         stepsToMeters(getRightEncoderPosition()));
   }
 
