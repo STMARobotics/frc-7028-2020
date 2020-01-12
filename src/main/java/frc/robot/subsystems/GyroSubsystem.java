@@ -28,6 +28,10 @@ public class GyroSubsystem extends SubsystemBase {
         gyro.reset();
     }
 
+    public void zeroYaw() {
+        gyro.zeroYaw();
+    }
+
     public boolean getIsRotating() {
         return gyro.isRotating();
     }
