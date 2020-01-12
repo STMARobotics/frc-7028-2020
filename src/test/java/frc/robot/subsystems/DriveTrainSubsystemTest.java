@@ -29,4 +29,9 @@ public class DriveTrainSubsystemTest {
     assertEquals(1.4444015254077984d, DriveTrainSubsystem.stepsToMeters(12357), 0);
   }
 
+  @Test
+  public void testStepsPerDecisecToMetersPerSec() {
+    assertEquals(8.214982536672338, DriveTrainSubsystem.stepsPerDecisecToMetersPerSec(7028), 0);
+  }
+
 }
