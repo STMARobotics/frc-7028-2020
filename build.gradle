@@ -40,6 +40,16 @@ deploy {
 // Set this to true to enable desktop support.
 def includeDesktopSupport = true
 
+repositories {
+  maven {
+    url 'https://first.wpi.edu/FRC/roborio/maven/release'
+  }
+}
+
+configurations {
+  pathweaver2019
+}
+
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 // Also defines JUnit 4.
 dependencies {
@@ -58,6 +68,12 @@ dependencies {
     // Enable simulation gui support. Must check the box in vscode to enable support
     // upon debugging
     simulation wpi.deps.sim.gui(wpi.platforms.desktop, true)
+
+    pathweaver2019 'edu.wpi.first.wpilib:PathWeaver:2019.2.1:win64'
+}
+
+task oldPathWeaver(type: JavaExec) {
+    classpath configurations.pathweaver2019
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
