@@ -10,12 +10,8 @@ package frc.robot;
 import static frc.robot.Constants.Controller.PORT_ID_DRIVER_CONTROLLER;
 import static frc.robot.Constants.Controller.PORT_ID_OPERATOR_CONSOLE;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.file.Paths;
 
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -23,6 +19,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
@@ -49,7 +46,7 @@ public class RobotContainer {
       var straightPathCommand = driveTrainSubsystem.createRamseteCommandForTrajectory(loadTrajectory("Straight"))
           .andThen(() -> driveTrainSubsystem.tankDriveVolts(0, 0), driveTrainSubsystem);
       autoChooser.setDefaultOption("Straight", straightPathCommand);
-    } catch (Exception e) {
+    } catch (IOException e) {
       System.err.println("Failed to load auto path");
       e.printStackTrace();
     }
@@ -69,9 +66,8 @@ public class RobotContainer {
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {
-    var trajectoryFile = new File(Filesystem.getDeployDirectory(), "paths/output/" + trajectoryName + ".wpilib.json");
-    var objectMapper = new ObjectMapper();
-    return new Trajectory(objectMapper.readValue(trajectoryFile, new TypeReference<List<Trajectory.State>>() {}));
+    return TrajectoryUtil.fromPathweaverJson(
+        Filesystem.getDeployDirectory().toPath().resolve(Paths.get("paths", "output", trajectoryName + ".wpilib.json")));
   }
 
   private void configureSubsystemCommands() {
