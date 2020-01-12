@@ -25,7 +25,6 @@ public class PathCommand extends CommandBase {
 
     private boolean isForward;
 
-
     /**
      * Constructs path to drive forwards
      * @param path path to execute

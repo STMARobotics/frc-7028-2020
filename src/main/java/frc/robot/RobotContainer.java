@@ -16,8 +16,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
-import frc.robot.subsystems.GyroSubsystem;
-import frc.robot.subsystems.OdometrySubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -28,16 +26,11 @@ import frc.robot.subsystems.OdometrySubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
-  private final GyroSubsystem gyroSubsystem = new GyroSubsystem();
-  private final OdometrySubsystem odometrySubsystem = new OdometrySubsystem(gyroSubsystem);
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
-
-  private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem,
-    odometrySubsystem, gyroSubsystem);
 
   public RobotContainer() {
     // Configure the button bindings
@@ -58,8 +51,7 @@ public class RobotContainer {
   }
 
   private void configureSubsystemCommands() {
-    driveTrainSubsystem.setDefaultCommand(new TeleDriveCommand(driverController, driveTrainSubsystem, odometrySubsystem,
-      gyroSubsystem));
+    driveTrainSubsystem.setDefaultCommand(new TeleDriveCommand(driverController, driveTrainSubsystem));
   }
 
 

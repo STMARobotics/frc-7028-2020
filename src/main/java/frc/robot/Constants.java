@@ -23,9 +23,12 @@ public final class Constants {
         public static final int DEVICE_ID_RIGHT_MASTER = 3;
         public static final int DEVICE_ID_RIGHT_SLAVE = 1;
 
+        private static final double METERS_PER_INCH = 0.0254d;
+
         public static final int SENSOR_UNITS_PER_ROTATION = 4096;
-        public static final double WHEEL_DIAMETER_INCHES = 6d; // assumes KOP wheels
+        public static final double WHEEL_DIAMETER_INCHES = 6d;
         public static final double WHEEL_CIRCUMFERENCE_INCHES = WHEEL_DIAMETER_INCHES * Math.PI;
+        public static final double WHEEL_CIRCUMFERENCE_METERS = WHEEL_DIAMETER_INCHES * METERS_PER_INCH * Math.PI;
     }
 
     public final class Controller {

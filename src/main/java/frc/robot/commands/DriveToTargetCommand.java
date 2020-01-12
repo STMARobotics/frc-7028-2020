@@ -5,8 +5,6 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrainSubsystem;
-import frc.robot.subsystems.GyroSubsystem;
-import frc.robot.subsystems.OdometrySubsystem;
 
 /**
  * DriveToTargetCommand
@@ -14,8 +12,6 @@ import frc.robot.subsystems.OdometrySubsystem;
 public class DriveToTargetCommand extends CommandBase {
 
   private final DriveTrainSubsystem driveTrainSubsystem;
-  private final OdometrySubsystem odometrySubsystem;
-  private final GyroSubsystem gyroSubsystem;
   private final Pose2d targetPosition;
   private Trajectory trajectory;
   private double targetX;
@@ -24,21 +20,16 @@ public class DriveToTargetCommand extends CommandBase {
   private double currentX;
   private double currentY;
 
-  public DriveToTargetCommand(DriveTrainSubsystem driveTrainSubsystem, OdometrySubsystem odometrySubsystem, 
-    GyroSubsystem gyroSubsystem, Pose2d targetPosition) {
+  public DriveToTargetCommand(DriveTrainSubsystem driveTrainSubsystem,Pose2d targetPosition) {
     this.driveTrainSubsystem = driveTrainSubsystem;
-    this.odometrySubsystem = odometrySubsystem;
-    this.gyroSubsystem = gyroSubsystem;
     this.targetPosition = targetPosition;
     addRequirements(driveTrainSubsystem);
-    addRequirements(odometrySubsystem);
-    addRequirements(gyroSubsystem);
   }
 
   @Override
   public void initialize() {
     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-      odometrySubsystem.getCurrentPosition(),
+      driveTrainSubsystem.getCurrentPose(),
       null,
       targetPosition,
       null);
@@ -46,8 +37,8 @@ public class DriveToTargetCommand extends CommandBase {
   
   @Override
   public void execute() {
-    currentX = odometrySubsystem.getCurrentPosition().getTranslation().getX();
-    currentY = odometrySubsystem.getCurrentPosition().getTranslation().getY();
+    currentX = driveTrainSubsystem.getCurrentPose().getTranslation().getX();
+    currentY = driveTrainSubsystem.getCurrentPose().getTranslation().getY();
     double deltaX = currentX - targetX;
     double deltaY = currentY - targetY;
     double pointOrientation;
@@ -71,9 +62,9 @@ public class DriveToTargetCommand extends CommandBase {
          pointOrientation += 360;
        }
      }
-     if (gyroSubsystem.getGyroYaw() >= pointOrientation + 5) {
+     if (driveTrainSubsystem.getYaw() >= pointOrientation + 5) {
        driveTrainSubsystem.arcadeDrive(0, .5);
-     } else if (gyroSubsystem.getGyroYaw() <= pointOrientation - 5) {
+     } else if (driveTrainSubsystem.getYaw() <= pointOrientation - 5) {
        driveTrainSubsystem.arcadeDrive(0, -.5);
      } else {
        driveTrainSubsystem.arcadeDrive(.5, 0);
