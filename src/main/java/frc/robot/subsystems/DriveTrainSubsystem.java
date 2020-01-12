@@ -159,7 +159,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
      * 
      * @return left encoder position
      */
-    public double getLeftEncoderPosition() {
+    public int getLeftEncoderPosition() {
         return leftMaster.getSelectedSensorPosition(0);
     }
 
@@ -168,7 +168,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
      * 
      * @return right encoder position
      */
-    public double getRightEncoderPosition() {
+    public int getRightEncoderPosition() {
         return rightMaster.getSelectedSensorPosition(0);
     }
 
@@ -229,8 +229,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
      * @param steps encoder steps to convert
      * @return meters
      */
-    public static double stepsToMeters(double steps) {
-        return (SENSOR_UNITS_PER_ROTATION / WHEEL_CIRCUMFERENCE_METERS) * steps;
+    public static double stepsToMeters(int steps) {
+        return (WHEEL_CIRCUMFERENCE_METERS / SENSOR_UNITS_PER_ROTATION) * steps;
     }
     
 }
