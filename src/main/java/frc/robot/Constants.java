@@ -40,7 +40,7 @@ public final class Constants {
     /** Voltage needed to overcome the motor’s static friction. kS */
     public static final double STATIC_VOLTS = 0.829;
 
-    /** Voltage needed to hold (or “cruise”) at a given constant velocity. kV */
+    /** Voltage needed to hold (or "cruise") at a given constant velocity. kV */
     public static final double VOLT_SECONDS_PER_METER = 3.04;
 
     /** Voltage needed to induce a given acceleration in the motor shaft. kA */
