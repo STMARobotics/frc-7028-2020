@@ -47,11 +47,13 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
   private static final AHRS gyro = new AHRS(SPI.Port.kMXP);
   private final DifferentialDriveOdometry differentialDriveOdometry;
-  private Pose2d savedPosition;
+  private Pose2d savedPose;
 
   public DriveTrainSubsystem() {
-    differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(gyro.getYaw()));
-    savedPosition = new Pose2d(0, 0, Rotation2d.fromDegrees(gyro.getYaw()));
+    zeroDriveTrainEncoders();
+    gyro.zeroYaw();
+    differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(-gyro.getAngle()));
+    savedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(-gyro.getAngle()));
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
@@ -86,7 +88,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     differentialDriveOdometry.update(
-        Rotation2d.fromDegrees(gyro.getAngle()),
+        Rotation2d.fromDegrees(-gyro.getAngle()),
         stepsToMeters(getLeftEncoderPosition()),
         stepsToMeters(getRightEncoderPosition()));
   }
@@ -191,11 +193,11 @@ public class DriveTrainSubsystem extends SubsystemBase {
   }
 
   public void saveCurrentPose() {
-    savedPosition = getCurrentPose();
+    savedPose = getCurrentPose();
   }
 
   public Pose2d getSavedPose() {
-    return savedPosition;
+    return savedPose;
   }
 
   public float getYaw() {
