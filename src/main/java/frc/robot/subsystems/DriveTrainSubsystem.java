@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
@@ -51,6 +52,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
   public DriveTrainSubsystem() {
     zeroDriveTrainEncoders();
+    while (gyro.isCalibrating()) {System.out.println("Calibrating...");}
     gyro.zeroYaw();
     differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));
     savedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getHeading()));
@@ -91,6 +93,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
         Rotation2d.fromDegrees(getHeading()),
         stepsToMeters(getLeftEncoderPosition()),
         stepsToMeters(getRightEncoderPosition()));
+    SmartDashboard.putString("Pose", differentialDriveOdometry.getPoseMeters().toString());
+    SmartDashboard.putNumber("Gyro Position", gyro.getYaw());
   }
 
   /**

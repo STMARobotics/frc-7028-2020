@@ -35,9 +35,10 @@ public class TeleDriveCommand extends CommandBase {
     driveTrainSubsystem.arcadeDrive(speed, getRotation(), true);
     if (driverController.getXButtonPressed()) {
       savePose();
+      System.out.println("Pose Saved");
     }
     if (driverController.getYButtonPressed()) {
-      new DriveToTargetCommand(driveTrainSubsystem, driveTrainSubsystem.getCurrentPose());
+      new DriveToTargetCommand(driveTrainSubsystem, driveTrainSubsystem.getSavedPose()).schedule();;
     }
   }
 

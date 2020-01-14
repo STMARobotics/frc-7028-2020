@@ -16,6 +16,7 @@ import static frc.robot.Constants.DriveTrain.DRIVE_KINEMATICS;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -27,8 +28,8 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import frc.robot.commands.AsyncSchedulerCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
@@ -73,16 +74,19 @@ public class RobotContainer {
   private void configureButtonBindings() {
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
         .whenPressed(driveTrainSubsystem::saveCurrentPose);
-    new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(
-      new AsyncSchedulerCommand(() ->
-          driveTrainSubsystem.createRamseteCommandForTrajectory(TrajectoryGenerator.generateTrajectory(
-              driveTrainSubsystem.getCurrentPose(),
-              null,
-              driveTrainSubsystem.getSavedPose(),
-              new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND)
-                  .setKinematics(DRIVE_KINEMATICS)
-                  .addConstraint(VOLTAGE_CONSTRAINT)))
-          .andThen(() -> driveTrainSubsystem.arcadeDrive(0, 0), driveTrainSubsystem)));
+    new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->
+      new PrintCommand("Running path")
+      .andThen(driveTrainSubsystem.createRamseteCommandForTrajectory(
+          TrajectoryGenerator.generateTrajectory(
+            driveTrainSubsystem.getCurrentPose(),
+            Collections.emptyList(),
+            driveTrainSubsystem.getSavedPose(),
+            new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND)
+                .setKinematics(DRIVE_KINEMATICS)
+                .addConstraint(VOLTAGE_CONSTRAINT))))
+      .andThen(new PrintCommand("Done running path"))
+      .andThen(() -> driveTrainSubsystem.arcadeDrive(0, 0), driveTrainSubsystem)
+      .schedule());
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {

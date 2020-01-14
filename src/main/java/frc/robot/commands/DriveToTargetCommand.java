@@ -1,8 +1,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
@@ -20,7 +20,7 @@ public class DriveToTargetCommand extends CommandBase {
   private double currentX;
   private double currentY;
 
-  public DriveToTargetCommand(DriveTrainSubsystem driveTrainSubsystem,Pose2d targetPosition) {
+  public DriveToTargetCommand(DriveTrainSubsystem driveTrainSubsystem, Pose2d targetPosition) {
     this.driveTrainSubsystem = driveTrainSubsystem;
     this.targetPosition = targetPosition;
     addRequirements(driveTrainSubsystem);
@@ -28,11 +28,12 @@ public class DriveToTargetCommand extends CommandBase {
 
   @Override
   public void initialize() {
-    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-      driveTrainSubsystem.getCurrentPose(),
-      null,
-      targetPosition,
-      null);
+    // Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+    //   driveTrainSubsystem.getCurrentPose(),
+    //   null,
+    //   targetPosition,
+    //   null);
+    System.out.println("Started Command");
   }
   
   @Override
@@ -44,17 +45,18 @@ public class DriveToTargetCommand extends CommandBase {
     double pointOrientation;
     if (deltaX >= 0) {
       if (deltaY >= 0) {
-        pointOrientation = Math.toDegrees(Math.tan(deltaX / deltaY)) + 180;
+        pointOrientation = Math.toDegrees(Math.atan(deltaX / deltaY)) - 45;
       } else {
-        pointOrientation = Math.toDegrees(Math.tan(deltaX / deltaY)) + 270;
+        pointOrientation = Math.toDegrees(Math.atan(deltaX / deltaY)) + 270;
       }
     } else {
       if (deltaY >= 0) {
-        pointOrientation = Math.toDegrees(Math.tan(deltaX / deltaY)) + 90;
+        pointOrientation = Math.toDegrees(Math.atan(deltaX / deltaY)) + 90;
       } else {
-        pointOrientation = Math.toDegrees(Math.tan(deltaX / deltaY));
+        pointOrientation = Math.toDegrees(Math.atan(deltaX / deltaY));
       }
      }
+     SmartDashboard.putNumber("Target Orientation: ", pointOrientation);
      if (pointOrientation < -180 || pointOrientation > 180) {
        if (pointOrientation > 0) {
          pointOrientation -= 360;
@@ -62,19 +64,17 @@ public class DriveToTargetCommand extends CommandBase {
          pointOrientation += 360;
        }
      }
-     if (driveTrainSubsystem.getYaw() >= pointOrientation + 5) {
-       driveTrainSubsystem.arcadeDrive(0, .5);
-     } else if (driveTrainSubsystem.getYaw() <= pointOrientation - 5) {
-       driveTrainSubsystem.arcadeDrive(0, -.5);
+     if (!(driveTrainSubsystem.getCurrentPose().getRotation().getDegrees() <= pointOrientation + 3 && driveTrainSubsystem.getCurrentPose().getRotation().getDegrees() >= pointOrientation - 3)) {
+       driveTrainSubsystem.arcadeDrive(0, .1);
      } else {
-       driveTrainSubsystem.arcadeDrive(.5, 0);
+       driveTrainSubsystem.arcadeDrive(-.3, 0);
      }
   }
 
   @Override
   public boolean isFinished() {
-    return (currentX >= targetX - 5 && currentX <= targetX + 5) &&
-      (currentY >= targetY - 5 && currentY <= targetY + 5) /*&&
+    return (currentX >= targetX - .1 && currentX <= targetX + .1) &&
+      (currentY >= targetY - .1 && currentY <= targetY + .1) /*&&
       (targetOrientation == gyroSubsystem.getGyroYaw() ||
       targetOrientation == gyroSubsystem.getGyroYaw())*/;
   }
