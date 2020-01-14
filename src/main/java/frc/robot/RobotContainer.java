@@ -7,8 +7,12 @@
 
 package frc.robot;
 
+import static frc.robot.Constants.Auto.MAX_ACCELERATION_METERS_PER_SECOND;
+import static frc.robot.Constants.Auto.MAX_SPEED_METERS_PER_SECOND;
+import static frc.robot.Constants.Auto.VOLTAGE_CONSTRAINT;
 import static frc.robot.Constants.Controller.PORT_ID_DRIVER_CONTROLLER;
 import static frc.robot.Constants.Controller.PORT_ID_OPERATOR_CONSOLE;
+import static frc.robot.Constants.DriveTrain.DRIVE_KINEMATICS;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -19,8 +23,11 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
@@ -63,6 +70,18 @@ public class RobotContainer {
    * passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
+        .whenPressed(() -> driveTrainSubsystem.saveCurrentPose());
+    new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() -> driveTrainSubsystem
+        .createRamseteCommandForTrajectory(TrajectoryGenerator.generateTrajectory(
+            driveTrainSubsystem.getCurrentPose(),
+            null,
+            driveTrainSubsystem.getSavedPose(),
+            new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND)
+                .setKinematics(DRIVE_KINEMATICS)
+                .addConstraint(VOLTAGE_CONSTRAINT)))
+          .andThen(() -> driveTrainSubsystem.arcadeDrive(0, 0), driveTrainSubsystem)
+          .schedule());
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {

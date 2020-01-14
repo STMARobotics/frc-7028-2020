@@ -4,6 +4,7 @@ import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_SLAVE;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrain.FEED_FORWARD;
 import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
 import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_INCHES;
 import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_METERS;
@@ -19,7 +20,6 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.RamseteController;
-import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
@@ -207,7 +207,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
   /**
    * Returns the heading of the robot in form required for odometry.
    *
-   * @return the robot's heading in degrees, from 180 to 180 with positive value for left turn.
+   * @return the robot's heading in degrees, from 180 to 180 with positive value
+   *         for left turn.
    */
   private double getHeading() {
     return Math.IEEEremainder(gyro.getAngle(), 360.0d) * -1.0d;
@@ -238,13 +239,10 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
   public Command createRamseteCommandForTrajectory(Trajectory trajectory) {
     return new RamseteCommand(
-        trajectory, 
+        trajectory,
         this::getCurrentPose,
         new RamseteController(Auto.RAMSETE_B, Auto.RAMSETE_ZETA),
-        new SimpleMotorFeedforward(
-            DriveTrain.STATIC_VOLTS,
-            DriveTrain.VOLT_SECONDS_PER_METER,
-            DriveTrain.VOLT_SECONDS_SQUARED_PER_METER),
+        FEED_FORWARD,
         DriveTrain.DRIVE_KINEMATICS,
         this::getWheelSpeeds,
         new PIDController(DriveTrain.P_GAIN_DRIVE_VEL, 0, 0),

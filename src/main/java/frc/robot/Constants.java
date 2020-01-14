@@ -7,7 +7,12 @@
 
 package frc.robot;
 
+import static frc.robot.Constants.DriveTrain.DRIVE_KINEMATICS;
+import static frc.robot.Constants.DriveTrain.FEED_FORWARD;
+
+import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.util.Units;
 
 /**
@@ -34,8 +39,8 @@ public final class Constants {
     public static final double WHEEL_CIRCUMFERENCE_METERS = Units.inchesToMeters(WHEEL_DIAMETER_INCHES) * Math.PI;
 
     public static final double TRACK_WIDTH_METERS = 0.555625;
-    public static final DifferentialDriveKinematics DRIVE_KINEMATICS = 
-      new DifferentialDriveKinematics(TRACK_WIDTH_METERS);
+    public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(
+        TRACK_WIDTH_METERS);
 
     /** Voltage needed to overcome the motor’s static friction. kS */
     public static final double STATIC_VOLTS = 0.829;
@@ -46,6 +51,9 @@ public final class Constants {
     /** Voltage needed to induce a given acceleration in the motor shaft. kA */
     public static final double VOLT_SECONDS_SQUARED_PER_METER = 0.676;
 
+    public static final SimpleMotorFeedforward FEED_FORWARD = 
+        new SimpleMotorFeedforward(STATIC_VOLTS, VOLT_SECONDS_PER_METER, VOLT_SECONDS_SQUARED_PER_METER);
+
     public static final double P_GAIN_DRIVE_VEL = 0.000665;
   }
 
@@ -55,6 +63,14 @@ public final class Constants {
   }
 
   public static final class Auto {
+
+    public static final double MAX_SPEED_METERS_PER_SECOND = 3;
+    public static final double MAX_ACCELERATION_METERS_PER_SECOND = 3;
+    public static final double MAX_VOLTAGE = 10;
+
+    public static final DifferentialDriveVoltageConstraint VOLTAGE_CONSTRAINT = 
+        new DifferentialDriveVoltageConstraint(FEED_FORWARD, DRIVE_KINEMATICS, MAX_VOLTAGE);
+
     // Reasonable baseline values for a RAMSETE follower in units of meters and seconds
     public static final double RAMSETE_B = 2;
     public static final double RAMSETE_ZETA = 0.7;
