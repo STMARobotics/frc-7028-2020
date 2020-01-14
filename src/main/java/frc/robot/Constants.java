@@ -33,21 +33,20 @@ public final class Constants {
     public static final double WHEEL_CIRCUMFERENCE_INCHES = WHEEL_DIAMETER_INCHES * Math.PI;
     public static final double WHEEL_CIRCUMFERENCE_METERS = Units.inchesToMeters(WHEEL_DIAMETER_INCHES) * Math.PI;
 
-    // TODO all of these have to be set for our bot
     public static final double TRACK_WIDTH_METERS = 0.555625;
     public static final DifferentialDriveKinematics DRIVE_KINEMATICS = 
       new DifferentialDriveKinematics(TRACK_WIDTH_METERS);
 
-    /** Voltage needed to overcome the motor’s static friction */
-    public static final double STATIC_VOLTS = 0.22;
+    /** Voltage needed to overcome the motor’s static friction. kS */
+    public static final double STATIC_VOLTS = 0.829;
 
-    /** Voltage needed to hold (or “cruise”) at a given constant velocity */
-    public static final double VOLT_SECONDS_PER_METER = 1.98;
+    /** Voltage needed to hold (or “cruise”) at a given constant velocity. kV */
+    public static final double VOLT_SECONDS_PER_METER = 3.04;
 
-    /** Voltage needed to induce a given acceleration in the motor shaft */
-    public static final double VOLT_SECONDS_SQUARED_PER_METER = 0.2;
+    /** Voltage needed to induce a given acceleration in the motor shaft. kA */
+    public static final double VOLT_SECONDS_SQUARED_PER_METER = 0.676;
 
-    public static final double P_GAIN_DRIVE_VEL = 8.5;
+    public static final double P_GAIN_DRIVE_VEL = 0.000665;
   }
 
   public static final class Controller {
@@ -55,13 +54,8 @@ public final class Constants {
     public static final int PORT_ID_OPERATOR_CONSOLE = 1;
   }
 
-  // TODO all of these have to be set for our bot
   public static final class Auto {
-    public static final double MAX_SPEED_METERS_PER_SECOND = 3;
-    public static final double MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 3;
-
-    // Reasonable baseline values for a RAMSETE follower in units of meters and
-    // seconds
+    // Reasonable baseline values for a RAMSETE follower in units of meters and seconds
     public static final double RAMSETE_B = 2;
     public static final double RAMSETE_ZETA = 0.7;
   }
