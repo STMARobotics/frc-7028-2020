@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.AsyncSchedulerCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
@@ -71,17 +72,17 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
-        .whenPressed(() -> driveTrainSubsystem.saveCurrentPose());
-    new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() -> driveTrainSubsystem
-        .createRamseteCommandForTrajectory(TrajectoryGenerator.generateTrajectory(
-            driveTrainSubsystem.getCurrentPose(),
-            null,
-            driveTrainSubsystem.getSavedPose(),
-            new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND)
-                .setKinematics(DRIVE_KINEMATICS)
-                .addConstraint(VOLTAGE_CONSTRAINT)))
-          .andThen(() -> driveTrainSubsystem.arcadeDrive(0, 0), driveTrainSubsystem)
-          .schedule());
+        .whenPressed(driveTrainSubsystem::saveCurrentPose);
+    new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(
+      new AsyncSchedulerCommand(() ->
+          driveTrainSubsystem.createRamseteCommandForTrajectory(TrajectoryGenerator.generateTrajectory(
+              driveTrainSubsystem.getCurrentPose(),
+              null,
+              driveTrainSubsystem.getSavedPose(),
+              new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND)
+                  .setKinematics(DRIVE_KINEMATICS)
+                  .addConstraint(VOLTAGE_CONSTRAINT)))
+          .andThen(() -> driveTrainSubsystem.arcadeDrive(0, 0), driveTrainSubsystem)));
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {
