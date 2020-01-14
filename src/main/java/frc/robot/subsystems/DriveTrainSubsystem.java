@@ -52,8 +52,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
   public DriveTrainSubsystem() {
     zeroDriveTrainEncoders();
     gyro.zeroYaw();
-    differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(-gyro.getAngle()));
-    savedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(-gyro.getAngle()));
+    differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));
+    savedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getHeading()));
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
@@ -88,7 +88,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     differentialDriveOdometry.update(
-        Rotation2d.fromDegrees(-gyro.getAngle()),
+        Rotation2d.fromDegrees(getHeading()),
         stepsToMeters(getLeftEncoderPosition()),
         stepsToMeters(getRightEncoderPosition()));
   }
@@ -202,6 +202,15 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
   public float getYaw() {
     return gyro.getYaw();
+  }
+
+  /**
+   * Returns the heading of the robot in form required for odometry.
+   *
+   * @return the robot's heading in degrees, from 180 to 180 with positive value for left turn.
+   */
+  private double getHeading() {
+    return Math.IEEEremainder(gyro.getAngle(), 360.0d) * -1.0d;
   }
 
   /**
