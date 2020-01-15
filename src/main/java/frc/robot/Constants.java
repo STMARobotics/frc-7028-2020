@@ -54,7 +54,8 @@ public final class Constants {
     public static final SimpleMotorFeedforward FEED_FORWARD = 
         new SimpleMotorFeedforward(STATIC_VOLTS, VOLT_SECONDS_PER_METER, VOLT_SECONDS_SQUARED_PER_METER);
 
-    public static final double P_GAIN_DRIVE_VEL = 0.000665;
+    public static final double P_GAIN_DRIVE_VEL = .0005;
+    public static final double D_GAIN_DRIVE_VEL = .0004;
   }
 
   public static final class Controller {
@@ -64,9 +65,9 @@ public final class Constants {
 
   public static final class Auto {
 
-    public static final double MAX_SPEED_METERS_PER_SECOND = 3;
+    public static final double MAX_SPEED_METERS_PER_SECOND = 3.5;
     public static final double MAX_ACCELERATION_METERS_PER_SECOND = 3;
-    public static final double MAX_VOLTAGE = 10;
+    public static final double MAX_VOLTAGE = 9;
 
     public static final DifferentialDriveVoltageConstraint VOLTAGE_CONSTRAINT = 
         new DifferentialDriveVoltageConstraint(FEED_FORWARD, DRIVE_KINEMATICS, MAX_VOLTAGE);

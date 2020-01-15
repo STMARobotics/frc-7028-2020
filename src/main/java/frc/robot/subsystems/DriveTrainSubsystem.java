@@ -4,6 +4,7 @@ import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_SLAVE;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrain.D_GAIN_DRIVE_VEL;
 import static frc.robot.Constants.DriveTrain.FEED_FORWARD;
 import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
 import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_INCHES;
@@ -47,15 +48,12 @@ public class DriveTrainSubsystem extends SubsystemBase {
       new SpeedControllerGroup(leftMaster, leftSlave), new SpeedControllerGroup(rightMaster, rightSlave));
 
   private static final AHRS gyro = new AHRS(SPI.Port.kMXP);
-  private final DifferentialDriveOdometry differentialDriveOdometry;
+  private DifferentialDriveOdometry differentialDriveOdometry;
   private Pose2d savedPose;
 
   public DriveTrainSubsystem() {
     zeroDriveTrainEncoders();
-    while (gyro.isCalibrating()) {System.out.println("Calibrating...");}
-    gyro.zeroYaw();
-    differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));
-    savedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getHeading()));
+    differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));    
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
@@ -80,11 +78,20 @@ public class DriveTrainSubsystem extends SubsystemBase {
     rightSlave.setInverted(true);
     rightMaster.setSensorPhase(true);
     leftMaster.setSensorPhase(true);
+    rightMaster.overrideLimitSwitchesEnable(false);
+    leftMaster.overrideLimitSwitchesEnable(false);
 
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
 
     differentialDrive.setRightSideInverted(false);
+  }
+
+  public void resetOdometry() {
+    zeroDriveTrainEncoders();
+    gyro.zeroYaw();
+    savedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getHeading()));
+    differentialDriveOdometry.resetPosition(savedPose, Rotation2d.fromDegrees(getHeading()));
   }
 
   @Override
@@ -94,7 +101,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
         stepsToMeters(getLeftEncoderPosition()),
         stepsToMeters(getRightEncoderPosition()));
     SmartDashboard.putString("Pose", differentialDriveOdometry.getPoseMeters().toString());
-    SmartDashboard.putNumber("Gyro Position", gyro.getYaw());
   }
 
   /**
@@ -154,6 +160,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
   }
 
   public void setUseDifferentialDrive(boolean useDifferentialDrive) {
+    System.out.println("Use dif drive: " + useDifferentialDrive);
     differentialDrive.setSafetyEnabled(useDifferentialDrive);
     if (!useDifferentialDrive) {
       leftSlave.follow(leftMaster);
@@ -204,10 +211,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
     return savedPose;
   }
 
-  public float getYaw() {
-    return gyro.getYaw();
-  }
-
   /**
    * Returns the heading of the robot in form required for odometry.
    *
@@ -226,9 +229,9 @@ public class DriveTrainSubsystem extends SubsystemBase {
    */
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     leftMaster.setVoltage(leftVolts);
-    leftSlave.setVoltage(leftVolts);
-    rightMaster.setVoltage(-rightVolts);
-    rightSlave.setVoltage(-rightVolts);
+    //leftSlave.setVoltage(leftVolts);
+    rightMaster.setVoltage(rightVolts);
+    //rightSlave.setVoltage(rightVolts);
   }
 
   /**
@@ -237,7 +240,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @return The current wheel speeds.
    */
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity()),
+    return new DifferentialDriveWheelSpeeds(
+        stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity()),
         stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity()));
   }
 
@@ -249,8 +253,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
         FEED_FORWARD,
         DriveTrain.DRIVE_KINEMATICS,
         this::getWheelSpeeds,
-        new PIDController(DriveTrain.P_GAIN_DRIVE_VEL, 0, 0),
-        new PIDController(DriveTrain.P_GAIN_DRIVE_VEL, 0, 0),
+        new PIDController(DriveTrain.P_GAIN_DRIVE_VEL, 0, D_GAIN_DRIVE_VEL),
+        new PIDController(DriveTrain.P_GAIN_DRIVE_VEL, 0, D_GAIN_DRIVE_VEL),
         this::tankDriveVolts,
         this);
   }

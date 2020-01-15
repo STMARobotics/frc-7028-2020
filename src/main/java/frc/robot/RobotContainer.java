@@ -52,8 +52,13 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the button bindings
     try {
-      var straightPathCommand = driveTrainSubsystem.createRamseteCommandForTrajectory(loadTrajectory("Straight"))
-          .andThen(() -> driveTrainSubsystem.tankDriveVolts(0, 0), driveTrainSubsystem);
+      var straightPathCommand = 
+          new PrintCommand("Running Auto")
+            .andThen(() -> driveTrainSubsystem.setUseDifferentialDrive(false), driveTrainSubsystem)
+            .andThen(driveTrainSubsystem.createRamseteCommandForTrajectory(loadTrajectory("Straight")))
+            .andThen(() -> driveTrainSubsystem.setUseDifferentialDrive(true), driveTrainSubsystem)
+            .andThen(() -> driveTrainSubsystem.tankDriveVolts(0, 0), driveTrainSubsystem)
+            .andThen(new PrintCommand("Ran it!"));
       autoChooser.setDefaultOption("Straight", straightPathCommand);
     } catch (IOException e) {
       System.err.println("Failed to load auto path");
@@ -87,6 +92,10 @@ public class RobotContainer {
       .andThen(new PrintCommand("Done running path"))
       .andThen(() -> driveTrainSubsystem.arcadeDrive(0, 0), driveTrainSubsystem)
       .schedule());
+  }
+
+  public void resetOdometry() {
+    driveTrainSubsystem.resetOdometry();
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {
