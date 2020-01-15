@@ -40,41 +40,34 @@ public class DriveToTargetCommand extends CommandBase {
   public void execute() {
     currentX = driveTrainSubsystem.getCurrentPose().getTranslation().getX();
     currentY = driveTrainSubsystem.getCurrentPose().getTranslation().getY();
-    double deltaX = currentX - targetX;
-    double deltaY = currentY - targetY;
+    double netX = currentX - targetX;
+    double netY = currentY - targetY;
     double pointOrientation;
-    if (deltaX >= 0) {
-      if (deltaY >= 0) {
-        pointOrientation = Math.toDegrees(Math.atan(deltaX / deltaY)) - 45;
+    if (netX >= 0) {
+      if (netY >= 0) {
+        pointOrientation = -90 - Math.atan(netX/netY);
       } else {
-        pointOrientation = Math.toDegrees(Math.atan(deltaX / deltaY)) + 270;
+        pointOrientation = 90 + Math.atan(netX/-netY);
       }
     } else {
-      if (deltaY >= 0) {
-        pointOrientation = Math.toDegrees(Math.atan(deltaX / deltaY)) + 90;
+      if (netY >= 0) {
+        pointOrientation = -90 + Math.atan(-netX/netY);
       } else {
-        pointOrientation = Math.toDegrees(Math.atan(deltaX / deltaY));
+        pointOrientation = 90 - Math.atan(-netX/-netY);
       }
      }
      SmartDashboard.putNumber("Target Orientation: ", pointOrientation);
-     if (pointOrientation < -180 || pointOrientation > 180) {
-       if (pointOrientation > 0) {
-         pointOrientation -= 360;
-       } else {
-         pointOrientation += 360;
-       }
-     }
      if (!(driveTrainSubsystem.getCurrentPose().getRotation().getDegrees() <= pointOrientation + 3 && driveTrainSubsystem.getCurrentPose().getRotation().getDegrees() >= pointOrientation - 3)) {
-       driveTrainSubsystem.arcadeDrive(0, .1);
+       driveTrainSubsystem.arcadeDrive(0, .15);
      } else {
-       driveTrainSubsystem.arcadeDrive(-.3, 0);
+       driveTrainSubsystem.arcadeDrive(.3, 0);
      }
   }
 
   @Override
   public boolean isFinished() {
-    return (currentX >= targetX - .1 && currentX <= targetX + .1) &&
-      (currentY >= targetY - .1 && currentY <= targetY + .1) /*&&
+    return (currentX >= targetX - .25 && currentX <= targetX + .25) &&
+      (currentY >= targetY - .25 && currentY <= targetY + .25) /*&&
       (targetOrientation == gyroSubsystem.getGyroYaw() ||
       targetOrientation == gyroSubsystem.getGyroYaw())*/;
   }
