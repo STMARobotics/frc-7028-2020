@@ -6,6 +6,7 @@ import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
 import static frc.robot.Constants.DriveTrain.D_GAIN_DRIVE_VEL;
 import static frc.robot.Constants.DriveTrain.FEED_FORWARD;
+import static frc.robot.Constants.DriveTrain.P_GAIN_DRIVE_VEL;
 import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
 import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_INCHES;
 import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_METERS;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Auto;
@@ -47,12 +49,13 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private final DifferentialDrive differentialDrive = new DifferentialDrive(
       new SpeedControllerGroup(leftMaster, leftSlave), new SpeedControllerGroup(rightMaster, rightSlave));
 
-  private static final AHRS gyro = new AHRS(SPI.Port.kMXP);
-  private DifferentialDriveOdometry differentialDriveOdometry;
+  private final AHRS gyro = new AHRS(SPI.Port.kMXP);
+  private final DifferentialDriveOdometry differentialDriveOdometry;
   private Pose2d savedPose;
 
   public DriveTrainSubsystem() {
     zeroDriveTrainEncoders();
+    gyro.zeroYaw();
     differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));    
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
@@ -160,7 +163,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
   }
 
   public void setUseDifferentialDrive(boolean useDifferentialDrive) {
-    System.out.println("Use dif drive: " + useDifferentialDrive);
     differentialDrive.setSafetyEnabled(useDifferentialDrive);
     if (!useDifferentialDrive) {
       leftSlave.follow(leftMaster);
@@ -229,9 +231,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
    */
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     leftMaster.setVoltage(leftVolts);
-    //leftSlave.setVoltage(leftVolts);
     rightMaster.setVoltage(rightVolts);
-    //rightSlave.setVoltage(rightVolts);
   }
 
   /**
@@ -245,18 +245,23 @@ public class DriveTrainSubsystem extends SubsystemBase {
         stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity()));
   }
 
-  public Command createRamseteCommandForTrajectory(Trajectory trajectory) {
-    return new RamseteCommand(
-        trajectory,
-        this::getCurrentPose,
-        new RamseteController(Auto.RAMSETE_B, Auto.RAMSETE_ZETA),
-        FEED_FORWARD,
-        DriveTrain.DRIVE_KINEMATICS,
-        this::getWheelSpeeds,
-        new PIDController(DriveTrain.P_GAIN_DRIVE_VEL, 0, D_GAIN_DRIVE_VEL),
-        new PIDController(DriveTrain.P_GAIN_DRIVE_VEL, 0, D_GAIN_DRIVE_VEL),
-        this::tankDriveVolts,
-        this);
+  public Command createCommandForTrajectory(Trajectory trajectory) {
+    return new InstantCommand(() -> setUseDifferentialDrive(false), this)
+        .andThen(new RamseteCommand(
+            trajectory,
+            this::getCurrentPose,
+            new RamseteController(Auto.RAMSETE_B, Auto.RAMSETE_ZETA),
+            FEED_FORWARD,
+            DriveTrain.DRIVE_KINEMATICS,
+            this::getWheelSpeeds,
+            new PIDController(P_GAIN_DRIVE_VEL, 0, D_GAIN_DRIVE_VEL),
+            new PIDController(P_GAIN_DRIVE_VEL, 0, D_GAIN_DRIVE_VEL),
+            this::tankDriveVolts,
+            this))
+        .andThen(new InstantCommand(() -> {
+            setUseDifferentialDrive(true);
+            arcadeDrive(0, 0);
+        }, this));
   }
 
   /**
