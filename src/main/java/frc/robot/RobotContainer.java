@@ -18,8 +18,10 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -30,6 +32,7 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
@@ -51,23 +54,24 @@ public class RobotContainer {
 
   public RobotContainer() {
     // Configure the button bindings
+    configureButtonBindings();
+    configureSubsystemCommands();
+
     try {
+      var straightTrajectory = loadTrajectory("Straight");
       var straightPathCommand = 
           new PrintCommand("Running Auto")
-            .andThen(() -> driveTrainSubsystem.setUseDifferentialDrive(false), driveTrainSubsystem)
-            .andThen(driveTrainSubsystem.createRamseteCommandForTrajectory(loadTrajectory("Straight")))
-            .andThen(() -> driveTrainSubsystem.setUseDifferentialDrive(true), driveTrainSubsystem)
-            .andThen(() -> driveTrainSubsystem.tankDriveVolts(0, 0), driveTrainSubsystem)
+            .andThen(driveTrainSubsystem.createCommandForTrajectory(straightTrajectory))
             .andThen(new PrintCommand("Ran it!"));
       autoChooser.setDefaultOption("Straight", straightPathCommand);
     } catch (IOException e) {
-      System.err.println("Failed to load auto path");
-      e.printStackTrace();
+      DriverStation.reportError("Failed to load auto trajectory: Straight", false);
     }
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
-    configureButtonBindings();
-    configureSubsystemCommands();
+    // Reset odometry when the robot is enabled
+    new Trigger(() -> RobotState.isEnabled())
+        .whenActive(() -> driveTrainSubsystem.resetOdometry(), driveTrainSubsystem);
   }
 
   /**
@@ -81,7 +85,7 @@ public class RobotContainer {
         .whenPressed(driveTrainSubsystem::saveCurrentPose);
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->
       new PrintCommand("Running path")
-      .andThen(driveTrainSubsystem.createRamseteCommandForTrajectory(
+      .andThen(driveTrainSubsystem.createCommandForTrajectory(
           TrajectoryGenerator.generateTrajectory(
             driveTrainSubsystem.getCurrentPose(),
             Collections.emptyList(),
@@ -94,19 +98,14 @@ public class RobotContainer {
       .schedule());
   }
 
-  public void resetOdometry() {
-    driveTrainSubsystem.resetOdometry();
+  private void configureSubsystemCommands() {
+    driveTrainSubsystem.setDefaultCommand(new TeleDriveCommand(driverController, driveTrainSubsystem));
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {
     return TrajectoryUtil.fromPathweaverJson(
         Filesystem.getDeployDirectory().toPath().resolve(Paths.get("paths", "output", trajectoryName + ".wpilib.json")));
   }
-
-  private void configureSubsystemCommands() {
-    driveTrainSubsystem.setDefaultCommand(new TeleDriveCommand(driverController, driveTrainSubsystem));
-  }
-
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
