@@ -21,7 +21,6 @@ import java.util.Collections;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -30,9 +29,9 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
@@ -59,19 +58,12 @@ public class RobotContainer {
 
     try {
       var straightTrajectory = loadTrajectory("Straight");
-      var straightPathCommand = 
-          new PrintCommand("Running Auto")
-            .andThen(driveTrainSubsystem.createCommandForTrajectory(straightTrajectory))
-            .andThen(new PrintCommand("Ran it!"));
+      var straightPathCommand = driveTrainSubsystem.createCommandForTrajectory(straightTrajectory);
       autoChooser.setDefaultOption("Straight", straightPathCommand);
     } catch (IOException e) {
       DriverStation.reportError("Failed to load auto trajectory: Straight", false);
     }
     SmartDashboard.putData("Auto Chooser", autoChooser);
-
-    // Reset odometry when the robot is enabled
-    new Trigger(() -> RobotState.isEnabled())
-        .whenActive(() -> driveTrainSubsystem.resetOdometry(), driveTrainSubsystem);
   }
 
   /**
@@ -94,7 +86,6 @@ public class RobotContainer {
                 .setKinematics(DRIVE_KINEMATICS)
                 .addConstraint(VOLTAGE_CONSTRAINT))))
       .andThen(new PrintCommand("Done running path"))
-      .andThen(() -> driveTrainSubsystem.arcadeDrive(0, 0), driveTrainSubsystem)
       .schedule());
   }
 
@@ -115,5 +106,9 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
     return autoChooser.getSelected();
+  }
+
+  public void resetOdometry() {
+    new InstantCommand(driveTrainSubsystem::resetOdometry, driveTrainSubsystem).schedule();
   }
 }
