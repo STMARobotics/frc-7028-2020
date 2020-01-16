@@ -67,7 +67,7 @@ public final class Constants {
 
     public static final double MAX_SPEED_METERS_PER_SECOND = 3.5;
     public static final double MAX_ACCELERATION_METERS_PER_SECOND = 3;
-    public static final double MAX_VOLTAGE = 9;
+    public static final double MAX_VOLTAGE = 11;
 
     public static final DifferentialDriveVoltageConstraint VOLTAGE_CONSTRAINT = 
         new DifferentialDriveVoltageConstraint(FEED_FORWARD, DRIVE_KINEMATICS, MAX_VOLTAGE);
