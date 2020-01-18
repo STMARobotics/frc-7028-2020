@@ -22,6 +22,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
@@ -58,7 +61,9 @@ public class RobotContainer {
 
     try {
       var straightTrajectory = loadTrajectory("Straight");
-      var straightPathCommand = driveTrainSubsystem.createCommandForTrajectory(straightTrajectory);
+      Transform2d transform = new Pose2d(0, 0, Rotation2d.fromDegrees(0)).minus(straightTrajectory.getInitialPose());
+      Trajectory newTrajectory = straightTrajectory.transformBy(transform);
+      var straightPathCommand = driveTrainSubsystem.createCommandForTrajectory(newTrajectory);
       autoChooser.setDefaultOption("Straight", straightPathCommand);
     } catch (IOException e) {
       DriverStation.reportError("Failed to load auto trajectory: Straight", false);
