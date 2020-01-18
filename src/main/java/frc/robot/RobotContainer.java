@@ -35,7 +35,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.TeleDriveCommand;
+import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
 /**
@@ -48,6 +50,7 @@ import frc.robot.subsystems.DriveTrainSubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
+  private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
@@ -79,7 +82,7 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
-        .whenPressed(driveTrainSubsystem::saveCurrentPose);
+       .whenPressed(driveTrainSubsystem::saveCurrentPose);
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->
       new PrintCommand("Running path")
       .andThen(driveTrainSubsystem.createCommandForTrajectory(
@@ -92,6 +95,11 @@ public class RobotContainer {
                 .addConstraint(VOLTAGE_CONSTRAINT))))
       .andThen(new PrintCommand("Done running path"))
       .schedule());
+
+      new JoystickButton(operatorConsole, XboxController.Button.kX.value)
+          .whenPressed(new RotateWheelCommand(controlPanelSubsystem));
+      new JoystickButton(operatorConsole, XboxController.Button.kY.value)
+          .whenPressed(new RotateWheelCommand(controlPanelSubsystem));
   }
 
   private void configureSubsystemCommands() {
