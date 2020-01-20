@@ -49,7 +49,7 @@ public class TeleDriveCommand extends CommandBase {
     } else {
       speed = driverController.getY(Hand.kLeft);
     }
-    return speed;
+    return -speed;
   }
 
   private double getRotation() {
