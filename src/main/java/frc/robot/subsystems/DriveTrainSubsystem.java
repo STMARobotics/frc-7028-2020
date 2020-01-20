@@ -5,7 +5,6 @@ import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_SLAVE;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
 import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
-import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_INCHES;
 import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_METERS;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -23,7 +22,6 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -167,14 +165,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
     }
   }
 
-  public WPI_TalonSRX getLeftTalonSRX() {
-    return leftMaster;
-  }
-
-  public WPI_TalonSRX getRightTalonSRX() {
-    return rightMaster;
-  }
-
   /**
    * returns left encoder position
    * 
@@ -193,7 +183,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
     return rightMaster.getSelectedSensorPosition(0);
   }
 
-  public void zeroDriveTrainEncoders() {
+  private void zeroDriveTrainEncoders() {
     leftMaster.setSelectedSensorPosition(0);
     rightMaster.setSelectedSensorPosition(0);
   }
@@ -216,19 +206,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @return the robot's heading in degrees, from 180 to 180 with positive value
    *         for left turn.
    */
-  private double getHeading() {
+  public double getHeading() {
     return Math.IEEEremainder(gyro.getAngle(), 360.0d) * -1.0d;
-  }
-
-  /**
-   * Controls the left and right sides of the drive directly with voltages.
-   *
-   * @param leftVolts  the commanded left output
-   * @param rightVolts the commanded right output
-   */
-  public void tankDriveVolts(double leftVolts, double rightVolts) {
-    leftMaster.setVoltage(leftVolts);
-    rightMaster.setVoltage(rightVolts);
   }
 
   /**
@@ -239,17 +218,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
   public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
     leftMaster.set(ControlMode.Velocity, metersPerSecToStepsPerDecisec(leftVelocity));
     rightMaster.set(ControlMode.Velocity, metersPerSecToStepsPerDecisec(rightVelocity));
-  }
-
-  /**
-   * Returns the current wheel speeds of the robot.
-   *
-   * @return The current wheel speeds.
-   */
-  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(
-        stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity()),
-        stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity()));
   }
 
   /**
@@ -272,35 +240,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
         }, this));
   }
 
-  /**
-   * Converts inches to wheel revolutions
-   * 
-   * @param inches inches
-   * @return wheel revolutions
-   */
-  public static double insToRevs(double inches) {
-    return inches / WHEEL_CIRCUMFERENCE_INCHES;
-  }
-
-  /**
-   * Converts inches to encoder steps
-   * 
-   * @param inches inches
-   * @return encoder steps
-   */
-  public static double insToSteps(double inches) {
-    return (insToRevs(inches) * SENSOR_UNITS_PER_ROTATION);
-  }
-
-  /**
-   * Converts inches per second to encoder steps per decisecond
-   * 
-   * @param inchesPerSec inches per second
-   * @return encoder steps per decisecond (100 ms)
-   */
-  public static double insPerSecToStepsPerDecisec(double inchesPerSec) {
-    return insToSteps(inchesPerSec) * .1;
-  }
 
   /**
    * Converts from encoder steps to meters.

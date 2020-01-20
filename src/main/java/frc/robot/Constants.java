@@ -53,9 +53,6 @@ public final class Constants {
 
     public static final SimpleMotorFeedforward FEED_FORWARD = 
         new SimpleMotorFeedforward(STATIC_VOLTS, VOLT_SECONDS_PER_METER, VOLT_SECONDS_SQUARED_PER_METER);
-
-    public static final double P_GAIN_DRIVE_VEL = 2;
-    public static final double D_GAIN_DRIVE_VEL = 0;
   }
 
   public static final class Controller {
