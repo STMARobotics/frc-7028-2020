@@ -4,13 +4,11 @@ import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_SLAVE;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
-import static frc.robot.Constants.DriveTrain.D_GAIN_DRIVE_VEL;
-import static frc.robot.Constants.DriveTrain.FEED_FORWARD;
-import static frc.robot.Constants.DriveTrain.P_GAIN_DRIVE_VEL;
 import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
 import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_INCHES;
 import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_METERS;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
@@ -20,7 +18,6 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
@@ -235,6 +232,16 @@ public class DriveTrainSubsystem extends SubsystemBase {
   }
 
   /**
+   * Controls the left and right side of the drive using  Talon SRX closed-loop velocity.
+   * @param leftVelocity left velocity
+   * @param rightVelocity right velocity
+   */
+  public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
+    leftMaster.set(ControlMode.Velocity, metersPerSecToStepsPerDecisec(leftVelocity));
+    rightMaster.set(ControlMode.Velocity, metersPerSecToStepsPerDecisec(rightVelocity));
+  }
+
+  /**
    * Returns the current wheel speeds of the robot.
    *
    * @return The current wheel speeds.
@@ -245,18 +252,19 @@ public class DriveTrainSubsystem extends SubsystemBase {
         stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity()));
   }
 
+  /**
+   * Creates a command to follow a Trajectory on the drivetrain.
+   * @param trajectory trajectory to follow
+   * @return command that will run the trajectory
+   */
   public Command createCommandForTrajectory(Trajectory trajectory) {
     return new InstantCommand(() -> setUseDifferentialDrive(false), this)
         .andThen(new RamseteCommand(
             trajectory,
             this::getCurrentPose,
             new RamseteController(Auto.RAMSETE_B, Auto.RAMSETE_ZETA),
-            FEED_FORWARD,
             DriveTrain.DRIVE_KINEMATICS,
-            this::getWheelSpeeds,
-            new PIDController(P_GAIN_DRIVE_VEL, 0, D_GAIN_DRIVE_VEL),
-            new PIDController(P_GAIN_DRIVE_VEL, 0, D_GAIN_DRIVE_VEL),
-            this::tankDriveVolts,
+            this::tankDriveVelocity,
             this))
         .andThen(new InstantCommand(() -> {
             setUseDifferentialDrive(true);
@@ -304,8 +312,31 @@ public class DriveTrainSubsystem extends SubsystemBase {
     return (WHEEL_CIRCUMFERENCE_METERS / SENSOR_UNITS_PER_ROTATION) * steps;
   }
 
+  /**
+   * Converts from encoder units per 100 milliseconds to meters per second.
+   * @param stepsPerDecisec steps per decisecond
+   * @return meters per second
+   */
   public static double stepsPerDecisecToMetersPerSec(int stepsPerDecisec) {
     return stepsToMeters(stepsPerDecisec * 10);
+  }
+
+  /**
+   * Converts from meters to encoder units.
+   * @param meters meters
+   * @return encoder units
+   */
+  public static double metersToSteps(double meters) {
+    return (meters / WHEEL_CIRCUMFERENCE_METERS) * SENSOR_UNITS_PER_ROTATION;
+  }
+
+  /**
+   * Convers from meters per second to encoder units per 100 milliseconds.
+   * @param metersPerSec meters per second
+   * @return encoder units per decisecond
+   */
+  public static double metersPerSecToStepsPerDecisec(double metersPerSec) {
+    return metersToSteps(metersPerSec) * .1d;
   }
 
 }
