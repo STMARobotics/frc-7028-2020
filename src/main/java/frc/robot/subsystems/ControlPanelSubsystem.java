@@ -32,26 +32,23 @@ public class ControlPanelSubsystem extends SubsystemBase {
     m_colorMatcher.addColorMatch(kYellowTarget);
   }
 
-  @Override
-  public void periodic() {
+  public String getColor() {
     Color detectedColor = colorSensor.getColor();
     ColorMatchResult match = m_colorMatcher.matchClosestColor(detectedColor);
 
     if (match.color == kBlueTarget) {
-      colorString = "Blue";
-    } else if (match.color == kRedTarget) {
-      colorString = "Red";
-    } else if (match.color == kGreenTarget) {
-      colorString = "Green";
-    } else if (match.color == kYellowTarget) {
-      colorString = "Yellow";
-    } else {
-      colorString = "Unknown";
+      return "Blue";
     }
-  }
-
-  public String getColor() {
-    return colorString;
+    if (match.color == kRedTarget) {
+      return "Red";
+    }
+    if (match.color == kGreenTarget) {
+      return "Green";
+    }
+    if (match.color == kYellowTarget) {
+      return "Yellow";
+    }
+    return "Unknown";
   }
 
   public void spinWheel() {
