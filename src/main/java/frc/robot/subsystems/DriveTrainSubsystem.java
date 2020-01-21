@@ -4,10 +4,12 @@ import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_SLAVE;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
 import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrain.FEED_FORWARD;
 import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
 import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_METERS;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
@@ -51,13 +53,12 @@ public class DriveTrainSubsystem extends SubsystemBase {
   public DriveTrainSubsystem() {
     zeroDriveTrainEncoders();
     gyro.zeroYaw();
-    differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));    
+    differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
     talonConfig.neutralDeadband = 0.001;
-    talonConfig.slot0.kF = 1023.0 / 6800.0;
-    talonConfig.slot0.kP = 1.0;
+    talonConfig.slot0.kP = 2;
     talonConfig.slot0.kI = 0.0;
     talonConfig.slot0.kD = 0.0;
     talonConfig.slot0.integralZone = 400;
@@ -211,13 +212,23 @@ public class DriveTrainSubsystem extends SubsystemBase {
   }
 
   /**
-   * Controls the left and right side of the drive using  Talon SRX closed-loop velocity.
-   * @param leftVelocity left velocity
+   * Controls the left and right side of the drive using Talon SRX closed-loop
+   * velocity.
+   * 
+   * @param leftVelocity  left velocity
    * @param rightVelocity right velocity
    */
   public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
-    leftMaster.set(ControlMode.Velocity, metersPerSecToStepsPerDecisec(leftVelocity));
-    rightMaster.set(ControlMode.Velocity, metersPerSecToStepsPerDecisec(rightVelocity));
+    leftMaster.set(
+        ControlMode.Velocity, 
+        metersPerSecToStepsPerDecisec(leftVelocity), 
+        DemandType.ArbitraryFeedForward,
+        FEED_FORWARD.calculate(leftVelocity));
+    rightMaster.set(
+        ControlMode.Velocity,
+        metersPerSecToStepsPerDecisec(rightVelocity),
+        DemandType.ArbitraryFeedForward,
+        FEED_FORWARD.calculate(rightVelocity));
   }
 
   /**
