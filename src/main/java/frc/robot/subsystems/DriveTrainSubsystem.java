@@ -18,7 +18,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
@@ -43,8 +42,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
   private final WPI_VictorSPX rightSlave = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE);
 
-  private final DifferentialDrive differentialDrive = new DifferentialDrive(
-      new SpeedControllerGroup(leftMaster, leftSlave), new SpeedControllerGroup(rightMaster, rightSlave));
+  private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
 
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);
   private final DifferentialDriveOdometry differentialDriveOdometry;
@@ -58,9 +56,9 @@ public class DriveTrainSubsystem extends SubsystemBase {
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
     talonConfig.neutralDeadband = 0.001;
-    talonConfig.slot0.kP = 2;
+    talonConfig.slot0.kP = 1;
     talonConfig.slot0.kI = 0.0;
-    talonConfig.slot0.kD = 0.0;
+    talonConfig.slot0.kD = 0.11;
     talonConfig.slot0.integralZone = 400;
     talonConfig.slot0.closedLoopPeakOutput = 1.0;
     talonConfig.openloopRamp = .25;
@@ -158,14 +156,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
     rightSlave.setNeutralMode(neutralMode);
   }
 
-  public void setUseDifferentialDrive(boolean useDifferentialDrive) {
-    differentialDrive.setSafetyEnabled(useDifferentialDrive);
-    if (!useDifferentialDrive) {
-      leftSlave.follow(leftMaster);
-      rightSlave.follow(rightMaster);
-    }
-  }
-
   /**
    * returns left encoder position
    * 
@@ -219,16 +209,27 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param rightVelocity right velocity
    */
   public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
+    var leftFeedForwardVolts = FEED_FORWARD.calculate(
+      leftVelocity,
+      (leftVelocity - stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity())) / 20);
+    var rightFeedForwardVolts = FEED_FORWARD.calculate(
+      rightVelocity,
+      (rightVelocity - stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity())) / 20);
+
+    SmartDashboard.putNumber("Left error", leftMaster.getClosedLoopError());
+    SmartDashboard.putNumber("Right error", rightMaster.getClosedLoopError());
+
     leftMaster.set(
         ControlMode.Velocity, 
         metersPerSecToStepsPerDecisec(leftVelocity), 
         DemandType.ArbitraryFeedForward,
-        FEED_FORWARD.calculate(leftVelocity));
+        leftFeedForwardVolts / 12);
     rightMaster.set(
         ControlMode.Velocity,
         metersPerSecToStepsPerDecisec(rightVelocity),
         DemandType.ArbitraryFeedForward,
-        FEED_FORWARD.calculate(rightVelocity));
+        rightFeedForwardVolts / 12);
+    differentialDrive.feed();
   }
 
   /**
@@ -237,18 +238,14 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @return command that will run the trajectory
    */
   public Command createCommandForTrajectory(Trajectory trajectory) {
-    return new InstantCommand(() -> setUseDifferentialDrive(false), this)
-        .andThen(new RamseteCommand(
+    return new RamseteCommand(
             trajectory,
             this::getCurrentPose,
             new RamseteController(Auto.RAMSETE_B, Auto.RAMSETE_ZETA),
             DriveTrain.DRIVE_KINEMATICS,
             this::tankDriveVelocity,
-            this))
-        .andThen(new InstantCommand(() -> {
-            setUseDifferentialDrive(true);
-            arcadeDrive(0, 0);
-        }, this));
+            this)
+        .andThen(new InstantCommand(() -> arcadeDrive(0, 0), this));
   }
 
 
