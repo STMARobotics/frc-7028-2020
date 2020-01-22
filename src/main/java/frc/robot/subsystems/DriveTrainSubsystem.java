@@ -1,12 +1,15 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_MASTER;
-import static frc.robot.Constants.DriveTrain.DEVICE_ID_LEFT_SLAVE;
-import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_MASTER;
-import static frc.robot.Constants.DriveTrain.DEVICE_ID_RIGHT_SLAVE;
-import static frc.robot.Constants.DriveTrain.FEED_FORWARD;
-import static frc.robot.Constants.DriveTrain.SENSOR_UNITS_PER_ROTATION;
-import static frc.robot.Constants.DriveTrain.WHEEL_CIRCUMFERENCE_METERS;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_MASTER;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_SLAVE;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_MASTER;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrainConstants.DRIVE_KINEMATICS;
+import static frc.robot.Constants.DriveTrainConstants.FEED_FORWARD;
+import static frc.robot.Constants.DriveTrainConstants.SENSOR_UNITS_PER_ROTATION;
+import static frc.robot.Constants.DriveTrainConstants.WHEEL_CIRCUMFERENCE_METERS;
+import static frc.robot.Constants.TeleConstants.MAX_ANGULAR_VEL;
+import static frc.robot.Constants.TeleConstants.MAX_SPEED_TELE;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
@@ -18,11 +21,10 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.RamseteController;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
@@ -30,8 +32,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.Auto;
-import frc.robot.Constants.DriveTrain;
+import frc.robot.Constants.DriveTrainConstants;
+import frc.robot.Constants.TrajectoryConstants;
 
 /**
  * DriveTrainSubsystem
@@ -42,9 +44,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private final WPI_VictorSPX leftSlave = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE);
   private final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
   private final WPI_VictorSPX rightSlave = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE);
-
-  private final DifferentialDrive differentialDrive = new DifferentialDrive(
-      new SpeedControllerGroup(leftMaster, leftSlave), new SpeedControllerGroup(rightMaster, rightSlave));
 
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);
   private final DifferentialDriveOdometry differentialDriveOdometry;
@@ -57,13 +56,14 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
-    talonConfig.neutralDeadband = 0.001;
-    talonConfig.slot0.kP = 2;
+    talonConfig.neutralDeadband = DriveTrainConstants.DEADBAND;
+    talonConfig.slot0.kP = DriveTrainConstants.kP;
     talonConfig.slot0.kI = 0.0;
-    talonConfig.slot0.kD = 0.0;
+    talonConfig.slot0.kD = DriveTrainConstants.kD;
     talonConfig.slot0.integralZone = 400;
     talonConfig.slot0.closedLoopPeakOutput = 1.0;
-    talonConfig.openloopRamp = .25;
+    talonConfig.closedloopRamp = DriveTrainConstants.CLOSED_LOOP_RAMP;
+    talonConfig.openloopRamp = DriveTrainConstants.OPEN_LOOP_RAMP;
 
     rightMaster.configAllSettings(talonConfig);
     leftMaster.configAllSettings(talonConfig);
@@ -82,8 +82,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
-
-    differentialDrive.setRightSideInverted(false);
   }
 
   public void resetOdometry() {
@@ -120,7 +118,14 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void arcadeDrive(double speed, double rotation, boolean useSquares) {
-    differentialDrive.arcadeDrive(speed, rotation, useSquares);
+    var xSpeed = speed * MAX_SPEED_TELE;
+    var zRotation = Rotation2d.fromDegrees(-rotation * MAX_ANGULAR_VEL).getRadians();;
+    if (useSquares) {
+      xSpeed *= Math.abs(xSpeed);
+      zRotation *= Math.abs(zRotation);
+    }
+    var wheelSpeeds = DRIVE_KINEMATICS.toWheelSpeeds(new ChassisSpeeds(xSpeed, 0.0, zRotation));
+    tankDriveVelocity(wheelSpeeds.leftMetersPerSecond, wheelSpeeds.rightMetersPerSecond);
   }
 
   /**
@@ -143,7 +148,13 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void tankDrive(double leftSpeed, double rightSpeed, boolean useSquares) {
-    differentialDrive.tankDrive(leftSpeed, rightSpeed, useSquares);
+    var xLeftSpeed = leftSpeed * MAX_SPEED_TELE;
+    var xRightSpeed = rightSpeed * MAX_SPEED_TELE;
+    if (useSquares) {
+      xLeftSpeed *= Math.abs(xLeftSpeed);
+      xRightSpeed *= Math.abs(xRightSpeed);
+    }
+    tankDriveVelocity(xLeftSpeed, xRightSpeed);
   }
 
   /**
@@ -156,14 +167,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
     leftSlave.setNeutralMode(neutralMode);
     rightMaster.setNeutralMode(neutralMode);
     rightSlave.setNeutralMode(neutralMode);
-  }
-
-  public void setUseDifferentialDrive(boolean useDifferentialDrive) {
-    differentialDrive.setSafetyEnabled(useDifferentialDrive);
-    if (!useDifferentialDrive) {
-      leftSlave.follow(leftMaster);
-      rightSlave.follow(rightMaster);
-    }
   }
 
   /**
@@ -219,16 +222,22 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param rightVelocity right velocity
    */
   public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
+    var leftAccel = (leftVelocity - stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity())) / 20;
+    var rightAccel = (rightVelocity - stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity())) / 20;
+    
+    var leftFeedForwardVolts = FEED_FORWARD.calculate(leftVelocity, leftAccel);
+    var rightFeedForwardVolts = FEED_FORWARD.calculate(rightVelocity, rightAccel);
+
     leftMaster.set(
         ControlMode.Velocity, 
         metersPerSecToStepsPerDecisec(leftVelocity), 
         DemandType.ArbitraryFeedForward,
-        FEED_FORWARD.calculate(leftVelocity));
+        leftFeedForwardVolts / 12);
     rightMaster.set(
         ControlMode.Velocity,
         metersPerSecToStepsPerDecisec(rightVelocity),
         DemandType.ArbitraryFeedForward,
-        FEED_FORWARD.calculate(rightVelocity));
+        rightFeedForwardVolts / 12);
   }
 
   /**
@@ -237,20 +246,15 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @return command that will run the trajectory
    */
   public Command createCommandForTrajectory(Trajectory trajectory) {
-    return new InstantCommand(() -> setUseDifferentialDrive(false), this)
-        .andThen(new RamseteCommand(
+    return new RamseteCommand(
             trajectory,
             this::getCurrentPose,
-            new RamseteController(Auto.RAMSETE_B, Auto.RAMSETE_ZETA),
-            DriveTrain.DRIVE_KINEMATICS,
+            new RamseteController(TrajectoryConstants.RAMSETE_B, TrajectoryConstants.RAMSETE_ZETA),
+            DriveTrainConstants.DRIVE_KINEMATICS,
             this::tankDriveVelocity,
-            this))
-        .andThen(new InstantCommand(() -> {
-            setUseDifferentialDrive(true);
-            arcadeDrive(0, 0);
-        }, this));
+            this)
+        .andThen(new InstantCommand(() -> arcadeDrive(0, 0), this));
   }
-
 
   /**
    * Converts from encoder steps to meters.

@@ -7,12 +7,12 @@
 
 package frc.robot;
 
-import static frc.robot.Constants.Auto.MAX_ACCELERATION_METERS_PER_SECOND;
-import static frc.robot.Constants.Auto.MAX_SPEED_METERS_PER_SECOND;
-import static frc.robot.Constants.Auto.VOLTAGE_CONSTRAINT;
-import static frc.robot.Constants.Controller.PORT_ID_DRIVER_CONTROLLER;
-import static frc.robot.Constants.Controller.PORT_ID_OPERATOR_CONSOLE;
-import static frc.robot.Constants.DriveTrain.DRIVE_KINEMATICS;
+import static frc.robot.Constants.ControllerConstants.PORT_ID_DRIVER_CONTROLLER;
+import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
+import static frc.robot.Constants.DriveTrainConstants.DRIVE_KINEMATICS;
+import static frc.robot.Constants.TrajectoryConstants.MAX_ACCELERATION_AUTO;
+import static frc.robot.Constants.TrajectoryConstants.MAX_SPEED_AUTO;
+import static frc.robot.Constants.TrajectoryConstants.VOLTAGE_CONSTRAINT;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -33,7 +33,6 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
@@ -83,16 +82,14 @@ public class RobotContainer {
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
        .whenPressed(driveTrainSubsystem::saveCurrentPose);
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->
-      new PrintCommand("Running path")
-      .andThen(driveTrainSubsystem.createCommandForTrajectory(
+      driveTrainSubsystem.createCommandForTrajectory(
           TrajectoryGenerator.generateTrajectory(
             driveTrainSubsystem.getCurrentPose(),
             Collections.emptyList(),
             driveTrainSubsystem.getSavedPose(),
-            new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND)
+            new TrajectoryConfig(MAX_SPEED_AUTO, MAX_ACCELERATION_AUTO)
                 .setKinematics(DRIVE_KINEMATICS)
-                .addConstraint(VOLTAGE_CONSTRAINT))))
-      .andThen(new PrintCommand("Done running path"))
+                .addConstraint(VOLTAGE_CONSTRAINT)))
       .schedule());
   }
 
@@ -111,7 +108,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
     return autoChooser.getSelected();
   }
 
