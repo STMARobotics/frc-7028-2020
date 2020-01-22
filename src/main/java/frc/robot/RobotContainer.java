@@ -33,7 +33,6 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
@@ -83,16 +82,14 @@ public class RobotContainer {
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
        .whenPressed(driveTrainSubsystem::saveCurrentPose);
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->
-      new PrintCommand("Running path")
-      .andThen(driveTrainSubsystem.createCommandForTrajectory(
+      driveTrainSubsystem.createCommandForTrajectory(
           TrajectoryGenerator.generateTrajectory(
             driveTrainSubsystem.getCurrentPose(),
             Collections.emptyList(),
             driveTrainSubsystem.getSavedPose(),
             new TrajectoryConfig(MAX_SPEED_AUTO, MAX_ACCELERATION_AUTO)
                 .setKinematics(DRIVE_KINEMATICS)
-                .addConstraint(VOLTAGE_CONSTRAINT))))
-      .andThen(new PrintCommand("Done running path"))
+                .addConstraint(VOLTAGE_CONSTRAINT)))
       .schedule());
   }
 
