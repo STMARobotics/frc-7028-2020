@@ -7,12 +7,12 @@
 
 package frc.robot;
 
-import static frc.robot.Constants.Auto.MAX_ACCELERATION_METERS_PER_SECOND;
-import static frc.robot.Constants.Auto.MAX_SPEED_METERS_PER_SECOND;
-import static frc.robot.Constants.Auto.VOLTAGE_CONSTRAINT;
-import static frc.robot.Constants.Controller.PORT_ID_DRIVER_CONTROLLER;
-import static frc.robot.Constants.Controller.PORT_ID_OPERATOR_CONSOLE;
-import static frc.robot.Constants.DriveTrain.DRIVE_KINEMATICS;
+import static frc.robot.Constants.ControllerConstants.PORT_ID_DRIVER_CONTROLLER;
+import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
+import static frc.robot.Constants.DriveTrainConstants.DRIVE_KINEMATICS;
+import static frc.robot.Constants.TrajectoryConstants.MAX_ACCELERATION_AUTO;
+import static frc.robot.Constants.TrajectoryConstants.MAX_SPEED_AUTO;
+import static frc.robot.Constants.TrajectoryConstants.VOLTAGE_CONSTRAINT;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -89,7 +89,7 @@ public class RobotContainer {
             driveTrainSubsystem.getCurrentPose(),
             Collections.emptyList(),
             driveTrainSubsystem.getSavedPose(),
-            new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND)
+            new TrajectoryConfig(MAX_SPEED_AUTO, MAX_ACCELERATION_AUTO)
                 .setKinematics(DRIVE_KINEMATICS)
                 .addConstraint(VOLTAGE_CONSTRAINT))))
       .andThen(new PrintCommand("Done running path"))
@@ -111,7 +111,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
     return autoChooser.getSelected();
   }
 
