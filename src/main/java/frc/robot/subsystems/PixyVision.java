@@ -13,7 +13,7 @@ public class PixyVision{
   public int[] getCoordinates(){
     byte[] xy = new byte[4];
     //if no coordinates are recieved, this will substitute to minimize errors
-    int[] revertTo = {127, 80, 0, 0};
+    int[] revertTo = {127, 80, 0};
     try {
       if(!(port.read(arduinoAddress, 4, xy))){
         //transforms bytes(-128 to 127) into positive integers of desired ranges
