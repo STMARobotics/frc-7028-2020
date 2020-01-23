@@ -1,5 +1,9 @@
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.ArcadeConstants.MAX_ANGULAR_VEL_ARCADE;
+import static frc.robot.Constants.ArcadeConstants.MAX_SPEED_ARCADE;
+import static frc.robot.Constants.ArcadeConstants.ROTATE_RATE_LIMIT_ARCADE;
+import static frc.robot.Constants.ArcadeConstants.SPEED_RATE_LIMIT_ARCADE;
 import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_MASTER;
 import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_SLAVE;
 import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_MASTER;
@@ -8,8 +12,6 @@ import static frc.robot.Constants.DriveTrainConstants.DRIVE_KINEMATICS;
 import static frc.robot.Constants.DriveTrainConstants.FEED_FORWARD;
 import static frc.robot.Constants.DriveTrainConstants.SENSOR_UNITS_PER_ROTATION;
 import static frc.robot.Constants.DriveTrainConstants.WHEEL_CIRCUMFERENCE_METERS;
-import static frc.robot.Constants.TeleConstants.MAX_ANGULAR_VEL;
-import static frc.robot.Constants.TeleConstants.MAX_SPEED_TELE;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
@@ -21,6 +23,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.SlewRateLimiter;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
@@ -29,7 +32,6 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveTrainConstants;
@@ -49,6 +51,9 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private final DifferentialDriveOdometry differentialDriveOdometry;
   private Pose2d savedPose;
 
+  private SlewRateLimiter speedRateLimiter = new SlewRateLimiter(SPEED_RATE_LIMIT_ARCADE);
+  private SlewRateLimiter rotationRateLimiter = new SlewRateLimiter(ROTATE_RATE_LIMIT_ARCADE);
+
   public DriveTrainSubsystem() {
     zeroDriveTrainEncoders();
     gyro.zeroYaw();
@@ -59,10 +64,9 @@ public class DriveTrainSubsystem extends SubsystemBase {
     talonConfig.neutralDeadband = DriveTrainConstants.DEADBAND;
     talonConfig.slot0.kP = DriveTrainConstants.kP;
     talonConfig.slot0.kI = 0.0;
-    talonConfig.slot0.kD = DriveTrainConstants.kD;
+    talonConfig.slot0.kD = 0.0;
     talonConfig.slot0.integralZone = 400;
     talonConfig.slot0.closedLoopPeakOutput = 1.0;
-    talonConfig.closedloopRamp = DriveTrainConstants.CLOSED_LOOP_RAMP;
     talonConfig.openloopRamp = DriveTrainConstants.OPEN_LOOP_RAMP;
 
     rightMaster.configAllSettings(talonConfig);
@@ -118,12 +122,14 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void arcadeDrive(double speed, double rotation, boolean useSquares) {
-    var xSpeed = speed * MAX_SPEED_TELE;
-    var zRotation = Rotation2d.fromDegrees(-rotation * MAX_ANGULAR_VEL).getRadians();;
+    var xSpeed = speedRateLimiter.calculate(speed);
+    var zRotation = -rotationRateLimiter.calculate(rotation);
     if (useSquares) {
       xSpeed *= Math.abs(xSpeed);
       zRotation *= Math.abs(zRotation);
     }
+    xSpeed *= MAX_SPEED_ARCADE;
+    zRotation *= MAX_ANGULAR_VEL_ARCADE;
     var wheelSpeeds = DRIVE_KINEMATICS.toWheelSpeeds(new ChassisSpeeds(xSpeed, 0.0, zRotation));
     tankDriveVelocity(wheelSpeeds.leftMetersPerSecond, wheelSpeeds.rightMetersPerSecond);
   }
@@ -148,8 +154,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void tankDrive(double leftSpeed, double rightSpeed, boolean useSquares) {
-    var xLeftSpeed = leftSpeed * MAX_SPEED_TELE;
-    var xRightSpeed = rightSpeed * MAX_SPEED_TELE;
+    var xLeftSpeed = leftSpeed * MAX_SPEED_ARCADE;
+    var xRightSpeed = rightSpeed * MAX_SPEED_ARCADE;
     if (useSquares) {
       xLeftSpeed *= Math.abs(xLeftSpeed);
       xRightSpeed *= Math.abs(xRightSpeed);
@@ -253,7 +259,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
             DriveTrainConstants.DRIVE_KINEMATICS,
             this::tankDriveVelocity,
             this)
-        .andThen(new InstantCommand(() -> arcadeDrive(0, 0), this));
+        .andThen(() -> arcadeDrive(0, 0), this);
   }
 
   /**

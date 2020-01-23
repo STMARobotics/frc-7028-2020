@@ -55,8 +55,7 @@ public final class Constants {
 
     public static final double DEADBAND = 0.11;
 
-    public static final double kP = 1.0;
-    public static final double kD = 0.11;
+    public static final double kP = 1.25;
 
     public static final double CLOSED_LOOP_RAMP = .2;
     public static final double OPEN_LOOP_RAMP = .25;
@@ -86,12 +85,18 @@ public final class Constants {
     public static final double RAMSETE_ZETA = 0.7;
   }
 
-  public static final class TeleConstants {
+  public static final class ArcadeConstants {
     // Max speed to drive in teleop in meters per second
-    public static final double MAX_SPEED_TELE = 3.25;
+    public static final double MAX_SPEED_ARCADE = 3.0;
 
-    // Max angular velocity in teleop in degrees per second
-    public static final double MAX_ANGULAR_VEL = 320;
+    // Max angular velocity in teleop in radians per second
+    public static final double MAX_ANGULAR_VEL_ARCADE = Units.degreesToRadians(360);
+
+    // Max rate of change for speed per second
+    public static final double SPEED_RATE_LIMIT_ARCADE = 1.75;
+
+    // Max rate of change for rotation per second
+    public static final double ROTATE_RATE_LIMIT_ARCADE = 6.0;
   }
 
 }
