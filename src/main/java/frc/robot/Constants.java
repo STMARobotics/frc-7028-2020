@@ -99,4 +99,21 @@ public final class Constants {
     public static final double ROTATE_RATE_LIMIT_ARCADE = 4.0;
   }
 
+  public static final class AimConstants {
+
+    public static final double kP = 1.0;
+    public static final double kD = 0.1;
+
+    public static final double RANGE_HIGH = 1;
+    public static final double RANGE_LOW = -1;
+  }
+
+  public static final class LimeLightConstants {
+
+    public static final double TARGET_X_MAX = 29.8;
+
+    public static final double TARGET_ACQUIRED = 1.0;
+
+  }
+
 }

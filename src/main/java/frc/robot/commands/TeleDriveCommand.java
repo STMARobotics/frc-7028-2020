@@ -33,13 +33,6 @@ public class TeleDriveCommand extends CommandBase {
       speed = -speed;
     }
     driveTrainSubsystem.arcadeDrive(speed, getRotation(), true);
-    if (driverController.getXButtonPressed()) {
-      savePose();
-      System.out.println("Pose Saved");
-    }
-    if (driverController.getYButtonPressed()) {
-      new DriveToTargetCommand(driveTrainSubsystem, driveTrainSubsystem.getSavedPose()).schedule();;
-    }
   }
 
   private double getSpeed() {
@@ -74,10 +67,6 @@ public class TeleDriveCommand extends CommandBase {
       reverseMode = !reverseMode;
     }
     return reverseMode;
-  }
-
-  private void savePose() {
-    driveTrainSubsystem.saveCurrentPose();
   }
 
   @Override
