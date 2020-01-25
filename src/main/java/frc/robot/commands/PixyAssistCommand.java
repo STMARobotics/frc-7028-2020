@@ -1,17 +1,24 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrainSubsystem;
-import frc.robot.subsystems.PixyVision;
-import frc.robot.subsystems.PixyVisionExtension;
+import frc.robot.subsystems.PixyVisionSubsystem;
+import frc.robot.subsystems.PixyVisionVariables;
 
-public class PixyAssist {
+public class PixyAssistCommand extends CommandBase{
 
-  private final PixyVision pixy = new PixyVision();
+  private final PixyVisionSubsystem pixy;
   private final DriveTrainSubsystem driveTrainSubsystem;
 
-  public PixyAssist(DriveTrainSubsystem driveTrainSubsystem) {
+  private static final int lower = 100; 
+  private static final int upper = 154;
+  private static final double speed = 0.4;
+
+  public PixyAssistCommand(DriveTrainSubsystem driveTrainSubsystem, PixyVisionSubsystem pixy) {
     this.driveTrainSubsystem = driveTrainSubsystem;
+    this.pixy = pixy;
+    addRequirements(driveTrainSubsystem, pixy);
   }
 
   /** Safe Zone Stuff
@@ -22,20 +29,15 @@ public class PixyAssist {
    * +/- 40 = 87 to 167
    */
 
-  private int lower = 100; 
-  private int upper = 154;
-  private PixyVisionExtension pixyData = pixy.getCoordinates(); // {X,Y,Area}
-  private double speed = 0.4;
 
-  public void goToSafeZone(){
-    pixyData = pixy.getCoordinates(); // {X,Y,Area}
-    SmartDashboard.putNumber("Coordinate", pixyData.xCoord);
+  @Override
+  public void execute(){ //go to safezone and follow ball
+    PixyVisionVariables pixyData = pixy.getCoordinates(); // {X,Y,Area}
+    SmartDashboard.putNumber("X-Coordinate", pixyData.xCoord);
     if((lower<=pixyData.xCoord)&&(pixyData.xCoord<=upper)){
       //Within Safe Zone
       driveTrainSubsystem.tankDrive(speed, speed, false);//drive straight towards the opject in view
       pixyData = pixy.getCoordinates();
-      
-      
       SmartDashboard.putString("Pixy Command", "Straight");
     }else if(lower>pixyData.xCoord){
       //object is to the left of the bot
@@ -49,4 +51,10 @@ public class PixyAssist {
       SmartDashboard.putString("Pixy Command", "Right");
     }
   }
+
+  @Override
+  public boolean isFinished() {
+    return false;
+  }
+
 }

@@ -34,9 +34,11 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.PixyAssistCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
+import frc.robot.subsystems.PixyVisionSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -49,6 +51,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
+  private final PixyVisionSubsystem pixyVision = new PixyVisionSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
@@ -79,6 +82,8 @@ public class RobotContainer {
    * passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    new JoystickButton(driverController, XboxController.Button.kB.value)
+        .whenHeld(new PixyAssistCommand(driveTrainSubsystem, pixyVision));
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
        .whenPressed(driveTrainSubsystem::saveCurrentPose);
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->

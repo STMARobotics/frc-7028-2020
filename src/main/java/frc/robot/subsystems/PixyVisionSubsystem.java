@@ -2,23 +2,24 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class PixyVision{
+public class PixyVisionSubsystem extends SubsystemBase{
   private int arduinoAddress = 0x14;
   I2C port;
 
-  public PixyVision(){
+  public PixyVisionSubsystem(){
     port = new I2C(I2C.Port.kOnboard, arduinoAddress);
   }
 
-  public PixyVisionExtension getCoordinates(){
+  public PixyVisionVariables getCoordinates(){
     byte[] xy = new byte[4];
     //if no coordinates are recieved, this will substitute to minimize errors
-    PixyVisionExtension revertTo = new PixyVisionExtension(127, 80, 0, false);
+    PixyVisionVariables revertTo = new PixyVisionVariables(127, 80, 0, false);
     try {
       if(!(port.read(arduinoAddress, 4, xy))){
         //transforms bytes(-128 to 127) into positive integers of desired ranges
-        PixyVisionExtension coords = new PixyVisionExtension(xy[0]+128, xy[1]+128, (xy[2]+128)*(xy[3]+128), true);
+        PixyVisionVariables coords = new PixyVisionVariables(xy[0]+128, xy[1]+128, (xy[2]+128)*(xy[3]+128), true);
         SmartDashboard.putString("I2C Failure", "No Failure");
         return coords;
       } else {

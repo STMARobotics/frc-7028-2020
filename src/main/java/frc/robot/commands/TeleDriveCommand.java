@@ -17,23 +17,17 @@ public class TeleDriveCommand extends CommandBase {
 
   private final XboxController driverController;
   private final DriveTrainSubsystem driveTrainSubsystem;
-  private final PixyAssist pixyAssist;
   private boolean slowMode = false;
   private boolean reverseMode = false;
 
   public TeleDriveCommand(XboxController driverController, DriveTrainSubsystem driveTrainSubsystem) {
     this.driverController = driverController;
     this.driveTrainSubsystem = driveTrainSubsystem;
-    this.pixyAssist = new PixyAssist(driveTrainSubsystem);
     addRequirements(driveTrainSubsystem);
   }
 
   @Override
   public void execute() {
-    
-    if (driverController.getBButton()) {
-      pixyAssist.goToSafeZone();
-    } else {
     double speed = getSpeed();
     if (getReverseMode()) {
       speed = -speed;
@@ -45,7 +39,6 @@ public class TeleDriveCommand extends CommandBase {
     }
     if (driverController.getYButtonPressed()) {
       new DriveToTargetCommand(driveTrainSubsystem, driveTrainSubsystem.getSavedPose()).schedule();;
-    }
     }
   }
 
