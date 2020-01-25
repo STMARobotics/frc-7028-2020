@@ -39,6 +39,7 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpiutil.math.MathUtil;
 import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.TrajectoryConstants;
 
@@ -135,8 +136,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
    */
   public void arcadeDrive(double speed, double rotation, boolean useSquares) {
     if(useEncodersEntry.getBoolean(true)) {
-      var xSpeed = speedRateLimiter.calculate(speed);
-      var zRotation = -rotationRateLimiter.calculate(rotation);
+      var xSpeed = speedRateLimiter.calculate(safeClamp(speed));
+      var zRotation = -rotationRateLimiter.calculate(safeClamp(rotation));
       if (useSquares) {
         xSpeed *= Math.abs(xSpeed);
         zRotation *= Math.abs(zRotation);
@@ -171,8 +172,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
    */
   public void tankDrive(double leftSpeed, double rightSpeed, boolean useSquares) {
     if(useEncodersEntry.getBoolean(true)) {
-      var xLeftSpeed = leftSpeed * MAX_SPEED_ARCADE;
-      var xRightSpeed = rightSpeed * MAX_SPEED_ARCADE;
+      var xLeftSpeed = safeClamp(leftSpeed) * MAX_SPEED_ARCADE;
+      var xRightSpeed = safeClamp(rightSpeed) * MAX_SPEED_ARCADE;
       if (useSquares) {
         xLeftSpeed *= Math.abs(xLeftSpeed);
         xRightSpeed *= Math.abs(xRightSpeed);
@@ -181,6 +182,18 @@ public class DriveTrainSubsystem extends SubsystemBase {
     } else {
       differentialDrive.tankDrive(leftSpeed, rightSpeed, useSquares);
     }
+  }
+
+  /**
+   * Returns value clamped between [-1, 1]. Not-a-number (NaN) returns 0;
+   * @param input value to clamp
+   * @return clamped value
+   */
+  private double safeClamp(double input) {
+    if (Double.isNaN(input)) {
+      return 0;
+    }
+    return MathUtil.clamp(input, -1, 1);
   }
 
   /**
