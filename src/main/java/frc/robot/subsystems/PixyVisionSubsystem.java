@@ -15,11 +15,11 @@ public class PixyVisionSubsystem extends SubsystemBase{
   public PixyVisionVariables getCoordinates(){
     byte[] xy = new byte[4];
     //if no coordinates are recieved, this will substitute to minimize errors
-    PixyVisionVariables revertTo = new PixyVisionVariables(127, 80, 0, false);
+    PixyVisionVariables revertTo = new PixyVisionVariables(127, 80, 0, 0, 0, false);
     try {
       if(!(port.read(arduinoAddress, 4, xy))){
         //transforms bytes(-128 to 127) into positive integers of desired ranges
-        PixyVisionVariables coords = new PixyVisionVariables(xy[0]+128, xy[1]+128, (xy[2]+128)*(xy[3]+128), true);
+        PixyVisionVariables coords = new PixyVisionVariables(xy[0]+128, xy[1]+128, (xy[2]+128), (xy[3]+128), (xy[2]+128)*(xy[3]+128), true);
         SmartDashboard.putString("I2C Failure", "No Failure");
         return coords;
       } else {

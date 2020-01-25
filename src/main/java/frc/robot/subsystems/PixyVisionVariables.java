@@ -7,13 +7,17 @@ public class PixyVisionVariables {
 
   public int xCoord;
   public int yCoord;
-  public int area;
+  public int width;
   public boolean success;
+  public int area;
+  public int height;
 
-  public PixyVisionVariables(int xCoord, int yCoord, int area, boolean success){
+  public PixyVisionVariables(int xCoord, int yCoord, int width, int height, int area, boolean success){
     this.xCoord = xCoord;
     this.yCoord = yCoord;
-    this.area = area;
+    this.width = width;
     this.success = success;
+    this.area = area;
+    this.height = height;
   }
 }
