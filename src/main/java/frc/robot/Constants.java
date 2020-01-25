@@ -96,7 +96,7 @@ public final class Constants {
     public static final double SPEED_RATE_LIMIT_ARCADE = 1.75;
 
     // Max rate of change for rotation per second
-    public static final double ROTATE_RATE_LIMIT_ARCADE = 6.0;
+    public static final double ROTATE_RATE_LIMIT_ARCADE = 4.0;
   }
 
 }

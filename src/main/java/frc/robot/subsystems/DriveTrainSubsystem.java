@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets.kToggleSwitch;
 import static frc.robot.Constants.ArcadeConstants.MAX_ANGULAR_VEL_ARCADE;
 import static frc.robot.Constants.ArcadeConstants.MAX_SPEED_ARCADE;
 import static frc.robot.Constants.ArcadeConstants.ROTATE_RATE_LIMIT_ARCADE;
@@ -22,13 +23,17 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SlewRateLimiter;
 import edu.wpi.first.wpilibj.controller.RamseteController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,12 +52,17 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
   private final WPI_VictorSPX rightSlave = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE);
 
+  private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
+
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);
   private final DifferentialDriveOdometry differentialDriveOdometry;
   private Pose2d savedPose;
 
   private SlewRateLimiter speedRateLimiter = new SlewRateLimiter(SPEED_RATE_LIMIT_ARCADE);
   private SlewRateLimiter rotationRateLimiter = new SlewRateLimiter(ROTATE_RATE_LIMIT_ARCADE);
+
+  ShuffleboardTab drivetrainTab = Shuffleboard.getTab("Drivetrain");
+  NetworkTableEntry useEncodersEntry = drivetrainTab.add("Use encoders?", true).withWidget(kToggleSwitch).getEntry();
 
   public DriveTrainSubsystem() {
     zeroDriveTrainEncoders();
@@ -86,6 +96,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
+
+    differentialDrive.setRightSideInverted(false);
   }
 
   public void resetOdometry() {
@@ -122,16 +134,20 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void arcadeDrive(double speed, double rotation, boolean useSquares) {
-    var xSpeed = speedRateLimiter.calculate(speed);
-    var zRotation = -rotationRateLimiter.calculate(rotation);
-    if (useSquares) {
-      xSpeed *= Math.abs(xSpeed);
-      zRotation *= Math.abs(zRotation);
+    if(useEncodersEntry.getBoolean(true)) {
+      var xSpeed = speedRateLimiter.calculate(speed);
+      var zRotation = -rotationRateLimiter.calculate(rotation);
+      if (useSquares) {
+        xSpeed *= Math.abs(xSpeed);
+        zRotation *= Math.abs(zRotation);
+      }
+      xSpeed *= MAX_SPEED_ARCADE;
+      zRotation *= MAX_ANGULAR_VEL_ARCADE;
+      var wheelSpeeds = DRIVE_KINEMATICS.toWheelSpeeds(new ChassisSpeeds(xSpeed, 0.0, zRotation));
+      tankDriveVelocity(wheelSpeeds.leftMetersPerSecond, wheelSpeeds.rightMetersPerSecond);
+    } else {
+      differentialDrive.arcadeDrive(speed, rotation, useSquares);
     }
-    xSpeed *= MAX_SPEED_ARCADE;
-    zRotation *= MAX_ANGULAR_VEL_ARCADE;
-    var wheelSpeeds = DRIVE_KINEMATICS.toWheelSpeeds(new ChassisSpeeds(xSpeed, 0.0, zRotation));
-    tankDriveVelocity(wheelSpeeds.leftMetersPerSecond, wheelSpeeds.rightMetersPerSecond);
   }
 
   /**
@@ -154,13 +170,17 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void tankDrive(double leftSpeed, double rightSpeed, boolean useSquares) {
-    var xLeftSpeed = leftSpeed * MAX_SPEED_ARCADE;
-    var xRightSpeed = rightSpeed * MAX_SPEED_ARCADE;
-    if (useSquares) {
-      xLeftSpeed *= Math.abs(xLeftSpeed);
-      xRightSpeed *= Math.abs(xRightSpeed);
+    if(useEncodersEntry.getBoolean(true)) {
+      var xLeftSpeed = leftSpeed * MAX_SPEED_ARCADE;
+      var xRightSpeed = rightSpeed * MAX_SPEED_ARCADE;
+      if (useSquares) {
+        xLeftSpeed *= Math.abs(xLeftSpeed);
+        xRightSpeed *= Math.abs(xRightSpeed);
+      }
+      tankDriveVelocity(xLeftSpeed, xRightSpeed);
+    } else {
+      differentialDrive.tankDrive(leftSpeed, rightSpeed, useSquares);
     }
-    tankDriveVelocity(xLeftSpeed, xRightSpeed);
   }
 
   /**
@@ -244,6 +264,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
         metersPerSecToStepsPerDecisec(rightVelocity),
         DemandType.ArbitraryFeedForward,
         rightFeedForwardVolts / 12);
+    differentialDrive.feed();
   }
 
   /**
