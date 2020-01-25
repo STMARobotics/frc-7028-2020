@@ -19,7 +19,7 @@ public class AimShooterCommand extends CommandBase {
   private final LimelightSubsystem limelightSubsystem;
   private boolean isFinished = false;
 
-  private PIDController pidController = new PIDController(kD, 0, kP);
+  private PIDController pidController = new PIDController(kP, 0, kD);
 
   public AimShooterCommand(LimelightSubsystem limelightSubsystem, DriveTrainSubsystem driveTrainSubsystem) {
     this.limelightSubsystem = limelightSubsystem;
