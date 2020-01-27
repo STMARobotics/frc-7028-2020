@@ -1,7 +1,5 @@
 package frc.robot.commands;
 
-import static frc.robot.Constants.AimConstants.RANGE_HIGH;
-import static frc.robot.Constants.AimConstants.RANGE_LOW;
 import static frc.robot.Constants.AimConstants.kD;
 import static frc.robot.Constants.AimConstants.kP;
 
@@ -17,7 +15,7 @@ public class AimShooterCommand extends CommandBase {
 
   private final DriveTrainSubsystem driveTrainSubsystem;
   private final LimelightSubsystem limelightSubsystem;
-  private boolean isFinished = false;
+  private boolean noTarget = false;
 
   private PIDController pidController = new PIDController(kP, 0, kD);
 
@@ -25,33 +23,34 @@ public class AimShooterCommand extends CommandBase {
     this.limelightSubsystem = limelightSubsystem;
     this.driveTrainSubsystem = driveTrainSubsystem;
     addRequirements(limelightSubsystem, driveTrainSubsystem);
+    pidController.setTolerance(.01);
   }
 
   @Override
   public void initialize() {
-    isFinished = false;
+    System.out.println("Targeting");
+    noTarget = false;
   }
 
   @Override
   public void execute() {
     if (limelightSubsystem.getTargetAcquired()) {
       double targetX = limelightSubsystem.getTargetX();
-      if (targetX > RANGE_HIGH || targetX < RANGE_LOW) {
-        double rotationSpeed = -pidController.calculate(targetX / limelightSubsystem.getMaxX());
-        driveTrainSubsystem.arcadeDrive(0, rotationSpeed);
-        return;
-      }
+      double rotationSpeed = -pidController.calculate(targetX / limelightSubsystem.getMaxX());
+      driveTrainSubsystem.arcadeDrive(0, rotationSpeed);
+      return;
     }
-    isFinished = true;
+    noTarget = true;
   }
 
   @Override
   public boolean isFinished() {
-    return isFinished;
+    return noTarget || pidController.atSetpoint();
   }
 
   @Override
   public void end(boolean interrupted) {
+    System.out.println("Targeting complete");
     driveTrainSubsystem.arcadeDrive(0,0);
   }
   

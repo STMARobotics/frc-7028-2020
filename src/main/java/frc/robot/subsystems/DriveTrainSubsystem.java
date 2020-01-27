@@ -261,8 +261,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param rightVelocity right velocity
    */
   public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
-    var leftAccel = (leftVelocity - stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity())) / 20;
-    var rightAccel = (rightVelocity - stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity())) / 20;
+    var leftAccel = (leftVelocity - stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity())) / .20;
+    var rightAccel = (rightVelocity - stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity())) / .20;
     
     var leftFeedForwardVolts = FEED_FORWARD.calculate(leftVelocity, leftAccel);
     var rightFeedForwardVolts = FEED_FORWARD.calculate(rightVelocity, rightAccel);
