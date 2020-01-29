@@ -30,7 +30,7 @@ public class DeadbandFilter {
    * Gets the high limit
    * @return the high limit
    */
-  public double geteHigh() {
+  public double getHigh() {
     return high;
   }
 
