@@ -56,6 +56,8 @@ public class RobotContainer {
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
 
+  private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
+
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   public RobotContainer() {
@@ -82,8 +84,19 @@ public class RobotContainer {
    * passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+
+    new JoystickButton(driverController, XboxController.Button.kY.value)
+        .whenHeld(new AimShooterCommand(limelightSubsystem, driveTrainSubsystem));
+
+    new JoystickButton(driverController, XboxController.Button.kA.value)
+        .whenPressed(teleDriveCommand::toggleSlowMode);
+    
+    new JoystickButton(driverController, XboxController.Button.kB.value)
+        .whenPressed(teleDriveCommand::toggleReverseMode);
+
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
        .whenPressed(driveTrainSubsystem::saveCurrentPose);
+
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->
       driveTrainSubsystem.createCommandForTrajectory(
           TrajectoryGenerator.generateTrajectory(
@@ -94,12 +107,11 @@ public class RobotContainer {
                 .setKinematics(DRIVE_KINEMATICS)
                 .addConstraint(VOLTAGE_CONSTRAINT)))
       .schedule());
-    new JoystickButton(driverController, XboxController.Button.kY.value)
-      .whenHeld(new AimShooterCommand(limelightSubsystem, driveTrainSubsystem));
+
   }
 
   private void configureSubsystemCommands() {
-    driveTrainSubsystem.setDefaultCommand(new TeleDriveCommand(driverController, driveTrainSubsystem));
+    driveTrainSubsystem.setDefaultCommand(teleDriveCommand);
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {

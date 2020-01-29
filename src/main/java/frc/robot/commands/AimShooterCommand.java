@@ -37,7 +37,7 @@ public class AimShooterCommand extends CommandBase {
     if (limelightSubsystem.getTargetAcquired()) {
       double targetX = limelightSubsystem.getTargetX();
       double rotationSpeed = -pidController.calculate(targetX / limelightSubsystem.getMaxX());
-      driveTrainSubsystem.arcadeDrive(0, rotationSpeed);
+      driveTrainSubsystem.arcadeDrive(0, rotationSpeed, false);
       return;
     }
     noTarget = true;
@@ -51,7 +51,7 @@ public class AimShooterCommand extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     System.out.println("Targeting complete");
-    driveTrainSubsystem.arcadeDrive(0,0);
+    driveTrainSubsystem.stop();
   }
   
 }

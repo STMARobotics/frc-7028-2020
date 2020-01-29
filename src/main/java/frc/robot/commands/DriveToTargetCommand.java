@@ -47,9 +47,9 @@ public class DriveToTargetCommand extends CommandBase {
      }
      if (driveTrainSubsystem.getCurrentPose().getRotation().getDegrees() <= pointOrientation + 3 &&
         driveTrainSubsystem.getCurrentPose().getRotation().getDegrees() >= pointOrientation - 3) {
-      driveTrainSubsystem.arcadeDrive(.3, 0.0);
+      driveTrainSubsystem.arcadeDrive(.3, 0.0, false);
      } else {
-       driveTrainSubsystem.arcadeDrive(0.0, .15);
+       driveTrainSubsystem.arcadeDrive(0.0, .15, false);
      }
   }
 
@@ -61,7 +61,7 @@ public class DriveToTargetCommand extends CommandBase {
 
   @Override
   public void end(boolean interrupted) {
-    driveTrainSubsystem.arcadeDrive(0.0, 0.0);
+    driveTrainSubsystem.stop();
   }
   
 }

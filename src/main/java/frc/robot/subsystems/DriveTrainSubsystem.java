@@ -62,8 +62,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private SlewRateLimiter speedRateLimiter = new SlewRateLimiter(SPEED_RATE_LIMIT_ARCADE);
   private SlewRateLimiter rotationRateLimiter = new SlewRateLimiter(ROTATE_RATE_LIMIT_ARCADE);
 
-  ShuffleboardTab drivetrainTab = Shuffleboard.getTab("Drivetrain");
-  NetworkTableEntry useEncodersEntry = drivetrainTab.add("Use encoders?", true).withWidget(kToggleSwitch).getEntry();
+  private ShuffleboardTab drivetrainTab = Shuffleboard.getTab("Drivetrain");
+  private NetworkTableEntry useEncodersEntry = drivetrainTab.add("Use encoders?", true).withWidget(kToggleSwitch).getEntry();
 
   public DriveTrainSubsystem() {
     zeroDriveTrainEncoders();
@@ -72,7 +72,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
-    talonConfig.neutralDeadband = DriveTrainConstants.DEADBAND;
     talonConfig.slot0.kP = DriveTrainConstants.kP;
     talonConfig.slot0.kI = 0.0;
     talonConfig.slot0.kD = 0.0;
@@ -120,16 +119,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
   /**
    * Drives the robot by adjusting x axis speed and z axis rotation
    * 
-   * @param speed    speed along the x axis [-1.0..1.0]
-   * @param rotation rotation rate along the z axis [-1.0..1.0]
-   */
-  public void arcadeDrive(double speed, double rotation) {
-    arcadeDrive(speed, rotation, false);
-  }
-
-  /**
-   * Drives the robot by adjusting x axis speed and z axis rotation
-   * 
    * @param speed      speed along the x axis [-1.0..1.0]
    * @param rotation   rotation rate along the z axis [-1.0..1.0]
    * @param useSquares if set, decreases input sensitivity at low speeds
@@ -157,17 +146,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * 
    * @param leftSpeed  speed of the left motors [-1.0..1.0]
    * @param rightSpeed speed of the right motors [-1.0..1.0]
-   */
-  public void tankDrive(double leftSpeed, double rightSpeed) {
-    tankDrive(leftSpeed, rightSpeed, false);
-  }
-
-  /**
-   * Drives the robot by individually addressing the left and right side of the
-   * drive train
-   * 
-   * @param leftSpeed  speed of the left motors [-1.0..1.0]
-   * @param rightSpeed speed of the right motors [-1.0..1.0]
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void tankDrive(double leftSpeed, double rightSpeed, boolean useSquares) {
@@ -182,6 +160,13 @@ public class DriveTrainSubsystem extends SubsystemBase {
     } else {
       differentialDrive.tankDrive(leftSpeed, rightSpeed, useSquares);
     }
+  }
+
+  /**
+   * Sets the drivetrain to zero velocity and rotation.
+   */
+  public void stop() {
+    tankDriveVelocity(0, 0);
   }
 
   /**
@@ -246,7 +231,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
   /**
    * Returns the heading of the robot in form required for odometry.
    *
-   * @return the robot's heading in degrees, from 180 to 180 with positive value
+   * @return the robot's heading in degrees, from -180 to 180 with positive value
    *         for left turn.
    */
   public double getHeading() {
@@ -293,7 +278,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
             DriveTrainConstants.DRIVE_KINEMATICS,
             this::tankDriveVelocity,
             this)
-        .andThen(() -> arcadeDrive(0, 0), this);
+        .andThen(this::stop, this);
   }
 
   /**

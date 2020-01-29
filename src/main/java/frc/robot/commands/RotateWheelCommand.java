@@ -29,7 +29,6 @@ public class RotateWheelCommand extends CommandBase {
   public void execute() {
     controlPanelSubsystem.spinWheel();
     boolean isCurrentInitial = controlPanelSubsystem.getColor().equals(initialColor);
-    controlPanelSubsystem.getColor();
     if (!wasLastInitial && isCurrentInitial) {
       colorCount++;
     }

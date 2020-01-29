@@ -53,8 +53,6 @@ public final class Constants {
 
     public static final SimpleMotorFeedforward FEED_FORWARD = new SimpleMotorFeedforward(kS, kV, kA);
 
-    public static final double DEADBAND = 0.11;
-
     public static final double kP = 0.75;
 
     public static final double CLOSED_LOOP_RAMP = .2;
@@ -83,6 +81,17 @@ public final class Constants {
     // Baseline values for a RAMSETE follower in units of meters and seconds
     public static final double RAMSETE_B = 2;
     public static final double RAMSETE_ZETA = 0.7;
+  }
+
+  public static final class DriverConstants {
+    
+    public static final double ROTATION_MULTIPLIER = .78;
+
+    public static final double SLOW_MODE_SPEED_MULTIPLIER = .6;
+    public static final double SLOW_MODE_ROTATION_MULTIPLIER = .9;
+
+    public static final double DEADBAND_HIGH = 0.9;
+    public static final double DEADBAND_LOW = -DEADBAND_HIGH;
   }
 
   public static final class ArcadeConstants {

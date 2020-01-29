@@ -23,8 +23,6 @@ public class ControlPanelSubsystem extends SubsystemBase {
 
   private final ColorMatch m_colorMatcher = new ColorMatch();
   
-  private String colorString;
-  
   public ControlPanelSubsystem() {
     m_colorMatcher.addColorMatch(kBlueTarget);
     m_colorMatcher.addColorMatch(kGreenTarget);
