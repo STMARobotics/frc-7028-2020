@@ -129,13 +129,13 @@ public final class Constants {
 
     public static final int SENSOR_UNITS_PER_ROTATION = 8192;
 
-    public static final double kS = 0.829;
-    public static final double kV = 3.04;
-    public static final double kA = 0.676;
+    public static final double kS = 2.09;
+    public static final double kV = 0.109;
+    public static final double kA = 0.172;
 
     public static final SimpleMotorFeedforward FEED_FORWARD = new SimpleMotorFeedforward(kS, kV, kA);
 
-    public static final double kP = 0;
+    public static final double kP = 0.1;
 
     public static final double ROTATE_RPM = 3;
     public static final double SET_COLOR_RPM = 3;

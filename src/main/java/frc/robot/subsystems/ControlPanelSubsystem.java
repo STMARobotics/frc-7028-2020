@@ -5,6 +5,7 @@ import java.util.Map;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.ColorMatch;
@@ -15,7 +16,6 @@ import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.SuppliedValueWidget;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ControlPanelConstants;
@@ -46,7 +46,6 @@ public class ControlPanelSubsystem extends SubsystemBase {
   private final ShuffleboardLayout speedGrid = dashboard.getLayout("Speed", BuiltInLayouts.kGrid)
     .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
     
-  
   private String colorString;
 
   public ControlPanelSubsystem() {
@@ -65,6 +64,8 @@ public class ControlPanelSubsystem extends SubsystemBase {
     talonConfig.slot0.kI = 0.0;
     talonConfig.slot0.kD = 0.0;
     talonConfig.slot0.closedLoopPeakOutput = .5;
+    motor.setNeutralMode(NeutralMode.Brake);
+    stopWheel();
 
     motor.configAllSettings(talonConfig);
     motor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
@@ -84,20 +85,17 @@ public class ControlPanelSubsystem extends SubsystemBase {
 
     if (match.color == kWhiteTarget) {
       colorString = "White";
-    }
-    if (match.color == kBlueTarget) {
+    } else if (match.color == kBlueTarget) {
       colorString = "Blue";
-    }
-    if (match.color == kRedTarget) {
+    } else if (match.color == kRedTarget) {
       colorString = "Red";
-    }
-    if (match.color == kGreenTarget) {
+    } else if (match.color == kGreenTarget) {
       colorString = "Green";
-    }
-    if (match.color == kYellowTarget) {
+    } else if (match.color == kYellowTarget) {
       colorString = "Yellow";
+    } else {
+      colorString = "White";
     }
-    colorString = "White";
 
     colorWidget.withProperties(Map.of("colorWhenTrue", colorString));
   }
@@ -115,8 +113,6 @@ public class ControlPanelSubsystem extends SubsystemBase {
   }
 
   public void spinSpeed(double rpm) {
-    SmartDashboard.putBoolean("Spinning Wheel", true);
-
     var accel = (rpm - stepsPerDecisecToRPS(motor.getSelectedSensorVelocity())) / .20;
     var leftFeedForwardVolts = ControlPanelConstants.FEED_FORWARD.calculate(rpm, accel);
     motor.set(
@@ -127,12 +123,10 @@ public class ControlPanelSubsystem extends SubsystemBase {
   }
 
   public void stopWheel() {
-    SmartDashboard.putBoolean("Spinning Wheel", false);
     motor.set(0);
   }
 
   public void stopHere() {
-    SmartDashboard.putBoolean("Spinning Wheel", false);
     motor.set(ControlMode.Position, motor.getSelectedSensorPosition());
   }
 
