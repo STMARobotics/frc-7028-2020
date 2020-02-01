@@ -60,10 +60,12 @@ public class ControlPanelSubsystem extends SubsystemBase {
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.QuadEncoder;
-    talonConfig.slot0.kP = ControlPanelConstants.kP;
+    talonConfig.slot0.kP = ControlPanelConstants.kP_VELOCITY;
     talonConfig.slot0.kI = 0.0;
     talonConfig.slot0.kD = 0.0;
-    talonConfig.slot0.closedLoopPeakOutput = .5;
+    talonConfig.slot1.kP = ControlPanelConstants.kP_POSITION;
+    talonConfig.slot1.kI = 0.0;
+    talonConfig.slot1.kD = ControlPanelConstants.kD_POSITION;
     motor.setNeutralMode(NeutralMode.Brake);
     stopWheel();
 
@@ -115,6 +117,7 @@ public class ControlPanelSubsystem extends SubsystemBase {
   public void spinSpeed(double rpm) {
     var accel = (rpm - stepsPerDecisecToRPS(motor.getSelectedSensorVelocity())) / .20;
     var leftFeedForwardVolts = ControlPanelConstants.FEED_FORWARD.calculate(rpm, accel);
+    motor.selectProfileSlot(0, 0);
     motor.set(
         ControlMode.Velocity,
         rpmToStepsPerDecisec(ControlPanelConstants.SET_COLOR_RPM),
@@ -127,6 +130,7 @@ public class ControlPanelSubsystem extends SubsystemBase {
   }
 
   public void stopHere() {
+    motor.selectProfileSlot(1, 1);
     motor.set(ControlMode.Position, motor.getSelectedSensorPosition());
   }
 
