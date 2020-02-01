@@ -39,6 +39,7 @@ import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
+import frc.robot.subsystems.ShooterHoodSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -51,6 +52,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
+  private final ShooterHoodSubsystem shooterHoodSubsystem = new ShooterHoodSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
@@ -100,7 +102,14 @@ public class RobotContainer {
           .whenPressed(new RotateWheelCommand(controlPanelSubsystem));
       new JoystickButton(operatorConsole, XboxController.Button.kY.value)
           .whenPressed(new RotateWheelCommand(controlPanelSubsystem));
+          
+      new JoystickButton(operatorConsole, XboxController.Button.kB.value)
+          .whenPressed(new SetHoodCommand(shooterHoodSubsystem, 2));
+
+      new JoystickButton(operatorConsole, XboxController.Button.kA.value)
+          .whenPressed(new SetHoodCommand(shooterHoodSubsystem, 1));
   }
+
 
   private void configureSubsystemCommands() {
     driveTrainSubsystem.setDefaultCommand(new TeleDriveCommand(driverController, driveTrainSubsystem));
