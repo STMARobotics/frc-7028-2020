@@ -49,7 +49,7 @@ public class TeleDriveCommand extends CommandBase {
   }
 
   private double getRotation() {
-    double rotation = deadbandFilter.calculate(driverController.getX(Hand.kRight) * ROTATION_MULTIPLIER);
+    double rotation = deadbandFilter.calculate(driverController.getX(Hand.kRight)) * ROTATION_MULTIPLIER;
     if (isSlowMode()) {
       rotation *= SLOW_MODE_ROTATION_MULTIPLIER;
     }

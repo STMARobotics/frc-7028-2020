@@ -70,6 +70,7 @@ public class ControlPanelSubsystem extends SubsystemBase {
     stopWheel();
 
     motor.configAllSettings(talonConfig);
+    motor.overrideLimitSwitchesEnable(false);
     motor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
     motor.setSensorPhase(true);
 
