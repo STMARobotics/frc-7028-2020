@@ -16,8 +16,10 @@ public class RotateWheelCommand extends CommandBase {
 
   private final ControlPanelSubsystem controlPanelSubsystem;
 
-  private final ShuffleboardLayout dashboard = Dashboard.commandsTab.getLayout("Rotate Wheel", BuiltInLayouts.kList);
-  private final SuppliedValueWidget<Boolean> initialColorWidget = dashboard.addBoolean("Initial Color", () -> true);
+  private final ShuffleboardLayout dashboard = 
+      Dashboard.commandsTab.getLayout("Rotate Wheel", BuiltInLayouts.kList).withSize(2, 2).withPosition(4, 0);
+  private final SuppliedValueWidget<Boolean> initialColorWidget = 
+      dashboard.addBoolean("Initial Color", () -> true).withProperties(Map.of("colorWhenTrue", "Black"));
   
   private String initialColor;
   private int colorCount;

@@ -51,7 +51,7 @@ public class ControlPanelSubsystem extends SubsystemBase {
   public ControlPanelSubsystem() {
     dashboard.add(this);
     dashboard.add("Motor", motor);
-    speedGrid.addNumber("Raw", motor::getSelectedSensorVelocity);
+    speedGrid.addNumber("Raw Velocity", motor::getSelectedSensorVelocity);
     speedGrid.addNumber("RPM", () -> stepsPerDecisecToRPS(motor.getSelectedSensorVelocity()) * 60);
     colorGrid.addNumber("Color Red", () -> colorSensor.getColor().red);
     colorGrid.addNumber("Color Green", () -> colorSensor.getColor().green);

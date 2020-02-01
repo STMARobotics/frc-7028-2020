@@ -21,7 +21,7 @@ public class AimShooterCommand extends CommandBase {
   private PIDController pidController = new PIDController(kP, 0, kD);
 
   public AimShooterCommand(LimelightSubsystem limelightSubsystem, DriveTrainSubsystem driveTrainSubsystem) {
-    Dashboard.commandsTab.add(this);
+    Dashboard.commandsTab.add(this).withSize(2, 1).withPosition(2, 0);
     this.limelightSubsystem = limelightSubsystem;
     this.driveTrainSubsystem = driveTrainSubsystem;
     addRequirements(limelightSubsystem, driveTrainSubsystem);
