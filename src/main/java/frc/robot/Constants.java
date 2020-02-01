@@ -139,8 +139,8 @@ public final class Constants {
     public static final double kP_POSITION = 1;
     public static final double kD_POSITION = 0;
 
-    public static final double ROTATE_RPM = 5;
-    public static final double SET_COLOR_RPM = 3;
+    public static final double ROTATE_RPM = 200.0;
+    public static final double SET_COLOR_RPM = 180.0;
 
   }
 

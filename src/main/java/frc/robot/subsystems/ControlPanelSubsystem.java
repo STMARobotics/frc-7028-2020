@@ -108,11 +108,11 @@ public class ControlPanelSubsystem extends SubsystemBase {
   }
 
   public void spinForRotations() {
-    spinSpeed(ControlPanelConstants.ROTATE_RPM);
+    spinSpeed(ControlPanelConstants.ROTATE_RPM / 60);
   }
 
   public void spinForColor() {
-    spinSpeed(ControlPanelConstants.SET_COLOR_RPM);
+    spinSpeed(ControlPanelConstants.SET_COLOR_RPM / 60);
   }
 
   public void spinSpeed(double rpm) {
