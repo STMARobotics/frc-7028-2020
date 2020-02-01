@@ -5,6 +5,7 @@ import static frc.robot.Constants.AimConstants.kP;
 
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Dashboard;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 
@@ -20,6 +21,7 @@ public class AimShooterCommand extends CommandBase {
   private PIDController pidController = new PIDController(kP, 0, kD);
 
   public AimShooterCommand(LimelightSubsystem limelightSubsystem, DriveTrainSubsystem driveTrainSubsystem) {
+    Dashboard.commandsTab.add(this);
     this.limelightSubsystem = limelightSubsystem;
     this.driveTrainSubsystem = driveTrainSubsystem;
     addRequirements(limelightSubsystem, driveTrainSubsystem);

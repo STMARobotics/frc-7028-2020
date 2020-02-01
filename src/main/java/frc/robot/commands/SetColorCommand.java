@@ -5,6 +5,7 @@ import java.util.Map;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Dashboard;
 import frc.robot.subsystems.ControlPanelSubsystem;
 
 /**
@@ -23,6 +24,7 @@ public class SetColorCommand extends CommandBase {
   private String targetColor;
 
   public SetColorCommand(ControlPanelSubsystem controlPanelSubsystem) {
+    Dashboard.commandsTab.add(this);
     this.controlPanelSubsystem = controlPanelSubsystem;
   }
 
@@ -34,7 +36,7 @@ public class SetColorCommand extends CommandBase {
 
   @Override
   public void execute() {
-    controlPanelSubsystem.spinWheel();
+    controlPanelSubsystem.spinForColor();
   }
 
   @Override
@@ -47,7 +49,11 @@ public class SetColorCommand extends CommandBase {
 
   @Override
   public void end(boolean interrupted) {
-    controlPanelSubsystem.stopWheel();
+    if (interrupted) {
+      controlPanelSubsystem.stopWheel();
+    } else {
+      controlPanelSubsystem.stopHere();
+    }
   }
 
 }

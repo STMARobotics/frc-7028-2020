@@ -9,8 +9,11 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Dashboard;
 import frc.robot.commands.InstantWhenDisabledCommand;
 
 /**
@@ -18,11 +21,16 @@ import frc.robot.commands.InstantWhenDisabledCommand;
  */
 public class LimelightSubsystem extends SubsystemBase {
 
+  private final ShuffleboardLayout dashboard = Dashboard.subsystemsTab.getLayout("Limelight", BuiltInLayouts.kList)
+      .withSize(2, 2).withPosition(4, 0);
+
   private final NetworkTable limeLightNetworkTable;
   private double targetX = 0.0;
   private boolean targetAcquired = false;
+  private boolean enabled;
 
   public LimelightSubsystem() {
+    dashboard.add(this);
     limeLightNetworkTable = NetworkTableInstance.getDefault().getTable("limelight");
     limeLightNetworkTable.addEntryListener("tl", this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
     
@@ -34,6 +42,9 @@ public class LimelightSubsystem extends SubsystemBase {
   private void update(NetworkTable table, String key, NetworkTableEntry entry, NetworkTableValue value, int flags) {
     targetAcquired = table.getEntry("tv").getDouble(0.0) == TARGET_ACQUIRED;
     targetX = table.getEntry("tx").getDouble(0.0);
+    
+    table.getEntry("ledMode").setDouble(enabled ? 0.0 : 1.0);
+    table.getEntry("camMode").setDouble(enabled ? 0.0 : 1.0);
   }
 
   public boolean getTargetAcquired() {
@@ -52,16 +63,14 @@ public class LimelightSubsystem extends SubsystemBase {
    * Turns the LEDS off and switches camera mode to driver.
    */
   public void disable() {
-    limeLightNetworkTable.getEntry("ledMode").setDouble(1.0);
-    limeLightNetworkTable.getEntry("camMode").setDouble(1.0);
+    enabled = false;
   }
 
   /**
    * Sets the LEDS to be controlled by the pipeline and switches the camera mode to vision processor.
    */
   public void enable() {
-    limeLightNetworkTable.getEntry("ledMode").setDouble(0.0);
-    limeLightNetworkTable.getEntry("camMode").setDouble(0.0);
+    enabled = true;
   }
 
 }

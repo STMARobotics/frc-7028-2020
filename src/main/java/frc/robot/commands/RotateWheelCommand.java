@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Dashboard;
 import frc.robot.subsystems.ControlPanelSubsystem;
 
 /**
@@ -15,6 +16,7 @@ public class RotateWheelCommand extends CommandBase {
   private boolean wasLastInitial;
 
   public RotateWheelCommand(ControlPanelSubsystem controlPanelSubsystem) {
+    Dashboard.commandsTab.add(this);
     this.controlPanelSubsystem = controlPanelSubsystem;
   }
 
@@ -27,12 +29,19 @@ public class RotateWheelCommand extends CommandBase {
 
   @Override
   public void execute() {
-    controlPanelSubsystem.spinWheel();
-    boolean isCurrentInitial = controlPanelSubsystem.getColor().equals(initialColor);
-    if (!wasLastInitial && isCurrentInitial) {
-      colorCount++;
+    controlPanelSubsystem.spinForRotations();
+    var currentColor = controlPanelSubsystem.getColor();
+    if ("White".equals(initialColor)) {
+      if (!"White".equals(currentColor)) {
+        initialColor = currentColor;
+      }
+    } else {
+      boolean isCurrentInitial = currentColor.equals(initialColor);
+      if (!wasLastInitial && isCurrentInitial) {
+        colorCount++;
+      }
+      wasLastInitial = isCurrentInitial;
     }
-    wasLastInitial = isCurrentInitial;
   }
 
   @Override

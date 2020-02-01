@@ -32,9 +32,8 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
@@ -42,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
 import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.TrajectoryConstants;
+import frc.robot.Dashboard;
 
 /**
  * DriveTrainSubsystem
@@ -62,13 +62,21 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private SlewRateLimiter speedRateLimiter = new SlewRateLimiter(SPEED_RATE_LIMIT_ARCADE);
   private SlewRateLimiter rotationRateLimiter = new SlewRateLimiter(ROTATE_RATE_LIMIT_ARCADE);
 
-  private ShuffleboardTab drivetrainTab = Shuffleboard.getTab("Drivetrain");
-  private NetworkTableEntry useEncodersEntry = drivetrainTab.add("Use encoders?", true).withWidget(kToggleSwitch).getEntry();
-
+  private final ShuffleboardLayout dashboard = Dashboard.subsystemsTab.getLayout("Drivetrain", BuiltInLayouts.kList)
+      .withSize(2, 4).withPosition(0, 0);
+  private NetworkTableEntry useEncodersEntry =
+      dashboard.addPersistent("Use encoders", true).withWidget(kToggleSwitch).getEntry();
+  
   public DriveTrainSubsystem() {
+    dashboard.add(this);
+
     zeroDriveTrainEncoders();
     gyro.zeroYaw();
     differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));
+
+    dashboard.add(rightMaster);
+    dashboard.add(leftMaster);
+    dashboard.addString("Pose", () -> differentialDriveOdometry.getPoseMeters().toString());
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
@@ -100,10 +108,12 @@ public class DriveTrainSubsystem extends SubsystemBase {
     differentialDrive.setRightSideInverted(false);
   }
 
+  /**
+   * Resets the current pose to 0, 0, 0° and resets the saved pose
+   */
   public void resetOdometry() {
     zeroDriveTrainEncoders();
-    gyro.zeroYaw();
-    savedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(getHeading()));
+    savedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
     differentialDriveOdometry.resetPosition(savedPose, Rotation2d.fromDegrees(getHeading()));
   }
 
@@ -113,7 +123,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
         Rotation2d.fromDegrees(getHeading()),
         stepsToMeters(getLeftEncoderPosition()),
         stepsToMeters(getRightEncoderPosition()));
-    SmartDashboard.putString("Pose", differentialDriveOdometry.getPoseMeters().toString());
   }
 
   /**
@@ -160,6 +169,33 @@ public class DriveTrainSubsystem extends SubsystemBase {
     } else {
       differentialDrive.tankDrive(leftSpeed, rightSpeed, useSquares);
     }
+  }
+
+  /**
+   * Controls the left and right side of the drive using Talon SRX closed-loop
+   * velocity.
+   * 
+   * @param leftVelocity  left velocity in meters per second
+   * @param rightVelocity right velocity in meters per second
+   */
+  public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
+    var leftAccel = (leftVelocity - stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity())) / .20;
+    var rightAccel = (rightVelocity - stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity())) / .20;
+    
+    var leftFeedForwardVolts = FEED_FORWARD.calculate(leftVelocity, leftAccel);
+    var rightFeedForwardVolts = FEED_FORWARD.calculate(rightVelocity, rightAccel);
+
+    leftMaster.set(
+        ControlMode.Velocity, 
+        metersPerSecToStepsPerDecisec(leftVelocity), 
+        DemandType.ArbitraryFeedForward,
+        leftFeedForwardVolts / 12);
+    rightMaster.set(
+        ControlMode.Velocity,
+        metersPerSecToStepsPerDecisec(rightVelocity),
+        DemandType.ArbitraryFeedForward,
+        rightFeedForwardVolts / 12);
+    differentialDrive.feed();
   }
 
   /**
@@ -236,33 +272,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
    */
   public double getHeading() {
     return Math.IEEEremainder(gyro.getAngle(), 360.0d) * -1.0d;
-  }
-
-  /**
-   * Controls the left and right side of the drive using Talon SRX closed-loop
-   * velocity.
-   * 
-   * @param leftVelocity  left velocity
-   * @param rightVelocity right velocity
-   */
-  public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
-    var leftAccel = (leftVelocity - stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity())) / .20;
-    var rightAccel = (rightVelocity - stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity())) / .20;
-    
-    var leftFeedForwardVolts = FEED_FORWARD.calculate(leftVelocity, leftAccel);
-    var rightFeedForwardVolts = FEED_FORWARD.calculate(rightVelocity, rightAccel);
-
-    leftMaster.set(
-        ControlMode.Velocity, 
-        metersPerSecToStepsPerDecisec(leftVelocity), 
-        DemandType.ArbitraryFeedForward,
-        leftFeedForwardVolts / 12);
-    rightMaster.set(
-        ControlMode.Velocity,
-        metersPerSecToStepsPerDecisec(rightVelocity),
-        DemandType.ArbitraryFeedForward,
-        rightFeedForwardVolts / 12);
-    differentialDrive.feed();
   }
 
   /**
