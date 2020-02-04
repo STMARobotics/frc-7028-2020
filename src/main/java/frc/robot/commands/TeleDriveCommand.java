@@ -1,8 +1,16 @@
 package frc.robot.commands;
 
+import static frc.robot.Constants.DriverConstants.DEADBAND_HIGH;
+import static frc.robot.Constants.DriverConstants.DEADBAND_LOW;
+import static frc.robot.Constants.DriverConstants.ROTATION_MULTIPLIER;
+import static frc.robot.Constants.DriverConstants.SLOW_MODE_ROTATION_MULTIPLIER;
+import static frc.robot.Constants.DriverConstants.SLOW_MODE_SPEED_MULTIPLIER;
+
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Dashboard;
+import frc.robot.DeadbandFilter;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
 /**
@@ -10,10 +18,7 @@ import frc.robot.subsystems.DriveTrainSubsystem;
  */
 public class TeleDriveCommand extends CommandBase {
 
-  public static final double ROTATION_MULTIPLIER = .78;
-
-  public static final double SLOW_MODE_SPEED_MULTIPLIER = .6;
-  public static final double SLOW_MODE_ROTATION_MULTIPLIER = .9;
+  private final DeadbandFilter deadbandFilter = new DeadbandFilter(DEADBAND_LOW, DEADBAND_HIGH);
 
   private final XboxController driverController;
   private final DriveTrainSubsystem driveTrainSubsystem;
@@ -21,6 +26,7 @@ public class TeleDriveCommand extends CommandBase {
   private boolean reverseMode = false;
 
   public TeleDriveCommand(XboxController driverController, DriveTrainSubsystem driveTrainSubsystem) {
+    Dashboard.commandsTab.add(this).withSize(2, 1).withPosition(0, 0);
     this.driverController = driverController;
     this.driveTrainSubsystem = driveTrainSubsystem;
     addRequirements(driveTrainSubsystem);
@@ -28,56 +34,42 @@ public class TeleDriveCommand extends CommandBase {
 
   @Override
   public void execute() {
-    double speed = getSpeed();
-    if (getReverseMode()) {
-      speed = -speed;
-    }
-    driveTrainSubsystem.arcadeDrive(speed, getRotation(), true);
-    if (driverController.getXButtonPressed()) {
-      savePose();
-      System.out.println("Pose Saved");
-    }
-    if (driverController.getYButtonPressed()) {
-      new DriveToTargetCommand(driveTrainSubsystem, driveTrainSubsystem.getSavedPose()).schedule();;
-    }
+    driveTrainSubsystem.arcadeDrive(getSpeed(), getRotation(), true);
   }
 
   private double getSpeed() {
-    double speed;
-    if (getSlowMode()) {
-      speed = driverController.getY(Hand.kLeft) * SLOW_MODE_SPEED_MULTIPLIER;
-    } else {
-      speed = driverController.getY(Hand.kLeft);
+    double speed = deadbandFilter.calculate(-driverController.getY(Hand.kLeft));
+    if (isSlowMode()) {
+      speed *= SLOW_MODE_SPEED_MULTIPLIER;
+    }
+    if (isReverseMode()) {
+      speed = -speed;
     }
     return speed;
   }
 
   private double getRotation() {
-    double rotation;
-    if (getSlowMode()) {
-      rotation = driverController.getX(Hand.kRight) * ROTATION_MULTIPLIER * SLOW_MODE_ROTATION_MULTIPLIER;
-    } else {
-      rotation = driverController.getX(Hand.kRight) * ROTATION_MULTIPLIER;
+    double rotation = deadbandFilter.calculate(driverController.getX(Hand.kRight)) * ROTATION_MULTIPLIER;
+    if (isSlowMode()) {
+      rotation *= SLOW_MODE_ROTATION_MULTIPLIER;
     }
     return rotation;
   }
 
-  private boolean getSlowMode() {
-    if (driverController.getBButtonPressed()) {
-      slowMode = !slowMode;
-    }
+  public void toggleSlowMode() {
+    slowMode = !slowMode;
+  }
+
+  public boolean isSlowMode() {
     return slowMode;
   }
 
-  private boolean getReverseMode() {
-    if (driverController.getAButtonPressed()) {
-      reverseMode = !reverseMode;
-    }
-    return reverseMode;
+  public void toggleReverseMode() {
+    reverseMode = !reverseMode;
   }
 
-  private void savePose() {
-    driveTrainSubsystem.saveCurrentPose();
+  public boolean isReverseMode() {
+    return reverseMode;
   }
 
   @Override
@@ -87,7 +79,7 @@ public class TeleDriveCommand extends CommandBase {
 
   @Override
   public void end(boolean interrupted) {
-    driveTrainSubsystem.arcadeDrive(0, 0);
+    driveTrainSubsystem.stop();
   }
 
 }

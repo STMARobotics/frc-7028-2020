@@ -7,12 +7,12 @@
 
 package frc.robot;
 
-import static frc.robot.Constants.Auto.MAX_ACCELERATION_METERS_PER_SECOND;
-import static frc.robot.Constants.Auto.MAX_SPEED_METERS_PER_SECOND;
-import static frc.robot.Constants.Auto.VOLTAGE_CONSTRAINT;
-import static frc.robot.Constants.Controller.PORT_ID_DRIVER_CONTROLLER;
-import static frc.robot.Constants.Controller.PORT_ID_OPERATOR_CONSOLE;
-import static frc.robot.Constants.DriveTrain.DRIVE_KINEMATICS;
+import static frc.robot.Constants.ControllerConstants.PORT_ID_DRIVER_CONTROLLER;
+import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
+import static frc.robot.Constants.DriveTrainConstants.DRIVE_KINEMATICS;
+import static frc.robot.Constants.TrajectoryConstants.MAX_ACCELERATION_AUTO;
+import static frc.robot.Constants.TrajectoryConstants.MAX_SPEED_AUTO;
+import static frc.robot.Constants.TrajectoryConstants.VOLTAGE_CONSTRAINT;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -33,13 +33,15 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.AimShooterCommand;
 import frc.robot.commands.RotateWheelCommand;
+import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.SetHoodCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterHoodSubsystem;
 
 /**
@@ -54,9 +56,12 @@ public class RobotContainer {
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
   private final ShooterHoodSubsystem shooterHoodSubsystem = new ShooterHoodSubsystem();
+  private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
+
+  private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
@@ -84,25 +89,36 @@ public class RobotContainer {
    * passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+
+    new JoystickButton(driverController, XboxController.Button.kY.value)
+        .whenHeld(new AimShooterCommand(limelightSubsystem, driveTrainSubsystem));
+
+    new JoystickButton(driverController, XboxController.Button.kX.value)
+        .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
+
+    new JoystickButton(driverController, XboxController.Button.kStart.value)
+        .whenHeld(new SetColorCommand(controlPanelSubsystem));
+
+    new JoystickButton(driverController, XboxController.Button.kA.value)
+        .whenPressed(teleDriveCommand::toggleSlowMode);
+    
+    new JoystickButton(driverController, XboxController.Button.kB.value)
+        .whenPressed(teleDriveCommand::toggleReverseMode);
+
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
        .whenPressed(driveTrainSubsystem::saveCurrentPose);
+
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->
-      new PrintCommand("Running path")
-      .andThen(driveTrainSubsystem.createCommandForTrajectory(
+      driveTrainSubsystem.createCommandForTrajectory(
           TrajectoryGenerator.generateTrajectory(
             driveTrainSubsystem.getCurrentPose(),
             Collections.emptyList(),
             driveTrainSubsystem.getSavedPose(),
-            new TrajectoryConfig(MAX_SPEED_METERS_PER_SECOND, MAX_ACCELERATION_METERS_PER_SECOND)
+            new TrajectoryConfig(MAX_SPEED_AUTO, MAX_ACCELERATION_AUTO)
                 .setKinematics(DRIVE_KINEMATICS)
-                .addConstraint(VOLTAGE_CONSTRAINT))))
-      .andThen(new PrintCommand("Done running path"))
+                .addConstraint(VOLTAGE_CONSTRAINT)))
       .schedule());
 
-      new JoystickButton(operatorConsole, XboxController.Button.kX.value)
-          .whenPressed(new RotateWheelCommand(controlPanelSubsystem));
-      new JoystickButton(operatorConsole, XboxController.Button.kY.value)
-          .whenPressed(new RotateWheelCommand(controlPanelSubsystem));
           
       new JoystickButton(operatorConsole, XboxController.Button.kB.value)
           .whenPressed(new SetHoodCommand(shooterHoodSubsystem, 2));
@@ -113,7 +129,7 @@ public class RobotContainer {
 
 
   private void configureSubsystemCommands() {
-    driveTrainSubsystem.setDefaultCommand(new TeleDriveCommand(driverController, driveTrainSubsystem));
+    driveTrainSubsystem.setDefaultCommand(teleDriveCommand);
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {
@@ -127,7 +143,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
     return autoChooser.getSelected();
   }
 
