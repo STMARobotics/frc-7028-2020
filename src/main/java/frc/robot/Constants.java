@@ -123,6 +123,18 @@ public final class Constants {
 
     public static final double TARGET_ACQUIRED = 1.0;
 
+    public static final double PIPELINE_INDEX_NEAR = 0.0;
+    public static final double PIPELINE_INDEX_FAR = 1.0;
+
+    /** Height of the target in meters */
+    public static final double TARGET_HEIGHT = Units.inchesToMeters(98.25);
+
+    /** Height of the limelight on the robot in meters */
+    public static final double MOUNT_HEIGHT = Units.inchesToMeters(18.0);
+
+    /** Angle of the limelight in degrees */
+    public static final double MOUNT_ANGLE = 20;
+
   }
 
   public static final class ControlPanelConstants {
