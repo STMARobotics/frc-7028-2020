@@ -65,7 +65,7 @@ public class PixyAssistCommand extends CommandBase{
 
   @Override
   public void end(boolean interrupted) {
-    driveTrainSubsystem.tankDrive(0, 0);
+    driveTrainSubsystem.tankDrive(0, 0, false);
   }
 
 }

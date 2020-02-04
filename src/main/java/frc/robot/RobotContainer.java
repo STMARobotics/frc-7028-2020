@@ -34,10 +34,14 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.AimShooterCommand;
 import frc.robot.commands.PixyAssistCommand;
+import frc.robot.commands.RotateWheelCommand;
+import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.PixyVisionSubsystem;
 
 /**
@@ -52,9 +56,12 @@ public class RobotContainer {
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
   private final PixyVisionSubsystem pixyVision = new PixyVisionSubsystem();
+  private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
+
+  private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
@@ -84,8 +91,25 @@ public class RobotContainer {
   private void configureButtonBindings() {
     new JoystickButton(driverController, XboxController.Button.kB.value)
         .whenHeld(new PixyAssistCommand(driveTrainSubsystem, pixyVision));
+
+    new JoystickButton(driverController, XboxController.Button.kY.value)
+        .whenHeld(new AimShooterCommand(limelightSubsystem, driveTrainSubsystem));
+
+    new JoystickButton(driverController, XboxController.Button.kX.value)
+        .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
+
+    new JoystickButton(driverController, XboxController.Button.kStart.value)
+        .whenHeld(new SetColorCommand(controlPanelSubsystem));
+
+    new JoystickButton(driverController, XboxController.Button.kA.value)
+        .whenPressed(teleDriveCommand::toggleSlowMode);
+    
+    new JoystickButton(driverController, XboxController.Button.kB.value)
+        .whenPressed(teleDriveCommand::toggleReverseMode);
+
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
        .whenPressed(driveTrainSubsystem::saveCurrentPose);
+
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->
       driveTrainSubsystem.createCommandForTrajectory(
           TrajectoryGenerator.generateTrajectory(
@@ -96,10 +120,11 @@ public class RobotContainer {
                 .setKinematics(DRIVE_KINEMATICS)
                 .addConstraint(VOLTAGE_CONSTRAINT)))
       .schedule());
+
   }
 
   private void configureSubsystemCommands() {
-    driveTrainSubsystem.setDefaultCommand(new TeleDriveCommand(driverController, driveTrainSubsystem));
+    driveTrainSubsystem.setDefaultCommand(teleDriveCommand);
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {
