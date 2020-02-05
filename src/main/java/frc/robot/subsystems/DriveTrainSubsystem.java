@@ -6,9 +6,11 @@ import static frc.robot.Constants.ArcadeConstants.MAX_SPEED_ARCADE;
 import static frc.robot.Constants.ArcadeConstants.ROTATE_RATE_LIMIT_ARCADE;
 import static frc.robot.Constants.ArcadeConstants.SPEED_RATE_LIMIT_ARCADE;
 import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_MASTER;
-import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_SLAVE;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_SLAVE_0;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_SLAVE_1;
 import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_MASTER;
-import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_SLAVE_0;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_SLAVE_1;
 import static frc.robot.Constants.DriveTrainConstants.DRIVE_KINEMATICS;
 import static frc.robot.Constants.DriveTrainConstants.FEED_FORWARD;
 import static frc.robot.Constants.DriveTrainConstants.SENSOR_UNITS_PER_ROTATION;
@@ -20,7 +22,6 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -49,9 +50,11 @@ import frc.robot.Dashboard;
 public class DriveTrainSubsystem extends SubsystemBase {
 
   private final WPI_TalonSRX leftMaster = new WPI_TalonSRX(DEVICE_ID_LEFT_MASTER);
-  private final WPI_VictorSPX leftSlave = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE);
+  private final WPI_TalonSRX leftSlave0 = new WPI_TalonSRX(DEVICE_ID_LEFT_SLAVE_0);
+  private final WPI_TalonSRX leftSlave1 = new WPI_TalonSRX(DEVICE_ID_LEFT_SLAVE_1);
   private final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
-  private final WPI_VictorSPX rightSlave = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE);
+  private final WPI_TalonSRX rightSlave0 = new WPI_TalonSRX(DEVICE_ID_RIGHT_SLAVE_0);
+  private final WPI_TalonSRX rightSlave1 = new WPI_TalonSRX(DEVICE_ID_RIGHT_SLAVE_1);
 
   private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
 
@@ -88,7 +91,11 @@ public class DriveTrainSubsystem extends SubsystemBase {
     talonConfig.openloopRamp = DriveTrainConstants.OPEN_LOOP_RAMP;
 
     rightMaster.configAllSettings(talonConfig);
+    rightSlave0.configFactoryDefault();
+    rightSlave1.configFactoryDefault();
     leftMaster.configAllSettings(talonConfig);
+    leftSlave0.configFactoryDefault();
+    leftSlave1.configFactoryDefault();
 
     leftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
     rightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
@@ -96,14 +103,17 @@ public class DriveTrainSubsystem extends SubsystemBase {
     setNeutralMode(NeutralMode.Brake);
 
     rightMaster.setInverted(true);
-    rightSlave.setInverted(true);
+    rightSlave0.setInverted(true);
+    rightSlave1.setInverted(true);
     rightMaster.setSensorPhase(true);
     leftMaster.setSensorPhase(true);
     rightMaster.overrideLimitSwitchesEnable(false);
     leftMaster.overrideLimitSwitchesEnable(false);
 
-    leftSlave.follow(leftMaster);
-    rightSlave.follow(rightMaster);
+    leftSlave0.follow(leftMaster);
+    leftSlave1.follow(leftMaster);
+    rightSlave0.follow(rightMaster);
+    rightSlave1.follow(rightMaster);
 
     differentialDrive.setRightSideInverted(false);
   }
@@ -224,9 +234,11 @@ public class DriveTrainSubsystem extends SubsystemBase {
    */
   public void setNeutralMode(NeutralMode neutralMode) {
     leftMaster.setNeutralMode(neutralMode);
-    leftSlave.setNeutralMode(neutralMode);
+    leftSlave0.setNeutralMode(neutralMode);
+    leftSlave1.setNeutralMode(neutralMode);
     rightMaster.setNeutralMode(neutralMode);
-    rightSlave.setNeutralMode(neutralMode);
+    rightSlave0.setNeutralMode(neutralMode);
+    rightSlave1.setNeutralMode(neutralMode);
   }
 
   /**

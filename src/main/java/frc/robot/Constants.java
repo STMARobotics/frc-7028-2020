@@ -28,10 +28,12 @@ import edu.wpi.first.wpilibj.util.Units;
 public final class Constants {
 
   public static final class DriveTrainConstants {
-    public static final int DEVICE_ID_RIGHT_MASTER = 0;
-    public static final int DEVICE_ID_RIGHT_SLAVE = 1;
-    public static final int DEVICE_ID_LEFT_MASTER = 2;
-    public static final int DEVICE_ID_LEFT_SLAVE = 3;
+    public static final int DEVICE_ID_LEFT_MASTER = 0;
+    public static final int DEVICE_ID_LEFT_SLAVE_0 = 1;
+    public static final int DEVICE_ID_LEFT_SLAVE_1 = 2;
+    public static final int DEVICE_ID_RIGHT_MASTER = 3;
+    public static final int DEVICE_ID_RIGHT_SLAVE_0 = 4;
+    public static final int DEVICE_ID_RIGHT_SLAVE_1 = 5;
 
     public static final int SENSOR_UNITS_PER_ROTATION = 4096;
     public static final double WHEEL_DIAMETER_INCHES = 6d;
@@ -138,6 +140,8 @@ public final class Constants {
   }
 
   public static final class ControlPanelConstants {
+
+    public static final int DEVICE_ID_CONTROL_PANEL = 7;
 
     public static final int SENSOR_UNITS_PER_ROTATION = 8192;
 
