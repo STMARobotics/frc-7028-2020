@@ -9,11 +9,11 @@ import frc.robot.subsystems.ShooterHoodSubsystem;
 public class SetHoodCommand extends CommandBase{
 
   private final ShooterHoodSubsystem shooterHoodSubsystem;
-  private final double hoodValue;
+  private final double percentageExtended;
 
-  public SetHoodCommand(ShooterHoodSubsystem shooterHoodSubsystem, double hoodValue) {
+  public SetHoodCommand(ShooterHoodSubsystem shooterHoodSubsystem, double percentageExtended) {
     this.shooterHoodSubsystem = shooterHoodSubsystem;
-    this.hoodValue = hoodValue;
+    this.percentageExtended = percentageExtended;
   }
 
   @Override
@@ -23,7 +23,7 @@ public class SetHoodCommand extends CommandBase{
 
   @Override
   public void execute() {
-    shooterHoodSubsystem.setHoodValue(hoodValue);
+    shooterHoodSubsystem.setPercentage(percentageExtended);
   }
 
   @Override
