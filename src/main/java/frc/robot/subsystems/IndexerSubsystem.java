@@ -17,5 +17,9 @@ public class IndexerSubsystem extends SubsystemBase {
   public void shoot() {
 
   }
+
+  public void stopIndexer() {
+    
+  }
   
 }

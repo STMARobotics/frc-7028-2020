@@ -31,7 +31,7 @@ public class ShooterHoodSubsystem extends SubsystemBase{
   public void setSpeed(double speed)
   {
     //wrapping this in a min/max check
-    hood.setSpeed(Math.max(minValue, Math.min(speed, maxValue)));
+    hood.setSpeed(MathUtil.clamp(speed, minValue, maxValue));
   }
 
   /**
@@ -55,7 +55,7 @@ public class ShooterHoodSubsystem extends SubsystemBase{
     //maximum travel is 2 if we don't falsely limit the min/max
     var totalAllowedTravel = maximumValue - minimumValue;
 
-    var desiredTravelFromMin = totalAllowedTravel * Math.max(0, Math.min(percent, 1));
+    var desiredTravelFromMin = totalAllowedTravel * MathUtil.clamp(percent, 0, 1);
 
     return desiredTravelFromMin + minimumValue;
   }
