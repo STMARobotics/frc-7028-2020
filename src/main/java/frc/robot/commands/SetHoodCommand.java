@@ -14,6 +14,8 @@ public class SetHoodCommand extends CommandBase{
   public SetHoodCommand(ShooterHoodSubsystem shooterHoodSubsystem, double percentageExtended) {
     this.shooterHoodSubsystem = shooterHoodSubsystem;
     this.percentageExtended = percentageExtended;
+
+    addRequirements(shooterHoodSubsystem);
   }
 
   @Override
