@@ -37,10 +37,14 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.AimShooterCommand;
 import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.SetColorCommand;
+import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
+import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.Profile;
+import frc.robot.subsystems.ShooterSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -54,6 +58,8 @@ public class RobotContainer {
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
   private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
+  private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
+  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
@@ -66,6 +72,8 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
     configureSubsystemCommands();
+
+    limelightSubsystem.setProfile(Profile.FAR);
 
     try {
       var straightTrajectory = loadTrajectory("Straight");
@@ -115,6 +123,8 @@ public class RobotContainer {
                 .setKinematics(DRIVE_KINEMATICS)
                 .addConstraint(VOLTAGE_CONSTRAINT)))
       .schedule());
+
+    new JoystickButton(driverController, XboxController.Button.kA.value).whenHeld(new ShootCommand(shooterSubsystem, indexerSubsystem, limelightSubsystem));
 
   }
 

@@ -6,9 +6,11 @@ import static frc.robot.Constants.ArcadeConstants.MAX_SPEED_ARCADE;
 import static frc.robot.Constants.ArcadeConstants.ROTATE_RATE_LIMIT_ARCADE;
 import static frc.robot.Constants.ArcadeConstants.SPEED_RATE_LIMIT_ARCADE;
 import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_MASTER;
-import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_SLAVE;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_SLAVE_ONE;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_LEFT_SLAVE_TWO;
 import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_MASTER;
-import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_SLAVE_ONE;
+import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_SLAVE_TWO;
 import static frc.robot.Constants.DriveTrainConstants.DRIVE_KINEMATICS;
 import static frc.robot.Constants.DriveTrainConstants.FEED_FORWARD;
 import static frc.robot.Constants.DriveTrainConstants.SENSOR_UNITS_PER_ROTATION;
@@ -49,9 +51,11 @@ import frc.robot.Dashboard;
 public class DriveTrainSubsystem extends SubsystemBase {
 
   private final WPI_TalonSRX leftMaster = new WPI_TalonSRX(DEVICE_ID_LEFT_MASTER);
-  private final WPI_VictorSPX leftSlave = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE);
+  private final WPI_VictorSPX leftSlaveOne = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE_ONE);
+  private final WPI_VictorSPX leftSlaveTwo = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE_TWO);
   private final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
-  private final WPI_VictorSPX rightSlave = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE);
+  private final WPI_VictorSPX rightSlaveOne = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE_ONE);
+  private final WPI_VictorSPX rightSlaveTwo = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE_TWO);
 
   private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
 
@@ -96,14 +100,17 @@ public class DriveTrainSubsystem extends SubsystemBase {
     setNeutralMode(NeutralMode.Brake);
 
     rightMaster.setInverted(true);
-    rightSlave.setInverted(true);
+    rightSlaveOne.setInverted(true);
+    rightSlaveTwo.setInverted(true);
     rightMaster.setSensorPhase(true);
     leftMaster.setSensorPhase(true);
     rightMaster.overrideLimitSwitchesEnable(false);
     leftMaster.overrideLimitSwitchesEnable(false);
 
-    leftSlave.follow(leftMaster);
-    rightSlave.follow(rightMaster);
+    leftSlaveOne.follow(leftMaster);
+    leftSlaveTwo.follow(leftMaster);
+    rightSlaveOne.follow(rightMaster);
+    rightSlaveTwo.follow(rightMaster);
 
     differentialDrive.setRightSideInverted(false);
   }
@@ -224,9 +231,11 @@ public class DriveTrainSubsystem extends SubsystemBase {
    */
   public void setNeutralMode(NeutralMode neutralMode) {
     leftMaster.setNeutralMode(neutralMode);
-    leftSlave.setNeutralMode(neutralMode);
+    leftSlaveOne.setNeutralMode(neutralMode);
+    leftSlaveTwo.setNeutralMode(neutralMode);
     rightMaster.setNeutralMode(neutralMode);
-    rightSlave.setNeutralMode(neutralMode);
+    rightSlaveOne.setNeutralMode(neutralMode);
+    rightSlaveTwo.setNeutralMode(neutralMode);
   }
 
   /**
