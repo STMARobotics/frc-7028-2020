@@ -43,6 +43,7 @@ import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.ShooterHoodSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
 
@@ -57,6 +58,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
+  public final ShooterHoodSubsystem shooterHoodSubsystem = new ShooterHoodSubsystem();
   private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
@@ -124,9 +126,17 @@ public class RobotContainer {
                 .addConstraint(VOLTAGE_CONSTRAINT)))
       .schedule());
 
-    new JoystickButton(driverController, XboxController.Button.kA.value).whenHeld(new ShootCommand(shooterSubsystem, indexerSubsystem, limelightSubsystem));
+      /* wire these up for testing the linear actuator
+      new JoystickButton(operatorConsole, XboxController.Button.kB.value)
+          .whenPressed(new SetHoodCommand(shooterHoodSubsystem, 1));
 
+      new JoystickButton(operatorConsole, XboxController.Button.kA.value)
+          .whenPressed(new SetHoodCommand(shooterHoodSubsystem, .5));
+      */
+  
+    new JoystickButton(driverController, XboxController.Button.kA.value).whenHeld(new ShootCommand(shooterSubsystem, indexerSubsystem, limelightSubsystem));
   }
+
 
   private void configureSubsystemCommands() {
     driveTrainSubsystem.setDefaultCommand(teleDriveCommand);

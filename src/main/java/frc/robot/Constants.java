@@ -157,7 +157,24 @@ public final class Constants {
     public static final double SET_COLOR_RPM = 180.0;
 
   }
+  
+  public static final class ShooterHoodConstants {
+    /**
+     * PWM Port on the Robo Rio
+     */
+    public static final int AcutatorPort = 0;
 
+    /**
+     * Minimum allowed value in range of -1 (fully retracted) to 1 (fully extended)
+     */
+    public static final double Minimum = -1;
+
+    /**
+     * Maximum allowed value in range of -1 (fully retracted) to 1 (fully extended)
+     */
+    public static final double Maximum = 1;
+  }
+  
   public static final class ShooterConstants {
 
     public static final int DEVICE_ID_SHOOTER_MASTER = 2;
@@ -166,5 +183,4 @@ public final class Constants {
     public static final int CLOSED_LOOP_ERROR_RANGE = 500;
 
   }
-
 }
