@@ -29,9 +29,11 @@ public final class Constants {
 
   public static final class DriveTrainConstants {
     public static final int DEVICE_ID_RIGHT_MASTER = 0;
-    public static final int DEVICE_ID_RIGHT_SLAVE = 1;
-    public static final int DEVICE_ID_LEFT_MASTER = 2;
-    public static final int DEVICE_ID_LEFT_SLAVE = 3;
+    public static final int DEVICE_ID_RIGHT_SLAVE_ONE = 1;
+    public static final int DEVICE_ID_RIGHT_SLAVE_TWO = 2;
+    public static final int DEVICE_ID_LEFT_MASTER = 3;
+    public static final int DEVICE_ID_LEFT_SLAVE_ONE = 4;
+    public static final int DEVICE_ID_LEFT_SLAVE_TWO = 5;
 
     public static final int SENSOR_UNITS_PER_ROTATION = 4096;
     public static final double WHEEL_DIAMETER_INCHES = 6d;
@@ -155,7 +157,7 @@ public final class Constants {
     public static final double SET_COLOR_RPM = 180.0;
 
   }
-
+  
   public static final class ShooterHoodConstants {
     /**
      * PWM Port on the Robo Rio
@@ -171,5 +173,14 @@ public final class Constants {
      * Maximum allowed value in range of -1 (fully retracted) to 1 (fully extended)
      */
     public static final double Maximum = 1;
+  }
+  
+  public static final class ShooterConstants {
+
+    public static final int DEVICE_ID_SHOOTER_MASTER = 2;
+    public static final int DEVICE_ID_SHOOTER_SLAVE = 1;
+
+    public static final int CLOSED_LOOP_ERROR_RANGE = 500;
+
   }
 }
