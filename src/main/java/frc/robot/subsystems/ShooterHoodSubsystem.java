@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpiutil.math.MathUtil;
 import frc.robot.Constants.ShooterHoodConstants;
 
 /**
@@ -23,7 +24,7 @@ public class ShooterHoodSubsystem extends SubsystemBase{
 
     new Trigger(() -> RobotState.isDisabled()).whenActive(() -> { this.setPercentage(0);});
   }
-  
+
   /**
    * Set speed between configurd min/max values
    * @param speed Raw speed value to set between min and max allowed
