@@ -26,7 +26,7 @@ public class ShooterHoodSubsystem extends SubsystemBase{
   public void setSpeed(double speed)
   {
     //wrapping this in a min/max check
-    hood.setSpeed(Math.max(minValue, Math.min(speed, maxValue)));
+    hood.setSpeed(MathUtil.clamp(speed, minValue, maxValue));
   }
 
   /**
