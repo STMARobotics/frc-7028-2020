@@ -1,7 +1,9 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ShooterHoodConstants;
 
 /**
@@ -18,7 +20,10 @@ public class ShooterHoodSubsystem extends SubsystemBase{
     //took these from the documentation here: 
     //https://andymark-weblinc.netdna-ssl.com/media/W1siZiIsIjIwMTkvMDMvMjIvMTAvMjcvNTgvMDMxOTQ4ODUtYmM5Yi00M2UyLWE1NDAtZGNiMWVhNzEzMDEzL1VzaW5nIEwxNiBMaW5lYXIgU2Vydm8gMDMtMjAxOS5wZGYiXV0/Using%20L16%20Linear%20Servo%2003-2019.pdf?sha=ee4c9607408cc835
     hood.setBounds(2.0, 1.8, 1.5, 1.2, 1.0);
+
+    new Trigger(() -> RobotState.isDisabled()).whenActive(() -> { this.setPercentage(0);});
   }
+  
   /**
    * Set speed between configurd min/max values
    * @param speed Raw speed value to set between min and max allowed

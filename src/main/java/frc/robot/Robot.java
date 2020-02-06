@@ -28,7 +28,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
-    robotContainer.shooterHoodSubsystem.setPercentage(0);
+    
   }
 
   @Override
