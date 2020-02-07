@@ -16,6 +16,7 @@ import static frc.robot.Constants.DriveTrainConstants.FEED_FORWARD;
 import static frc.robot.Constants.DriveTrainConstants.SENSOR_UNITS_PER_ROTATION;
 import static frc.robot.Constants.DriveTrainConstants.WHEEL_CIRCUMFERENCE_METERS;
 
+import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -25,7 +26,10 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SlewRateLimiter;
 import edu.wpi.first.wpilibj.controller.RamseteController;
@@ -38,6 +42,8 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
@@ -70,6 +76,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
       .withSize(2, 4).withPosition(0, 0);
   private NetworkTableEntry useEncodersEntry =
       dashboard.addPersistent("Use encoders", true).withWidget(kToggleSwitch).getEntry();
+  private boolean encodersAvailable;
   
   public DriveTrainSubsystem() {
     dashboard.add(this);
@@ -98,8 +105,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
     leftSlaveOne.configFactoryDefault();
     leftSlaveTwo.configFactoryDefault();
 
-    leftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
-    rightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+    useEncodersEntry.addListener(this::handleEncoderEntry, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    enableEncoders();
 
     setNeutralMode(NeutralMode.Brake);
 
@@ -117,6 +124,30 @@ public class DriveTrainSubsystem extends SubsystemBase {
     rightSlaveTwo.follow(rightMaster);
 
     differentialDrive.setRightSideInverted(false);
+  }
+
+  /**
+   * Handles changing the "Use encoders" entry to retry enabling encoders if they failed previously.
+   * @param notification network table entry notification
+   */
+  private void handleEncoderEntry(EntryNotification notification) {
+    var entry = notification.getEntry();
+    if(entry.getBoolean(true) && !encodersAvailable) {
+      enableEncoders();
+    }
+  }
+
+  /**
+   * Attempts to enable the drivetrain encoders.
+   */
+  private void enableEncoders() {
+    encodersAvailable = 
+        leftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10) == ErrorCode.OK &
+        rightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10) == ErrorCode.OK;
+    if (!encodersAvailable) {
+      DriverStation.reportError("Failed to configure Drivetrain encoders!!", false);
+      useEncodersEntry.setBoolean(false);
+    }
   }
 
   /**
@@ -242,6 +273,10 @@ public class DriveTrainSubsystem extends SubsystemBase {
     rightSlaveTwo.setNeutralMode(neutralMode);
   }
 
+  public boolean isEncodersAvailable() {
+    return encodersAvailable;
+  }
+
   /**
    * returns left encoder position
    * 
@@ -293,14 +328,15 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @return command that will run the trajectory
    */
   public Command createCommandForTrajectory(Trajectory trajectory) {
-    return new RamseteCommand(
+    return new ConditionalCommand(new RamseteCommand(
             trajectory,
             this::getCurrentPose,
             new RamseteController(TrajectoryConstants.RAMSETE_B, TrajectoryConstants.RAMSETE_ZETA),
             DriveTrainConstants.DRIVE_KINEMATICS,
             this::tankDriveVelocity,
-            this)
-        .andThen(this::stop, this);
+            this).andThen(this::stop, this),
+        new PrintCommand("Cannot run trajectory because encoders are unavailable!!"),
+        this::isEncodersAvailable);
   }
 
   /**
