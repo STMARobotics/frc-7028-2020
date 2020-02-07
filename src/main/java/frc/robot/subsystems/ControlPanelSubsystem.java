@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.ControlPanelConstants.DEVICE_ID_CONTROL_PANEL;
+
 import java.util.Map;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -36,7 +38,7 @@ public class ControlPanelSubsystem extends SubsystemBase {
 
   private final ColorMatch m_colorMatcher = new ColorMatch();
 
-  private final WPI_TalonSRX motor = new WPI_TalonSRX(4);
+  private final WPI_TalonSRX motor = new WPI_TalonSRX(DEVICE_ID_CONTROL_PANEL);
   
   private final ShuffleboardLayout dashboard = Dashboard.subsystemsTab.getLayout("Control Panel", BuiltInLayouts.kGrid)
     .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 5)).withSize(2, 5).withPosition(2, 0);

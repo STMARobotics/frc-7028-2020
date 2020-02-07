@@ -141,6 +141,8 @@ public final class Constants {
 
   public static final class ControlPanelConstants {
 
+    public static final int DEVICE_ID_CONTROL_PANEL = 7;
+
     public static final int SENSOR_UNITS_PER_ROTATION = 8192;
 
     public static final double kS = 2.09;

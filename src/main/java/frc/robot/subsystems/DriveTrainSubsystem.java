@@ -92,7 +92,11 @@ public class DriveTrainSubsystem extends SubsystemBase {
     talonConfig.openloopRamp = DriveTrainConstants.OPEN_LOOP_RAMP;
 
     rightMaster.configAllSettings(talonConfig);
+    rightSlaveOne.configFactoryDefault();
+    rightSlaveTwo.configFactoryDefault();
     leftMaster.configAllSettings(talonConfig);
+    leftSlaveOne.configFactoryDefault();
+    leftSlaveTwo.configFactoryDefault();
 
     leftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
     rightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
