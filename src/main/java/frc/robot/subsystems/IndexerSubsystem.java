@@ -20,15 +20,15 @@ public class IndexerSubsystem extends SubsystemBase {
   }
 
   public void intake() {
-
+    
   }
 
   public void shoot() {
-
+    indexerMotor.set(1.0);
   }
 
   public void stopIndexer() {
-    
+    indexerMotor.set(0.0);
   }
   
 }

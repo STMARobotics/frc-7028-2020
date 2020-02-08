@@ -92,7 +92,7 @@ public final class Constants {
     public static final double SLOW_MODE_SPEED_MULTIPLIER = .6;
     public static final double SLOW_MODE_ROTATION_MULTIPLIER = .9;
 
-    public static final double DEADBAND_HIGH = 0.9;
+    public static final double DEADBAND_HIGH = 0.09;
     public static final double DEADBAND_LOW = -DEADBAND_HIGH;
   }
 
@@ -165,9 +165,7 @@ public final class Constants {
     public static final int DEVICE_ID_SHOOTER_MASTER = 2;
     public static final int DEVICE_ID_SHOOTER_SLAVE = 1;
 
-    public static final int CLOSED_LOOP_ERROR_RANGE = 500;
-
-    public static final double SHOOTER_RPM = 4000;
+    public static final int CLOSED_LOOP_ERROR_RANGE = 200;
 
     public static final double kS = 0.0763;
     public static final double kV = 0.13;

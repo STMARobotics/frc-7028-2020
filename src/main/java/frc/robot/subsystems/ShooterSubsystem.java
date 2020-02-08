@@ -26,6 +26,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final CANPIDController shooterPIDController = shooterMaster.getPIDController();
   private final CANEncoder shooterEncoder = shooterMaster.getEncoder();
 
+  private int targetSpeed;
+
   private final SimpleMotorFeedforward motorFeedForward = 
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV, ShooterConstants.kA);
 
@@ -44,13 +46,14 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void prepareToShoot(double distanceToTarget) {
-    shooterPIDController.setReference(ShooterConstants.SHOOTER_RPM, ControlType.kVelocity,
-        0, motorFeedForward.calculate(ShooterConstants.SHOOTER_RPM / 60));
+    targetSpeed = 3800;
+    shooterPIDController.setReference(targetSpeed, ControlType.kVelocity,
+        0, motorFeedForward.calculate(targetSpeed / 60));
     SmartDashboard.putNumber("Velocity", shooterEncoder.getVelocity());
   }
 
   public boolean isReadyToShoot() {
-    return Math.abs(shooterEncoder.getVelocity() - ShooterConstants.SHOOTER_RPM) <= CLOSED_LOOP_ERROR_RANGE;
+    return Math.abs(shooterEncoder.getVelocity() - targetSpeed) <= CLOSED_LOOP_ERROR_RANGE;
   }
 
   public void stopShooter() {
