@@ -12,21 +12,29 @@ public class ShootCommand extends CommandBase {
 
   private final ShooterSubsystem shooterSubsystem;
   private final IndexerSubsystem indexerSubsystem;
-  private final LimelightSubsystem limelightSubsystem;
+  private final LimelightSubsystem highLimelightSubsystem;
+  private final LimelightSubsystem lowLimelightSubsystem;
 
-  public ShootCommand(ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem, LimelightSubsystem limelightSubsystem) {
+  public ShootCommand(
+      ShooterSubsystem shooterSubsystem, 
+      IndexerSubsystem indexerSubsystem,
+      LimelightSubsystem highLimelightSubsystem,
+      LimelightSubsystem lowLimelightSubsystem) {
+    
     this.shooterSubsystem = shooterSubsystem;
     this.indexerSubsystem = indexerSubsystem;
-    this.limelightSubsystem = limelightSubsystem;
+    this.highLimelightSubsystem = highLimelightSubsystem;
+    this.lowLimelightSubsystem = lowLimelightSubsystem;
 
     addRequirements(shooterSubsystem);
     addRequirements(indexerSubsystem);
-    addRequirements(limelightSubsystem);
+    addRequirements(highLimelightSubsystem);
+    addRequirements(lowLimelightSubsystem);
   }
 
   @Override
   public void execute() {
-    shooterSubsystem.prepareToShoot(limelightSubsystem.getLeftDistance());
+    shooterSubsystem.prepareToShoot(highLimelightSubsystem.getDistanceToTarget());
     if (shooterSubsystem.isReadyToShoot()) {
       indexerSubsystem.shoot();
     } else {
