@@ -39,6 +39,7 @@ import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
+import frc.robot.commands.TeleOperateCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -65,6 +66,7 @@ public class RobotContainer {
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
 
   private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
+  private final TeleOperateCommand teleOperateCommand = new TeleOperateCommand(operatorConsole, indexerSubsystem);
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
@@ -98,10 +100,10 @@ public class RobotContainer {
     new JoystickButton(driverController, XboxController.Button.kY.value)
         .whenHeld(new AimShooterCommand(limelightSubsystem, driveTrainSubsystem));
 
-    new JoystickButton(driverController, XboxController.Button.kX.value)
+    new JoystickButton(operatorConsole, XboxController.Button.kX.value)
         .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
 
-    new JoystickButton(driverController, XboxController.Button.kStart.value)
+    new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
         .whenHeld(new SetColorCommand(controlPanelSubsystem));
 
     new JoystickButton(driverController, XboxController.Button.kA.value)
@@ -124,12 +126,14 @@ public class RobotContainer {
                 .addConstraint(VOLTAGE_CONSTRAINT)))
       .schedule());
 
-    new JoystickButton(driverController, XboxController.Button.kA.value).whenHeld(new ShootCommand(shooterSubsystem, indexerSubsystem, limelightSubsystem));
+    new JoystickButton(driverController, XboxController.Button.kA.value)
+        .whenHeld(new ShootCommand(shooterSubsystem, indexerSubsystem, limelightSubsystem));
 
   }
 
   private void configureSubsystemCommands() {
     driveTrainSubsystem.setDefaultCommand(teleDriveCommand);
+    indexerSubsystem.setDefaultCommand(teleOperateCommand);
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {

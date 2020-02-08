@@ -167,6 +167,18 @@ public final class Constants {
 
     public static final int CLOSED_LOOP_ERROR_RANGE = 500;
 
+    public static final double SHOOTER_RPM = 4000;
+
+    public static final double kS = 0.0763;
+    public static final double kV = 0.13;
+    public static final double kA = 0.0614;
+
+  }
+
+  public static final class IndexerConstants {
+
+    public static final int DEVICE_ID_INDEXER = 6;
+
   }
 
 }
