@@ -1,9 +1,11 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.LimeLightConstants.MOUNT_ANGLE;
-import static frc.robot.Constants.LimeLightConstants.MOUNT_HEIGHT;
+import static frc.robot.Constants.LimeLightConstants.LEFT_DISTANCE_FROM_FRONT;
+import static frc.robot.Constants.LimeLightConstants.LEFT_MOUNT_ANGLE;
 import static frc.robot.Constants.LimeLightConstants.PIPELINE_INDEX_FAR;
 import static frc.robot.Constants.LimeLightConstants.PIPELINE_INDEX_NEAR;
+import static frc.robot.Constants.LimeLightConstants.RIGHT_DISTANCE_FROM_FRONT;
+import static frc.robot.Constants.LimeLightConstants.RIGHT_MOUNT_ANGLE;
 import static frc.robot.Constants.LimeLightConstants.TARGET_ACQUIRED;
 import static frc.robot.Constants.LimeLightConstants.TARGET_HEIGHT;
 import static frc.robot.Constants.LimeLightConstants.TARGET_X_MAX;
@@ -34,46 +36,65 @@ public class LimelightSubsystem extends SubsystemBase {
   private final ShuffleboardLayout detailDashboard = dashboard.getLayout("Target", BuiltInLayouts.kGrid)
       .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
 
-  private final NetworkTable limeLightNetworkTable;
-  private double targetX = 0.0;
-  private double targetY = 0.0;
-  private boolean targetAcquired = false;
+  private final NetworkTable leftLimeLightNetworkTable;
+  private final NetworkTable rightLimeLightNetworkTable;
+  private double leftTargetX = 0.0;
+  private double leftTargetY = 0.0;
+  private boolean leftTargetAcquired = false;
+  private double rightTargetX = 0.0;
+  private double rightTargetY = 0.0;
+  private boolean rightTargetAcquired = false;
   private boolean enabled;
 
   public LimelightSubsystem() {
     dashboard.add(this);
-    detailDashboard.addBoolean("Acquired", this::getTargetAcquired);
-    detailDashboard.addNumber("Distance", () -> Units.metersToInches(getDistance()));
-    detailDashboard.addNumber("X", this::getTargetX);
-    detailDashboard.addNumber("Y", this::getTargetY);
-    limeLightNetworkTable = NetworkTableInstance.getDefault().getTable("limelight");
-    limeLightNetworkTable.addEntryListener("tl", this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    detailDashboard.addBoolean("Acquired", this::getLeftTargetAcquired);
+    detailDashboard.addNumber("Distance", () -> Units.metersToInches(getLeftDistance()));
+    detailDashboard.addNumber("X", this::getLeftTargetX);
+    detailDashboard.addNumber("Y", this::getLeftTargetY);
+    leftLimeLightNetworkTable = NetworkTableInstance.getDefault().getTable("leftLimelight");
+    rightLimeLightNetworkTable = NetworkTableInstance.getDefault().getTable("rightLimelight");
+    leftLimeLightNetworkTable.addEntryListener("tl", this::update,
+        EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    rightLimeLightNetworkTable.addEntryListener("tl", this::update,
+        EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
 
-    new Trigger(() -> RobotState.isEnabled())
-        .whenActive(this::enable)
+    new Trigger(() -> RobotState.isEnabled()).whenActive(this::enable)
         .whenInactive(new InstantWhenDisabledCommand(this::disable));
   }
 
   private void update(final NetworkTable table, final String key, final NetworkTableEntry entry,
       final NetworkTableValue value, final int flags) {
-    targetAcquired = table.getEntry("tv").getDouble(0.0) == TARGET_ACQUIRED;
-    targetX = table.getEntry("tx").getDouble(0.0);
-    targetY = table.getEntry("ty").getDouble(0.0);
+    leftTargetAcquired = table.getEntry("tv").getDouble(0.0) == TARGET_ACQUIRED;
+    leftTargetX = table.getEntry("tx").getDouble(0.0);
+    leftTargetY = table.getEntry("ty").getDouble(0.0);
 
     table.getEntry("ledMode").setDouble(enabled ? 0.0 : 1.0);
     table.getEntry("camMode").setDouble(enabled ? 0.0 : 1.0);
   }
 
-  public boolean getTargetAcquired() {
-    return targetAcquired;
+  public boolean getLeftTargetAcquired() {
+    return leftTargetAcquired;
   }
 
-  public double getTargetX() {
-    return targetX;
+  public boolean getRightTargetAcquired() {
+    return rightTargetAcquired;
   }
 
-  public double getTargetY() {
-    return targetY;
+  public double getLeftTargetX() {
+    return leftTargetX;
+  }
+
+  public double getRightTargetX() {
+    return rightTargetX;
+  }
+
+  public double getLeftTargetY() {
+    return leftTargetY;
+  }
+
+  public double getRightTargetY() {
+    return rightTargetY;
   }
 
   public double getMaxX() {
@@ -95,18 +116,42 @@ public class LimelightSubsystem extends SubsystemBase {
     enabled = true;
   }
 
-  public double getDistance() {
-    return (TARGET_HEIGHT - MOUNT_HEIGHT) / Math.tan(Units.degreesToRadians(MOUNT_ANGLE + getTargetY()));
+  public double getLeftDistance() {
+    if (leftTargetAcquired) {
+      return ((TARGET_HEIGHT - LEFT_MOUNT_ANGLE)
+          / Math.tan(Units.degreesToRadians(LEFT_MOUNT_ANGLE + getLeftTargetY()))) - (LEFT_DISTANCE_FROM_FRONT);
+    }
+    return 0.0;
+  }
+
+  public double getRightDistance() {
+    if (rightTargetAcquired) {
+      return ((TARGET_HEIGHT - RIGHT_MOUNT_ANGLE)
+          / Math.tan(Units.degreesToRadians(RIGHT_MOUNT_ANGLE + getRightTargetY()))) - (RIGHT_DISTANCE_FROM_FRONT);
+    }
+    return 0.0;
+  }
+
+  public double getDistanceToTarget() {
+    if (rightTargetAcquired && leftTargetAcquired) {
+      return (getRightDistance() + getLeftDistance()) / 2;
+    } else if (!rightTargetAcquired && leftTargetAcquired) {
+      return getLeftDistance();
+    } else if (rightTargetAcquired && !leftTargetAcquired) {
+      return getRightDistance();
+    } else {
+      return 0.0;
+    }
   }
 
   public void setProfile(final Profile profile) {
     switch (profile) {
       case NEAR:
-        limeLightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_NEAR);
+        leftLimeLightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_NEAR);
         break;
       case MIDDLE:
       case FAR:
-        limeLightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_FAR);
+        leftLimeLightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_FAR);
     }
   }
 

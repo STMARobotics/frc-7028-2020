@@ -12,6 +12,8 @@ public class IndexCommand extends CommandBase {
 
   public IndexCommand(IndexerSubsystem indexerSubsystem) {
     this.indexerSubsystem = indexerSubsystem;
+
+    addRequirements(indexerSubsystem);
   }
 
   @Override

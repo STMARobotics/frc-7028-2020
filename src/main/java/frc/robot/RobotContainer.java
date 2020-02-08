@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.AimShooterCommand;
+import frc.robot.commands.IndexCommand;
 import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
@@ -67,6 +68,7 @@ public class RobotContainer {
 
   private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
   private final TeleOperateCommand teleOperateCommand = new TeleOperateCommand(operatorConsole, indexerSubsystem);
+  private final IndexCommand indexCommand = new IndexCommand(indexerSubsystem);
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
@@ -129,11 +131,16 @@ public class RobotContainer {
     new JoystickButton(driverController, XboxController.Button.kA.value)
         .whenHeld(new ShootCommand(shooterSubsystem, indexerSubsystem, limelightSubsystem));
 
+    new JoystickButton(operatorConsole, XboxController.Button.kA.value)
+        .whenHeld(new InstantCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem));
+
+    new JoystickButton(operatorConsole, XboxController.Button.kB.value)
+        .whenHeld(new InstantCommand(() -> indexerSubsystem.runManually(-1.0), indexerSubsystem));
   }
 
   private void configureSubsystemCommands() {
     driveTrainSubsystem.setDefaultCommand(teleDriveCommand);
-    indexerSubsystem.setDefaultCommand(teleOperateCommand);
+    indexerSubsystem.setDefaultCommand(indexCommand);
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {

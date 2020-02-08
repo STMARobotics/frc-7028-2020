@@ -26,11 +26,10 @@ public class ShootCommand extends CommandBase {
 
   @Override
   public void execute() {
-    shooterSubsystem.prepareToShoot(limelightSubsystem.getDistance());
+    shooterSubsystem.prepareToShoot(limelightSubsystem.getLeftDistance());
     if (shooterSubsystem.isReadyToShoot()) {
       indexerSubsystem.shoot();
     } else {
-      indexerSubsystem.stopIndexer();
     }
   }
 

@@ -132,10 +132,16 @@ public final class Constants {
     public static final double TARGET_HEIGHT = Units.inchesToMeters(98.25);
 
     /** Height of the limelight on the robot in meters */
-    public static final double MOUNT_HEIGHT = Units.inchesToMeters(18.0);
+    public static final double LEFT_MOUNT_HEIGHT = Units.inchesToMeters(18.0);
+    public static final double RIGHT_MOUNT_HEIGHT = Units.inchesToMeters(18.0);
+
+    /** Distance Limelight is mounted from the front frame of the bot */
+    public static final double LEFT_DISTANCE_FROM_FRONT = Units.inchesToMeters(42);
+    public static final double RIGHT_DISTANCE_FROM_FRONT = Units.inchesToMeters(42);
 
     /** Angle of the limelight in degrees */
-    public static final double MOUNT_ANGLE = 20;
+    public static final double LEFT_MOUNT_ANGLE = 20;
+    public static final double RIGHT_MOUNT_ANGLE = 20;
 
   }
 
@@ -175,7 +181,13 @@ public final class Constants {
 
   public static final class IndexerConstants {
 
-    public static final int DEVICE_ID_INDEXER = 6;
+    public static final int DEVICE_ID_BELT = 6;
+
+    public static final int PORT_ID_INTAKE_SENSOR = 0;
+    public static final int PORT_ID_SPACER_SENSOR = 1;
+    public static final int PORT_ID_FULL_SENSOR = 2;
+
+    public static final double BELT_RUN_SPEED = 0.4;
 
   }
 
