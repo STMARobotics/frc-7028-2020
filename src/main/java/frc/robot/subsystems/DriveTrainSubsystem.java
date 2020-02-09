@@ -12,8 +12,8 @@ import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_MASTER;
 import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_SLAVE_ONE;
 import static frc.robot.Constants.DriveTrainConstants.DEVICE_ID_RIGHT_SLAVE_TWO;
 import static frc.robot.Constants.DriveTrainConstants.DRIVE_KINEMATICS;
+import static frc.robot.Constants.DriveTrainConstants.EDGES_PER_ROTATION;
 import static frc.robot.Constants.DriveTrainConstants.FEED_FORWARD;
-import static frc.robot.Constants.DriveTrainConstants.SENSOR_UNITS_PER_ROTATION;
 import static frc.robot.Constants.DriveTrainConstants.WHEEL_CIRCUMFERENCE_METERS;
 
 import com.ctre.phoenix.ErrorCode;
@@ -163,8 +163,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
   public void periodic() {
     differentialDriveOdometry.update(
         Rotation2d.fromDegrees(getHeading()),
-        stepsToMeters(getLeftEncoderPosition()),
-        stepsToMeters(getRightEncoderPosition()));
+        edgesToMeters(getLeftEncoderPosition()),
+        edgesToMeters(getRightEncoderPosition()));
   }
 
   /**
@@ -221,20 +221,20 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param rightVelocity right velocity in meters per second
    */
   public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
-    var leftAccel = (leftVelocity - stepsPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity())) / .02;
-    var rightAccel = (rightVelocity - stepsPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity())) / .02;
+    var leftAccel = (leftVelocity - edgesPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity())) / .02;
+    var rightAccel = (rightVelocity - edgesPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity())) / .02;
     
     var leftFeedForwardVolts = FEED_FORWARD.calculate(leftVelocity, leftAccel);
     var rightFeedForwardVolts = FEED_FORWARD.calculate(rightVelocity, rightAccel);
 
     leftMaster.set(
         ControlMode.Velocity, 
-        metersPerSecToStepsPerDecisec(leftVelocity), 
+        metersPerSecToEdgesPerDecisec(leftVelocity), 
         DemandType.ArbitraryFeedForward,
         leftFeedForwardVolts / 12);
     rightMaster.set(
         ControlMode.Velocity,
-        metersPerSecToStepsPerDecisec(rightVelocity),
+        metersPerSecToEdgesPerDecisec(rightVelocity),
         DemandType.ArbitraryFeedForward,
         rightFeedForwardVolts / 12);
     differentialDrive.feed();
@@ -340,40 +340,40 @@ public class DriveTrainSubsystem extends SubsystemBase {
   }
 
   /**
-   * Converts from encoder steps to meters.
+   * Converts from encoder edges to meters.
    * 
-   * @param steps encoder steps to convert
+   * @param steps encoder edges to convert
    * @return meters
    */
-  public static double stepsToMeters(int steps) {
-    return (WHEEL_CIRCUMFERENCE_METERS / SENSOR_UNITS_PER_ROTATION) * steps;
+  public static double edgesToMeters(int steps) {
+    return (WHEEL_CIRCUMFERENCE_METERS / EDGES_PER_ROTATION) * steps;
   }
 
   /**
-   * Converts from encoder units per 100 milliseconds to meters per second.
-   * @param stepsPerDecisec steps per decisecond
+   * Converts from encoder edges per 100 milliseconds to meters per second.
+   * @param stepsPerDecisec edges per decisecond
    * @return meters per second
    */
-  public static double stepsPerDecisecToMetersPerSec(int stepsPerDecisec) {
-    return stepsToMeters(stepsPerDecisec * 10);
+  public static double edgesPerDecisecToMetersPerSec(int stepsPerDecisec) {
+    return edgesToMeters(stepsPerDecisec * 10);
   }
 
   /**
-   * Converts from meters to encoder units.
+   * Converts from meters to encoder edges.
    * @param meters meters
-   * @return encoder units
+   * @return encoder edges
    */
-  public static double metersToSteps(double meters) {
-    return (meters / WHEEL_CIRCUMFERENCE_METERS) * SENSOR_UNITS_PER_ROTATION;
+  public static double metersToEdges(double meters) {
+    return (meters / WHEEL_CIRCUMFERENCE_METERS) * EDGES_PER_ROTATION;
   }
 
   /**
-   * Convers from meters per second to encoder units per 100 milliseconds.
+   * Converts from meters per second to encoder edges per 100 milliseconds.
    * @param metersPerSec meters per second
-   * @return encoder units per decisecond
+   * @return encoder edges per decisecond
    */
-  public static double metersPerSecToStepsPerDecisec(double metersPerSec) {
-    return metersToSteps(metersPerSec) * .1d;
+  public static double metersPerSecToEdgesPerDecisec(double metersPerSec) {
+    return metersToEdges(metersPerSec) * .1d;
   }
 
 }

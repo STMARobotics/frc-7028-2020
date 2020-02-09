@@ -10,23 +10,23 @@ import org.junit.Test;
 public class DriveTrainSubsystemTest {
 
   @Test
-  public void testStepsToMeters() {
-    assertEquals(1.4444015254077984d, DriveTrainSubsystem.stepsToMeters(12357), 0);
+  public void testEdgesToMeters() {
+    assertEquals(5.777606101631194, DriveTrainSubsystem.edgesToMeters(12357), 0);
   }
 
   @Test
-  public void testStepsPerDecisecToMetersPerSec() {
-    assertEquals(8.214982536672338, DriveTrainSubsystem.stepsPerDecisecToMetersPerSec(7028), 0);
+  public void testEdgesPerDecisecToMetersPerSec() {
+    assertEquals(32.85993014668935, DriveTrainSubsystem.edgesPerDecisecToMetersPerSec(7028), 0);
   }
   
   @Test
-  public void testMetersToSteps() {
-    assertEquals(12357, DriveTrainSubsystem.metersToSteps(1.4444015254077984d), 0);
+  public void testMetersToEdges() {
+    assertEquals(3089.25, DriveTrainSubsystem.metersToEdges(1.4444015254077984d), 0);
   }
 
   @Test
-  public void testMetersPerSecToStepsPerDecisec() {
-    assertEquals(7028, DriveTrainSubsystem.metersPerSecToStepsPerDecisec(8.214982536672338), 0);
+  public void testMetersPerSecToEdgesPerDecisec() {
+    assertEquals(7028d, DriveTrainSubsystem.metersPerSecToEdgesPerDecisec(32.85993014668935), 0);
   }
 
 }
