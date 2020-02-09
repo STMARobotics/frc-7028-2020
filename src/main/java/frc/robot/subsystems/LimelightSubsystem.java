@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import static frc.robot.Constants.LimeLightConstants.PIPELINE_INDEX_FAR;
 import static frc.robot.Constants.LimeLightConstants.PIPELINE_INDEX_NEAR;
 import static frc.robot.Constants.LimeLightConstants.TARGET_ACQUIRED;
-import static frc.robot.Constants.LimeLightConstants.TARGET_HEIGHT;
 import static frc.robot.Constants.LimeLightConstants.TARGET_X_MAX;
 
 import java.util.Map;
@@ -19,6 +18,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.LimeLightConstants;
 import frc.robot.Dashboard;
 import frc.robot.commands.InstantWhenDisabledCommand;
 
@@ -26,10 +26,10 @@ import frc.robot.commands.InstantWhenDisabledCommand;
  * LimelightSubsystem
  */
 public class LimelightSubsystem extends SubsystemBase {
-  
+
   private final NetworkTable leftLimeLightNetworkTable;
   private final LimelightConfig limelightConfig;
-  
+
   private final ShuffleboardLayout dashboard;
   private final ShuffleboardLayout detailDashboard;
   private double targetX = 0.0;
@@ -71,7 +71,7 @@ public class LimelightSubsystem extends SubsystemBase {
   }
 
   public double getTargetX() {
-    return targetX;
+    return targetX - getOffsetAngle();
   }
 
   public double getTargetY() {
@@ -97,13 +97,22 @@ public class LimelightSubsystem extends SubsystemBase {
     enabled = true;
   }
 
-  public double getDistanceToTarget() {
+  private double getLimelightDistanceToTarget() {
     if (targetAcquired) {
-      return ((TARGET_HEIGHT - limelightConfig.getMountAngle())
-          / Math.tan(Units.degreesToRadians(limelightConfig.getMountAngle() + getTargetY())))
-          - (limelightConfig.getMountDepth());
+      return (LimeLightConstants.TARGET_HEIGHT - limelightConfig.getMountHeight())
+          / Math.tan(Units.degreesToRadians(limelightConfig.getMountAngle() + getTargetY()));
     }
     return 0.0;
+  }
+
+  private double getOffsetAngle() {
+    return 90.0 - 
+        Math.toDegrees(Math.acos(getLimelightDistanceToTarget() / limelightConfig.getMountDistanceFromCenter()));
+  }
+
+  public double getDistanceToTarget() {
+    return Math.sqrt(Math.pow(getLimelightDistanceToTarget(), 2)
+        + Math.pow(limelightConfig.getMountDistanceFromCenter(), 2)) - limelightConfig.getMountDepth();
   }
 
   public void setProfile(final Profile profile) {

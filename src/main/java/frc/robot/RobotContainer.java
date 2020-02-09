@@ -66,6 +66,7 @@ public class RobotContainer {
       .withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT)
       .withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
+      .withMountDistanceFromCenter(LimeLightConstants.HIGH_DISTANCE_FROM_CENTER)
       .build()
   );
   private final LimelightSubsystem lowLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
@@ -73,6 +74,7 @@ public class RobotContainer {
       .withMountDepth(LimeLightConstants.LOW_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.LOW_MOUNT_HEIGHT)
       .withMountingAngle(LimeLightConstants.LOW_MOUNT_ANGLE)
+      .withMountDistanceFromCenter(LimeLightConstants.LOW_DISTANCE_FROM_CENTER)
       .build()
   );
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
@@ -115,7 +117,7 @@ public class RobotContainer {
   private void configureButtonBindings() {
 
     new JoystickButton(driverController, XboxController.Button.kY.value)
-        .whenHeld(new AimShooterCommand(highLimelightSubsystem, driveTrainSubsystem));
+        .whenHeld(new AimShooterCommand(highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
 
     new JoystickButton(operatorConsole, XboxController.Button.kX.value)
         .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
@@ -144,7 +146,10 @@ public class RobotContainer {
       .schedule());
 
     new JoystickButton(driverController, XboxController.Button.kA.value)
-        .whenHeld(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem));
+        .whenHeld(new AimShooterCommand(highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem)
+            .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem)
+            .alongWith(new AimShooterCommand(highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem)
+                .perpetually())));
 
     new JoystickButton(operatorConsole, XboxController.Button.kA.value)
         .whenHeld(new InstantCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem));

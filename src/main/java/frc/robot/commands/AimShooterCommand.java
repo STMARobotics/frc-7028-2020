@@ -15,16 +15,19 @@ import frc.robot.subsystems.LimelightSubsystem;
 public class AimShooterCommand extends CommandBase {
 
   private final DriveTrainSubsystem driveTrainSubsystem;
-  private final LimelightSubsystem limelightSubsystem;
+  private final LimelightSubsystem highLimelightSubsystem;
+  private final LimelightSubsystem lowLimelightSubsystem;
   private boolean noTarget = false;
 
   private PIDController pidController = new PIDController(kP, 0, kD);
 
-  public AimShooterCommand(LimelightSubsystem limelightSubsystem, DriveTrainSubsystem driveTrainSubsystem) {
+  public AimShooterCommand(LimelightSubsystem highLimelightSubsystem, LimelightSubsystem lowLimelightSubsystem,
+      DriveTrainSubsystem driveTrainSubsystem) {
     Dashboard.commandsTab.add(this).withSize(2, 1).withPosition(2, 0);
-    this.limelightSubsystem = limelightSubsystem;
+    this.highLimelightSubsystem = highLimelightSubsystem;
+    this.lowLimelightSubsystem = lowLimelightSubsystem;
     this.driveTrainSubsystem = driveTrainSubsystem;
-    addRequirements(limelightSubsystem, driveTrainSubsystem);
+    addRequirements(highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem);
     pidController.setTolerance(.01);
   }
 
@@ -36,13 +39,19 @@ public class AimShooterCommand extends CommandBase {
 
   @Override
   public void execute() {
-    if (limelightSubsystem.getTargetAcquired()) {
-      double targetX = limelightSubsystem.getTargetX();
-      double rotationSpeed = -pidController.calculate(targetX / limelightSubsystem.getMaxX());
-      driveTrainSubsystem.arcadeDrive(0, rotationSpeed, false);
-      return;
+    if (highLimelightSubsystem.getTargetAcquired()) {
+      aimShooter(highLimelightSubsystem);
+    } else if (lowLimelightSubsystem.getTargetAcquired()) {
+      aimShooter(lowLimelightSubsystem);
+    } else {
+      noTarget = true;
     }
-    noTarget = true;
+  }
+
+  private void aimShooter(LimelightSubsystem selectedLimelightSubsystem) {
+    double targetX = selectedLimelightSubsystem.getTargetX();
+    double rotationSpeed = -pidController.calculate(targetX / selectedLimelightSubsystem.getMaxX());
+    driveTrainSubsystem.arcadeDrive(0, rotationSpeed, false);
   }
 
   @Override

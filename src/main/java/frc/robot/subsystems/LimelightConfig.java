@@ -13,6 +13,8 @@ public class LimelightConfig {
 
   private double mountAngle;
 
+  private double mountDistanceFromCenter;
+
   public String getNetworkTableName() {
     return networkTableName;
   }
@@ -29,6 +31,10 @@ public class LimelightConfig {
     return mountAngle;
   }
 
+  public double getMountDistanceFromCenter() {
+    return mountDistanceFromCenter;
+  }
+
   private void setNetworkTableName(String networkTableName) {
     this.networkTableName = networkTableName;
   }
@@ -43,6 +49,10 @@ public class LimelightConfig {
 
   private void setMountAngle(double mountAngle) {
     this.mountAngle = mountAngle;
+  }
+
+  private void setMountDistanceFromCenter(double mountDistanceFromCenter) {
+    this.mountDistanceFromCenter = mountDistanceFromCenter;
   }
 
   public static class Builder {
@@ -70,6 +80,11 @@ public class LimelightConfig {
 
     public Builder withMountingAngle(double mountingAngle) {
       limelightConfig.setMountAngle(mountingAngle);
+      return this;
+    }
+
+    public Builder withMountDistanceFromCenter(double mountDistanceFromCenter) {
+      limelightConfig.setMountDistanceFromCenter(mountDistanceFromCenter);
       return this;
     }
 
