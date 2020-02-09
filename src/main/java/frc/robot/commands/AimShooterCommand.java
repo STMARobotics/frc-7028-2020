@@ -36,8 +36,8 @@ public class AimShooterCommand extends CommandBase {
 
   @Override
   public void execute() {
-    if (limelightSubsystem.getLeftTargetAcquired()) {
-      double targetX = limelightSubsystem.getLeftTargetX();
+    if (limelightSubsystem.getTargetAcquired()) {
+      double targetX = limelightSubsystem.getTargetX();
       double rotationSpeed = -pidController.calculate(targetX / limelightSubsystem.getMaxX());
       driveTrainSubsystem.arcadeDrive(0, rotationSpeed, false);
       return;

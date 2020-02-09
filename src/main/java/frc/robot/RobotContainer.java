@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.AimShooterCommand;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.RotateWheelCommand;
@@ -44,6 +45,7 @@ import frc.robot.commands.TeleOperateCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.LimelightConfig;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -59,7 +61,20 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
-  private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
+  private final LimelightSubsystem highLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
+      .withNetworkTableName("limelight-high")
+      .withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
+      .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT)
+      .withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
+      .build()
+  );
+  private final LimelightSubsystem lowLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
+      .withNetworkTableName("limelight-low")
+      .withMountDepth(LimeLightConstants.LOW_DISTANCE_FROM_FRONT)
+      .withMountingHeight(LimeLightConstants.LOW_MOUNT_HEIGHT)
+      .withMountingAngle(LimeLightConstants.LOW_MOUNT_ANGLE)
+      .build()
+  );
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
@@ -77,7 +92,7 @@ public class RobotContainer {
     configureButtonBindings();
     configureSubsystemCommands();
 
-    limelightSubsystem.setProfile(Profile.FAR);
+    highLimelightSubsystem.setProfile(Profile.FAR);
 
     try {
       var straightTrajectory = loadTrajectory("Straight");
@@ -100,7 +115,7 @@ public class RobotContainer {
   private void configureButtonBindings() {
 
     new JoystickButton(driverController, XboxController.Button.kY.value)
-        .whenHeld(new AimShooterCommand(limelightSubsystem, driveTrainSubsystem));
+        .whenHeld(new AimShooterCommand(highLimelightSubsystem, driveTrainSubsystem));
 
     new JoystickButton(operatorConsole, XboxController.Button.kX.value)
         .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
@@ -129,7 +144,7 @@ public class RobotContainer {
       .schedule());
 
     new JoystickButton(driverController, XboxController.Button.kA.value)
-        .whenHeld(new ShootCommand(shooterSubsystem, indexerSubsystem, limelightSubsystem));
+        .whenHeld(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem));
 
     new JoystickButton(operatorConsole, XboxController.Button.kA.value)
         .whenHeld(new InstantCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem));
