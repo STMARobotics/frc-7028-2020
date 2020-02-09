@@ -7,6 +7,7 @@ import static frc.robot.Constants.ShooterConstants.DEVICE_ID_SHOOTER_SLAVE;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.ControlType;
 
@@ -32,12 +33,15 @@ public class ShooterSubsystem extends SubsystemBase {
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV, ShooterConstants.kA);
 
   public ShooterSubsystem() {
-    shooterPIDController.setP(.0002);
+    shooterPIDController.setP(.0004);
     shooterPIDController.setI(0);
     shooterPIDController.setD(0);
     shooterPIDController.setIZone(400);
     shooterPIDController.setFF(0);
     shooterPIDController.setOutputRange(-1.0, 1.0);
+
+    shooterMaster.setIdleMode(IdleMode.kCoast);
+    shooterSlave.setIdleMode(IdleMode.kCoast);
 
     shooterSlave.follow(shooterMaster, true);
 
@@ -46,7 +50,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void prepareToShoot(double distanceToTarget) {
-    targetSpeed = 3800;
+    targetSpeed = 2800;
     shooterPIDController.setReference(targetSpeed, ControlType.kVelocity,
         0, motorFeedForward.calculate(targetSpeed / 60));
     SmartDashboard.putNumber("Velocity", shooterEncoder.getVelocity());
