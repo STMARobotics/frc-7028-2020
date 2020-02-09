@@ -51,8 +51,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void prepareToShoot(double distanceToTarget) {
     targetSpeed = 2800;
-    shooterPIDController.setReference(targetSpeed, ControlType.kVelocity,
-        0, motorFeedForward.calculate(targetSpeed / 60, targetSpeed / 60 - shooterEncoder.getVelocity() / 60));
+    shooterPIDController.setReference(
+        targetSpeed,
+        ControlType.kVelocity,
+        0,
+        motorFeedForward.calculate(targetSpeed / 60, (targetSpeed / 60 - shooterEncoder.getVelocity() / 60)) / .02);
     SmartDashboard.putNumber("Velocity", shooterEncoder.getVelocity());
   }
 
