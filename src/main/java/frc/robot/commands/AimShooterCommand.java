@@ -5,7 +5,6 @@ import static frc.robot.Constants.AimConstants.kP;
 
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Dashboard;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 
@@ -23,7 +22,6 @@ public class AimShooterCommand extends CommandBase {
 
   public AimShooterCommand(LimelightSubsystem highLimelightSubsystem, LimelightSubsystem lowLimelightSubsystem,
       DriveTrainSubsystem driveTrainSubsystem) {
-    Dashboard.commandsTab.add(this).withSize(2, 1).withPosition(2, 0);
     this.highLimelightSubsystem = highLimelightSubsystem;
     this.lowLimelightSubsystem = lowLimelightSubsystem;
     this.driveTrainSubsystem = driveTrainSubsystem;

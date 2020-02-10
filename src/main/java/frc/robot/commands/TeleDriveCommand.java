@@ -9,7 +9,6 @@ import static frc.robot.Constants.DriverConstants.SLOW_MODE_SPEED_MULTIPLIER;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Dashboard;
 import frc.robot.DeadbandFilter;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
@@ -26,7 +25,6 @@ public class TeleDriveCommand extends CommandBase {
   private boolean reverseMode = false;
 
   public TeleDriveCommand(XboxController driverController, DriveTrainSubsystem driveTrainSubsystem) {
-    Dashboard.commandsTab.add(this).withSize(2, 1).withPosition(0, 0);
     this.driverController = driverController;
     this.driveTrainSubsystem = driveTrainSubsystem;
     addRequirements(driveTrainSubsystem);

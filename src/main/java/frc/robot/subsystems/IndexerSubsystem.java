@@ -15,7 +15,8 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Dashboard;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpiutil.math.MathUtil;
 
 /**
  * IndexerSubsystem
@@ -28,22 +29,22 @@ public class IndexerSubsystem extends SubsystemBase {
   private final DigitalInput spacerSensor = new DigitalInput(PORT_ID_SPACER_SENSOR);
   private final DigitalInput fullSensor = new DigitalInput(PORT_ID_FULL_SENSOR);
 
-  private final ShuffleboardLayout dashboard = Dashboard.subsystemsTab.getLayout("Indexer", BuiltInLayouts.kList)
-      .withSize(2, 3).withPosition(6, 0);
-  private final ShuffleboardLayout detailDashboard = dashboard.getLayout("Detail", BuiltInLayouts.kGrid)
-      .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
-
   private boolean running;
   private int state = 0;
 
   public IndexerSubsystem() {
-    dashboard.add(this);
+    belt.setInverted(true);
+    new Trigger(() -> fullSensor.get()).whenActive(() -> state = MathUtil.clamp(state - 1, 0, 5));
+  }
+
+  public void addDashboardWidgets(ShuffleboardLayout dashboard) {
+    var detailDashboard = dashboard.getLayout("Detail", BuiltInLayouts.kGrid)
+        .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
+    dashboard.addNumber("Balls", () -> state).withWidget(BuiltInWidgets.kDial)
+        .withProperties(Map.of("min", 0, "max", 5));
     detailDashboard.addBoolean("Intake", () -> intakeSensor.get());
     detailDashboard.addBoolean("Spacer", () -> spacerSensor.get());
     detailDashboard.addBoolean("Full", () -> fullSensor.get());
-    detailDashboard.addNumber("Balls", () -> state).withWidget(BuiltInWidgets.kDial)
-        .withProperties(Map.of("min", 0, "max", 5));
-    belt.setInverted(true);
   }
 
   public void runManually(double speed) {
@@ -68,12 +69,12 @@ public class IndexerSubsystem extends SubsystemBase {
     // sensors return false when something is detected
     if ((intakeSensor.get() && spacerSensor.get() && fullSensor.get()) ||
         (!fullSensor.get() || (spacerSensor.get() && intakeSensor.get()))) {
-          if (running) {
-            state++;
-          } if (!fullSensor.get()) {
-            state = 5;
-          }
-          stop();
+      if (running) {
+        state = MathUtil.clamp(state + 1, 0, 5);
+      } if (!fullSensor.get()) {
+        state = 5;
+      }
+      stop();
     } else {
       run();
     }

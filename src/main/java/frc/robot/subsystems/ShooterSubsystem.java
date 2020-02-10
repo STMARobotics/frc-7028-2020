@@ -12,7 +12,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.ControlType;
 
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 
@@ -49,6 +49,10 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterSlave.setClosedLoopRampRate(.2);
   }
 
+  public void addDashboardWidgets(ShuffleboardLayout dashboard) {
+    dashboard.addNumber("Velocity", shooterEncoder::getVelocity);
+  }
+
   public void prepareToShoot(double distanceToTarget) {
     targetSpeed = 2800;
     shooterPIDController.setReference(
@@ -56,7 +60,6 @@ public class ShooterSubsystem extends SubsystemBase {
         ControlType.kVelocity,
         0,
         motorFeedForward.calculate(targetSpeed / 60, (targetSpeed / 60 - shooterEncoder.getVelocity() / 60)) / .02);
-    SmartDashboard.putNumber("Velocity", shooterEncoder.getVelocity());
   }
 
   public boolean isReadyToShoot() {

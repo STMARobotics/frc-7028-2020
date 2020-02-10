@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.shuffleboard.SuppliedValueWidget;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ControlPanelConstants;
-import frc.robot.Dashboard;
 
 /**
  * ControlPanelSubsystem
@@ -40,25 +39,11 @@ public class ControlPanelSubsystem extends SubsystemBase {
 
   private final WPI_TalonSRX motor = new WPI_TalonSRX(DEVICE_ID_CONTROL_PANEL);
   
-  private final ShuffleboardLayout dashboard = Dashboard.subsystemsTab.getLayout("Control Panel", BuiltInLayouts.kGrid)
-    .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 5)).withSize(2, 5).withPosition(2, 0);
-  private final SuppliedValueWidget<Boolean> colorWidget = dashboard.addBoolean("Color", () -> true);
-  private final ShuffleboardLayout colorGrid = dashboard.getLayout("Color Info", BuiltInLayouts.kGrid)
-    .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
-  private final ShuffleboardLayout speedGrid = dashboard.getLayout("Speed", BuiltInLayouts.kGrid)
-    .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
+  private SuppliedValueWidget<Boolean> colorWidget;
     
   private String colorString;
 
   public ControlPanelSubsystem() {
-    dashboard.add(this);
-    dashboard.add("Motor", motor);
-    speedGrid.addNumber("Raw Velocity", motor::getSelectedSensorVelocity);
-    speedGrid.addNumber("RPM", () -> stepsPerDecisecToRPS(motor.getSelectedSensorVelocity()) * 60);
-    colorGrid.addNumber("Color Red", () -> colorSensor.getColor().red);
-    colorGrid.addNumber("Color Green", () -> colorSensor.getColor().green);
-    colorGrid.addNumber("Color Blue", () -> colorSensor.getColor().blue);
-    colorGrid.addNumber("Color confidence", () -> m_colorMatcher.matchClosestColor(colorSensor.getColor()).confidence);
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.QuadEncoder;
@@ -83,6 +68,22 @@ public class ControlPanelSubsystem extends SubsystemBase {
     m_colorMatcher.addColorMatch(kWhiteTarget);
   }
 
+  public void addDashboardWidgets(ShuffleboardLayout dashboard) {
+    dashboard.add("Motor", motor);
+    colorWidget = dashboard.addBoolean("Color", () -> true);
+    var colorGrid = dashboard.getLayout("Color Info", BuiltInLayouts.kGrid)
+        .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
+    colorGrid.addNumber("Color Red", () -> colorSensor.getColor().red);
+    colorGrid.addNumber("Color Green", () -> colorSensor.getColor().green);
+    colorGrid.addNumber("Color Blue", () -> colorSensor.getColor().blue);
+    colorGrid.addNumber("Color confidence", () -> m_colorMatcher.matchClosestColor(colorSensor.getColor()).confidence);
+
+    var speedGrid = dashboard.getLayout("Speed", BuiltInLayouts.kGrid)
+        .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
+    speedGrid.addNumber("Raw Velocity", motor::getSelectedSensorVelocity);
+    speedGrid.addNumber("RPM", () -> stepsPerDecisecToRPS(motor.getSelectedSensorVelocity()) * 60);
+  }
+
   @Override
   public void periodic() {
     Color detectedColor = colorSensor.getColor();
@@ -102,7 +103,9 @@ public class ControlPanelSubsystem extends SubsystemBase {
       colorString = "White";
     }
 
-    colorWidget.withProperties(Map.of("colorWhenTrue", colorString));
+    if (colorWidget != null) {
+      colorWidget.withProperties(Map.of("colorWhenTrue", colorString));
+    }
   }
 
   public String getColor() {

@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets.kToggleSwitch;
 import static frc.robot.Constants.ArcadeConstants.MAX_ANGULAR_VEL_ARCADE;
 import static frc.robot.Constants.ArcadeConstants.MAX_SPEED_ARCADE;
 import static frc.robot.Constants.ArcadeConstants.ROTATE_RATE_LIMIT_ARCADE;
@@ -28,7 +27,6 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.EntryNotification;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SlewRateLimiter;
@@ -38,7 +36,7 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -49,7 +47,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
 import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.TrajectoryConstants;
-import frc.robot.Dashboard;
 
 /**
  * DriveTrainSubsystem
@@ -72,22 +69,13 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private SlewRateLimiter speedRateLimiter = new SlewRateLimiter(SPEED_RATE_LIMIT_ARCADE);
   private SlewRateLimiter rotationRateLimiter = new SlewRateLimiter(ROTATE_RATE_LIMIT_ARCADE);
 
-  private final ShuffleboardLayout dashboard = Dashboard.subsystemsTab.getLayout("Drivetrain", BuiltInLayouts.kList)
-      .withSize(2, 4).withPosition(0, 0);
-  private NetworkTableEntry useEncodersEntry =
-      dashboard.addPersistent("Use encoders", true).withWidget(kToggleSwitch).getEntry();
+  private boolean useEncoders;
   private boolean encodersAvailable;
   
   public DriveTrainSubsystem() {
-    dashboard.add(this);
-
     zeroDriveTrainEncoders();
     gyro.zeroYaw();
     differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));
-
-    dashboard.add(rightMaster);
-    dashboard.add(leftMaster);
-    dashboard.addString("Pose", () -> differentialDriveOdometry.getPoseMeters().toString());
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
     talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
@@ -105,7 +93,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
     leftSlaveOne.configFactoryDefault();
     leftSlaveTwo.configFactoryDefault();
 
-    useEncodersEntry.addListener(this::handleEncoderEntry, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
     enableEncoders();
 
     setNeutralMode(NeutralMode.Brake);
@@ -126,15 +113,28 @@ public class DriveTrainSubsystem extends SubsystemBase {
     differentialDrive.setRightSideInverted(false);
   }
 
+  public void addDashboardWidgets(ShuffleboardLayout dashboard) {
+    dashboard.add(rightMaster);
+    dashboard.add(leftMaster);
+    dashboard.addString("Pose", () -> differentialDriveOdometry.getPoseMeters().toString());
+    
+    var useEncodersEntry = dashboard.addPersistent("Use encoders", useEncoders)
+        .withWidget(BuiltInWidgets.kToggleSwitch).getEntry();
+    useEncodersEntry.addListener(this::handleEncoderEntry, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+  }
+
   /**
    * Handles changing the "Use encoders" entry to retry enabling encoders if they failed previously.
    * @param notification network table entry notification
    */
   private void handleEncoderEntry(EntryNotification notification) {
     var entry = notification.getEntry();
-    if(entry.getBoolean(true) && !encodersAvailable) {
+    if(entry.getBoolean(true) && (!encodersAvailable || !useEncoders)) {
       enableEncoders();
+    } else if (!entry.getBoolean(true)) {
+      useEncoders = false;
     }
+    entry.setBoolean(useEncoders);
   }
 
   /**
@@ -146,7 +146,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
         rightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10) == ErrorCode.OK;
     if (!encodersAvailable) {
       DriverStation.reportError("Failed to configure Drivetrain encoders!!", false);
-      useEncodersEntry.setBoolean(false);
+      useEncoders = false;
     }
   }
 
@@ -175,7 +175,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void arcadeDrive(double speed, double rotation, boolean useSquares) {
-    if(useEncodersEntry.getBoolean(true)) {
+    if(useEncoders) {
       var xSpeed = speedRateLimiter.calculate(safeClamp(speed));
       var zRotation = -rotationRateLimiter.calculate(safeClamp(rotation));
       if (useSquares) {
@@ -200,7 +200,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void tankDrive(double leftSpeed, double rightSpeed, boolean useSquares) {
-    if(useEncodersEntry.getBoolean(true)) {
+    if(useEncoders) {
       var xLeftSpeed = safeClamp(leftSpeed) * MAX_SPEED_ARCADE;
       var xRightSpeed = safeClamp(rightSpeed) * MAX_SPEED_ARCADE;
       if (useSquares) {

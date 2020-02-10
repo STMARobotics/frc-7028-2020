@@ -17,6 +17,7 @@ import static frc.robot.Constants.TrajectoryConstants.VOLTAGE_CONSTRAINT;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Map;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
@@ -33,9 +35,9 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.LimeLightConstants;
-import frc.robot.commands.AimShooterCommand;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.SetColorCommand;
@@ -86,13 +88,23 @@ public class RobotContainer {
   private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
   private final TeleOperateCommand teleOperateCommand = new TeleOperateCommand(operatorConsole, indexerSubsystem);
   private final IndexCommand indexCommand = new IndexCommand(indexerSubsystem);
-
+  private final ShootCommand shootCommand = new ShootCommand(
+      shooterSubsystem, 
+      indexerSubsystem, 
+      highLimelightSubsystem, 
+      lowLimelightSubsystem, 
+      driveTrainSubsystem);
+  
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  private RotateWheelCommand rotateWheelCommand = new RotateWheelCommand(controlPanelSubsystem);
+  private SetColorCommand setColorCommand = new SetColorCommand(controlPanelSubsystem);
 
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
     configureSubsystemCommands();
+    configureSubsystemDashboard();
+    configureCommandDashboard();
 
     highLimelightSubsystem.setProfile(Profile.FAR);
 
@@ -116,14 +128,11 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    new JoystickButton(driverController, XboxController.Button.kY.value)
-        .whenHeld(new AimShooterCommand(highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
-
     new JoystickButton(operatorConsole, XboxController.Button.kX.value)
-        .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
+        .whenHeld(rotateWheelCommand);
 
     new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
-        .whenHeld(new SetColorCommand(controlPanelSubsystem));
+        .whenHeld(setColorCommand);
 
     new JoystickButton(driverController, XboxController.Button.kA.value)
         .whenPressed(teleDriveCommand::toggleSlowMode);
@@ -146,21 +155,69 @@ public class RobotContainer {
       .schedule());
 
     new JoystickButton(driverController, XboxController.Button.kA.value)
-        .whenHeld(new AimShooterCommand(highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem)
-            .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem)
-            .alongWith(new AimShooterCommand(highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem)
-                .perpetually())));
+        .whenHeld(shootCommand.perpetually());
 
     new JoystickButton(operatorConsole, XboxController.Button.kA.value)
-        .whenHeld(new InstantCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem));
+        .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem))
+        .whenReleased(() -> indexerSubsystem.runManually(0.0), indexerSubsystem);
 
     new JoystickButton(operatorConsole, XboxController.Button.kB.value)
-        .whenHeld(new InstantCommand(() -> indexerSubsystem.runManually(-1.0), indexerSubsystem));
+        .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(-1.0), indexerSubsystem))
+        .whenReleased(() -> indexerSubsystem.runManually(0.0), indexerSubsystem);
   }
 
   private void configureSubsystemCommands() {
     driveTrainSubsystem.setDefaultCommand(teleDriveCommand);
     indexerSubsystem.setDefaultCommand(indexCommand);
+  }
+
+  private void configureSubsystemDashboard() {
+    var drivetrainLayout = Dashboard.subsystemsTab.getLayout("Drivetrain", BuiltInLayouts.kList)
+        .withSize(2, 5).withPosition(0, 0);
+    driveTrainSubsystem.addDashboardWidgets(drivetrainLayout);
+    drivetrainLayout.add(driveTrainSubsystem);
+
+    var indexerLayout = Dashboard.subsystemsTab.getLayout("Indexer", BuiltInLayouts.kList)
+        .withSize(2, 4).withPosition(2, 0);
+    indexerSubsystem.addDashboardWidgets(indexerLayout);
+    indexerLayout.add(indexerSubsystem);
+    
+    var shooterLayout = Dashboard.subsystemsTab.getLayout("Shooter", BuiltInLayouts.kList)
+        .withSize(2,2).withPosition(4, 0);
+    shooterSubsystem.addDashboardWidgets(shooterLayout);
+    shooterLayout.add(shooterSubsystem);
+
+    var controlPanelLayout = Dashboard.subsystemsTab.getLayout("Control Panel", BuiltInLayouts.kGrid)
+        .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 5)).withSize(2, 5).withPosition(6, 0);
+    controlPanelSubsystem.addDashboardWidgets(controlPanelLayout);
+    controlPanelLayout.add(controlPanelSubsystem);
+
+    var highLimelightLayout = Dashboard.limelightsTab.getLayout("High Limelight", BuiltInLayouts.kList)
+        .withSize(2, 3).withPosition(0, 0);
+    highLimelightSubsystem.addDashboardWidgets(highLimelightLayout);
+    highLimelightLayout.add(highLimelightSubsystem);
+
+    var lowLimelightLayout = Dashboard.limelightsTab.getLayout("Low Limelight", BuiltInLayouts.kList)
+        .withSize(2, 3).withPosition(2, 0);
+    lowLimelightSubsystem.addDashboardWidgets(lowLimelightLayout);
+    lowLimelightLayout.add(lowLimelightSubsystem);
+  }
+
+  private void configureCommandDashboard() {
+    Dashboard.commandsTab.add(indexCommand).withSize(2, 1).withPosition(0, 0);
+    Dashboard.commandsTab.add(shootCommand).withSize(2, 1).withPosition(0, 1);
+    Dashboard.commandsTab.add(teleDriveCommand).withSize(2, 1).withPosition(2, 0);
+
+    var rotateWheelLayout = 
+        Dashboard.commandsTab.getLayout("Rotate Wheel", BuiltInLayouts.kList).withSize(2, 2).withPosition(4, 0);
+    rotateWheelCommand.addDashboardWidgets(rotateWheelLayout);
+    rotateWheelLayout.add(rotateWheelCommand);
+    
+    var setColorLayout =
+        Dashboard.commandsTab.getLayout("Set Color", BuiltInLayouts.kList).withSize(2, 2).withPosition(6, 0);
+    setColorCommand.addDashboardWidgets(setColorLayout);
+    setColorLayout.add(setColorCommand);
+    
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {

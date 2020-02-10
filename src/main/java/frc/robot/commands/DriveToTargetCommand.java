@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Dashboard;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
 /**
@@ -16,7 +15,6 @@ public class DriveToTargetCommand extends CommandBase {
   private double currentY;
 
   public DriveToTargetCommand(DriveTrainSubsystem driveTrainSubsystem) {
-    Dashboard.commandsTab.add(this);
     this.driveTrainSubsystem = driveTrainSubsystem;
     addRequirements(driveTrainSubsystem);
   }

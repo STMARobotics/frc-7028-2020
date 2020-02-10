@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.LimeLightConstants;
-import frc.robot.Dashboard;
 import frc.robot.commands.InstantWhenDisabledCommand;
 
 /**
@@ -27,33 +26,31 @@ import frc.robot.commands.InstantWhenDisabledCommand;
  */
 public class LimelightSubsystem extends SubsystemBase {
 
-  private final NetworkTable leftLimeLightNetworkTable;
+  private final NetworkTable limelightNetworkTable;
   private final LimelightConfig limelightConfig;
 
-  private final ShuffleboardLayout dashboard;
-  private final ShuffleboardLayout detailDashboard;
   private double targetX = 0.0;
   private double targetY = 0.0;
   private boolean targetAcquired = false;
   private boolean enabled;
 
   public LimelightSubsystem(LimelightConfig limelightConfig) {
-    dashboard = Dashboard.subsystemsTab.getLayout(limelightConfig.getNetworkTableName(), BuiltInLayouts.kList)
-        .withSize(2, 3).withPosition(4, 0);
-    detailDashboard = dashboard.getLayout("Target", BuiltInLayouts.kGrid)
-        .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
-    dashboard.add(limelightConfig.getNetworkTableName(), this);
     this.limelightConfig = limelightConfig;
+    
+    limelightNetworkTable = NetworkTableInstance.getDefault().getTable(limelightConfig.getNetworkTableName());
+    limelightNetworkTable.addEntryListener("tl", this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+
+    new Trigger(() -> RobotState.isEnabled()).whenActive(this::enable)
+        .whenInactive(new InstantWhenDisabledCommand(this::disable));
+  }
+
+  public void addDashboardWidgets(ShuffleboardLayout dashboard) {
+    var detailDashboard = dashboard.getLayout("Target", BuiltInLayouts.kGrid)
+        .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
     detailDashboard.addBoolean("Acquired", this::getTargetAcquired);
     detailDashboard.addNumber("Distance", () -> Units.metersToInches(getDistanceToTarget()));
     detailDashboard.addNumber("X", this::getTargetX);
     detailDashboard.addNumber("Y", this::getTargetY);
-    leftLimeLightNetworkTable = NetworkTableInstance.getDefault().getTable(limelightConfig.getNetworkTableName());
-    leftLimeLightNetworkTable.addEntryListener("tl", this::update,
-        EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-
-    new Trigger(() -> RobotState.isEnabled()).whenActive(this::enable)
-        .whenInactive(new InstantWhenDisabledCommand(this::disable));
   }
 
   private void update(final NetworkTable table, final String key, final NetworkTableEntry entry,
@@ -118,11 +115,11 @@ public class LimelightSubsystem extends SubsystemBase {
   public void setProfile(final Profile profile) {
     switch (profile) {
       case NEAR:
-        leftLimeLightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_NEAR);
+        limelightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_NEAR);
         break;
       case MIDDLE:
       case FAR:
-        leftLimeLightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_FAR);
+        limelightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_FAR);
     }
   }
 
