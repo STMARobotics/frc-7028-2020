@@ -11,22 +11,22 @@ public class DriveTrainSubsystemTest {
 
   @Test
   public void testEdgesToMeters() {
-    assertEquals(5.777606101631194, DriveTrainSubsystem.edgesToMeters(12357), 0);
+    assertEquals(0.7222007627038992, DriveTrainSubsystem.edgesToMeters(12357), 0);
   }
 
   @Test
   public void testEdgesPerDecisecToMetersPerSec() {
-    assertEquals(32.85993014668935, DriveTrainSubsystem.edgesPerDecisecToMetersPerSec(7028), 0);
+    assertEquals(4.107491268336169, DriveTrainSubsystem.edgesPerDecisecToMetersPerSec(7028), 0);
   }
   
   @Test
   public void testMetersToEdges() {
-    assertEquals(3089.25, DriveTrainSubsystem.metersToEdges(1.4444015254077984d), 0);
+    assertEquals(24714.0, DriveTrainSubsystem.metersToEdges(1.4444015254077984d), 0);
   }
 
   @Test
   public void testMetersPerSecToEdgesPerDecisec() {
-    assertEquals(7028d, DriveTrainSubsystem.metersPerSecToEdgesPerDecisec(32.85993014668935), 0);
+    assertEquals(7028d, DriveTrainSubsystem.metersPerSecToEdgesPerDecisec(4.107491268336169), 0);
   }
 
 }

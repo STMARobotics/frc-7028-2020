@@ -35,7 +35,7 @@ public final class Constants {
     public static final int DEVICE_ID_LEFT_SLAVE_ONE = 4;
     public static final int DEVICE_ID_LEFT_SLAVE_TWO = 5;
 
-    public static final int EDGES_PER_ROTATION = 1024;
+    public static final int EDGES_PER_ROTATION = 8192;
     public static final double WHEEL_DIAMETER_INCHES = 6d;
     public static final double WHEEL_CIRCUMFERENCE_INCHES = WHEEL_DIAMETER_INCHES * Math.PI;
     public static final double WHEEL_CIRCUMFERENCE_METERS = Units.inchesToMeters(WHEEL_DIAMETER_INCHES) * Math.PI;
