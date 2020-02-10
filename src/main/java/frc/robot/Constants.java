@@ -195,4 +195,10 @@ public final class Constants {
 
   }
 
+  public static final class IntakeConstants {
+
+    public static final int DEVICE_ID_INTAKE = 7;
+
+  }
+
 }

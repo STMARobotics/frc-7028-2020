@@ -47,6 +47,7 @@ import frc.robot.commands.TeleOperateCommand;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightConfig;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.Profile;
@@ -64,22 +65,15 @@ public class RobotContainer {
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
   private final LimelightSubsystem highLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
-      .withNetworkTableName("limelight-high")
-      .withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
-      .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT)
-      .withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
-      .withMountDistanceFromCenter(LimeLightConstants.HIGH_DISTANCE_FROM_CENTER)
-      .build()
-  );
+      .withNetworkTableName("limelight-high").withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
+      .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
+      .withMountDistanceFromCenter(LimeLightConstants.HIGH_DISTANCE_FROM_CENTER).build());
   private final LimelightSubsystem lowLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
-      .withNetworkTableName("limelight-low")
-      .withMountDepth(LimeLightConstants.LOW_DISTANCE_FROM_FRONT)
-      .withMountingHeight(LimeLightConstants.LOW_MOUNT_HEIGHT)
-      .withMountingAngle(LimeLightConstants.LOW_MOUNT_ANGLE)
-      .withMountDistanceFromCenter(LimeLightConstants.LOW_DISTANCE_FROM_CENTER)
-      .build()
-  );
+      .withNetworkTableName("limelight-low").withMountDepth(LimeLightConstants.LOW_DISTANCE_FROM_FRONT)
+      .withMountingHeight(LimeLightConstants.LOW_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.LOW_MOUNT_ANGLE)
+      .withMountDistanceFromCenter(LimeLightConstants.LOW_DISTANCE_FROM_CENTER).build());
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
+  private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(indexerSubsystem::isReadyForBall);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
@@ -128,12 +122,6 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    new JoystickButton(operatorConsole, XboxController.Button.kX.value)
-        .whenHeld(rotateWheelCommand);
-
-    new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
-        .whenHeld(setColorCommand);
-
     new JoystickButton(driverController, XboxController.Button.kA.value)
         .whenPressed(teleDriveCommand::toggleSlowMode);
     
@@ -157,6 +145,15 @@ public class RobotContainer {
     new JoystickButton(driverController, XboxController.Button.kA.value)
         .whenHeld(shootCommand.perpetually());
 
+    new JoystickButton(driverController, XboxController.Button.kX.value)
+        .whenHeld(new RunCommand(intakeSubsystem::intake, intakeSubsystem));
+
+    new JoystickButton(driverController, XboxController.Button.kY.value)
+        .whenHeld(new RunCommand(intakeSubsystem::reverse, intakeSubsystem));
+
+    new JoystickButton(driverController, XboxController.Button.kY.value)
+        .whenHeld(new RunCommand(indexerSubsystem::reverse, indexerSubsystem));
+
     new JoystickButton(operatorConsole, XboxController.Button.kA.value)
         .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem))
         .whenReleased(() -> indexerSubsystem.runManually(0.0), indexerSubsystem);
@@ -164,6 +161,12 @@ public class RobotContainer {
     new JoystickButton(operatorConsole, XboxController.Button.kB.value)
         .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(-1.0), indexerSubsystem))
         .whenReleased(() -> indexerSubsystem.runManually(0.0), indexerSubsystem);
+
+    new JoystickButton(operatorConsole, XboxController.Button.kX.value)
+        .whenHeld(rotateWheelCommand);
+
+    new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
+        .whenHeld(setColorCommand);
   }
 
   private void configureSubsystemCommands() {

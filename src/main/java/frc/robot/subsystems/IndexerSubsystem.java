@@ -30,11 +30,12 @@ public class IndexerSubsystem extends SubsystemBase {
   private final DigitalInput fullSensor = new DigitalInput(PORT_ID_FULL_SENSOR);
 
   private boolean running;
+  private boolean shooting;
   private int state = 0;
 
   public IndexerSubsystem() {
     belt.setInverted(true);
-    new Trigger(() -> fullSensor.get()).whenActive(() -> state = MathUtil.clamp(state - 1, 0, 5));
+    new Trigger(() -> this.fullSensor.get()).whenActive(() -> state = MathUtil.clamp(state - 1, 0, 5));
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
@@ -49,20 +50,24 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public void runManually(double speed) {
     belt.set(speed);
+    shooting = false;
   }
 
   private void run() {
     belt.set(BELT_RUN_SPEED);
+    shooting = false;
     running = true;
   }
   
   private void stop() {
     belt.set(0.0);
+    shooting = false;
     running = false;
   }
 
-  private void output() {
-    
+  public void reverse() {
+    belt.set(-1.0);
+    shooting = false;
   }
 
   public void intake() {
@@ -82,6 +87,12 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public void shoot() {
     belt.set(1.0);
+    shooting = true;
+  }
+
+  public boolean isReadyForBall() {
+    return (intakeSensor.get() && spacerSensor.get() && fullSensor.get())
+        || (shooting && intakeSensor.get() && spacerSensor.get());
   }
 
   public void stopIndexer() {
