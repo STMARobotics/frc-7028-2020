@@ -22,7 +22,6 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void intake() {
-    isIndexerReady.get();
     if (isIndexerReady.get()) {
       intakeMotor.set(0.2);
     } else {
