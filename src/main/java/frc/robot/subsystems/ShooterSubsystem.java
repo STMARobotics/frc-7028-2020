@@ -40,9 +40,11 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterPIDController.setFF(0);
     shooterPIDController.setOutputRange(-1.0, 1.0);
 
+    shooterMaster.restoreFactoryDefaults();
     shooterMaster.setIdleMode(IdleMode.kCoast);
-    shooterSlave.setIdleMode(IdleMode.kCoast);
 
+    shooterSlave.restoreFactoryDefaults();
+    shooterSlave.setIdleMode(IdleMode.kCoast);
     shooterSlave.follow(shooterMaster, true);
 
     shooterMaster.setClosedLoopRampRate(.2);

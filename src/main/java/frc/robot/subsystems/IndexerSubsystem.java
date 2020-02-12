@@ -34,6 +34,7 @@ public class IndexerSubsystem extends SubsystemBase {
   private int state = 0;
 
   public IndexerSubsystem() {
+    belt.configFactoryDefault();
     belt.setInverted(true);
     new Trigger(() -> this.fullSensor.get()).whenActive(() -> state = MathUtil.clamp(state - 1, 0, 5));
   }
