@@ -68,7 +68,8 @@ public class LimelightSubsystem extends SubsystemBase {
   }
 
   public double getTargetX() {
-    return targetX - getOffsetAngle();
+    // return targetX - getOffsetAngle();
+    return targetX;
   }
 
   public double getTargetY() {

@@ -112,8 +112,9 @@ public final class Constants {
 
   public static final class AimConstants {
 
-    public static final double kP = 0.50;
-    public static final double kD = 0.0;
+    public static final double kP = 1;
+    public static final double kD = 0.3;
+    public static final double kF = 0.25;
 
     public static final double RANGE_HIGH = 1;
     public static final double RANGE_LOW = -1;
@@ -175,7 +176,7 @@ public final class Constants {
     public static final int DEVICE_ID_SHOOTER_MASTER = 2;
     public static final int DEVICE_ID_SHOOTER_SLAVE = 1;
 
-    public static final int CLOSED_LOOP_ERROR_RANGE = 150;
+    public static final int CLOSED_LOOP_ERROR_RANGE = 100;
 
     public static final double kS = 0.0763;
     public static final double kV = 0.13;

@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import static frc.robot.Constants.AimConstants.kD;
+import static frc.robot.Constants.AimConstants.kF;
 import static frc.robot.Constants.AimConstants.kP;
 
 import edu.wpi.first.wpilibj.controller.PIDController;
@@ -20,19 +21,16 @@ public class ShootCommand extends CommandBase {
   private final LimelightSubsystem highLimelightSubsystem;
   private final LimelightSubsystem lowLimelightSubsystem;
   private final DriveTrainSubsystem driveTrainSubsystem;
-  
+
   private final PIDController pidController = new PIDController(kP, 0, kD);
 
   private boolean noTarget = false;
   private boolean shot = false;
 
-  public ShootCommand(
-      ShooterSubsystem shooterSubsystem, 
-      IndexerSubsystem indexerSubsystem,
-      LimelightSubsystem highLimelightSubsystem,
-      LimelightSubsystem lowLimelightSubsystem,
+  public ShootCommand(ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem,
+      LimelightSubsystem highLimelightSubsystem, LimelightSubsystem lowLimelightSubsystem,
       DriveTrainSubsystem driveTrainSubsystem) {
-        
+
     this.shooterSubsystem = shooterSubsystem;
     this.indexerSubsystem = indexerSubsystem;
     this.highLimelightSubsystem = highLimelightSubsystem;
@@ -79,6 +77,11 @@ public class ShootCommand extends CommandBase {
   private void aimShooter(LimelightSubsystem selectedLimelightSubsystem) {
     double targetX = selectedLimelightSubsystem.getTargetX();
     double rotationSpeed = -pidController.calculate(targetX / selectedLimelightSubsystem.getMaxX());
+    if (rotationSpeed > 0) {
+      rotationSpeed += kF;
+    } else if (rotationSpeed < 0) {
+      rotationSpeed -= kF;
+    }
     driveTrainSubsystem.arcadeDrive(0.0, rotationSpeed, false);
   }
 
