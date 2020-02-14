@@ -40,22 +40,22 @@ public final class Constants {
     public static final double WHEEL_CIRCUMFERENCE_INCHES = WHEEL_DIAMETER_INCHES * Math.PI;
     public static final double WHEEL_CIRCUMFERENCE_METERS = Units.inchesToMeters(WHEEL_DIAMETER_INCHES) * Math.PI;
 
-    public static final double TRACK_WIDTH_METERS = 0.555625;
+    public static final double TRACK_WIDTH_METERS = 0.8860688499115555;
     public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(
         TRACK_WIDTH_METERS);
 
     /** Voltage needed to overcome the motor’s static friction. kS */
-    public static final double kS = 0.829;
+    public static final double kS = 0.747;
 
     /** Voltage needed to hold (or "cruise") at a given constant velocity. kV */
-    public static final double kV = 3.04;
+    public static final double kV = 2.98;
 
     /** Voltage needed to induce a given acceleration in the motor shaft. kA */
-    public static final double kA = 0.676;
+    public static final double kA = 0.474;
 
     public static final SimpleMotorFeedforward FEED_FORWARD = new SimpleMotorFeedforward(kS, kV, kA);
 
-    public static final double kP = 0.75;
+    public static final double kP = 0.154;
 
     public static final double CLOSED_LOOP_RAMP = .2;
     public static final double OPEN_LOOP_RAMP = .25;
@@ -129,10 +129,10 @@ public final class Constants {
     public static final double PIPELINE_INDEX_FAR = 1.0;
 
     /** Height of the target in meters */
-    public static final double TARGET_HEIGHT = Units.inchesToMeters(98.25);
+    public static final double TARGET_HEIGHT = Units.inchesToMeters(80.875);
 
     /** Height of the limelight on the bot in meters */
-    public static final double HIGH_MOUNT_HEIGHT = Units.inchesToMeters(23.75);
+    public static final double HIGH_MOUNT_HEIGHT = Units.inchesToMeters(22.375);
     public static final double LOW_MOUNT_HEIGHT = Units.inchesToMeters(8.125);
 
     /** Distance Limelight is mounted from the front frame of the bot */
@@ -140,8 +140,8 @@ public final class Constants {
     public static final double LOW_DISTANCE_FROM_FRONT = Units.inchesToMeters(2.0);
 
     /** Distance Limelight is mounted from the centerline of the bot */
-    public static final double HIGH_DISTANCE_FROM_CENTER = Units.inchesToMeters(42);
-    public static final double LOW_DISTANCE_FROM_CENTER = Units.inchesToMeters(43);
+    public static final double HIGH_DISTANCE_FROM_CENTER = Units.inchesToMeters(0);
+    public static final double LOW_DISTANCE_FROM_CENTER = Units.inchesToMeters(7.125);
 
     /** Angle of the limelight in degrees */
     public static final double HIGH_MOUNT_ANGLE = 20.0;

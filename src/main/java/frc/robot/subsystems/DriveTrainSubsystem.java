@@ -78,7 +78,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
     differentialDriveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(getHeading()));
 
     TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
-    talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.CTRE_MagEncoder_Relative;
+    talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.QuadEncoder;
     talonConfig.slot0.kP = DriveTrainConstants.kP;
     talonConfig.slot0.kI = 0.0;
     talonConfig.slot0.kD = 0.0;
@@ -130,6 +130,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private void handleEncoderEntry(EntryNotification notification) {
     var entry = notification.getEntry();
     if(entry.getBoolean(true) && (!encodersAvailable || !useEncoders)) {
+      useEncoders = true;
       enableEncoders();
     } else if (!entry.getBoolean(true)) {
       useEncoders = false;
@@ -142,8 +143,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
    */
   private void enableEncoders() {
     encodersAvailable = 
-        leftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10) == ErrorCode.OK &
-        rightMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10) == ErrorCode.OK;
+        leftMaster.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10) == ErrorCode.OK &
+        rightMaster.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10) == ErrorCode.OK;
     if (!encodersAvailable) {
       DriverStation.reportError("Failed to configure Drivetrain encoders!!", false);
       useEncoders = false;

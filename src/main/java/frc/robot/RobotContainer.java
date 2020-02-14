@@ -9,14 +9,9 @@ package frc.robot;
 
 import static frc.robot.Constants.ControllerConstants.PORT_ID_DRIVER_CONTROLLER;
 import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
-import static frc.robot.Constants.DriveTrainConstants.DRIVE_KINEMATICS;
-import static frc.robot.Constants.TrajectoryConstants.MAX_ACCELERATION_AUTO;
-import static frc.robot.Constants.TrajectoryConstants.MAX_SPEED_AUTO;
-import static frc.robot.Constants.TrajectoryConstants.VOLTAGE_CONSTRAINT;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Map;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -30,8 +25,6 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -122,34 +115,21 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
+    // Driver
     new JoystickButton(driverController, XboxController.Button.kA.value)
         .whenPressed(teleDriveCommand::toggleSlowMode);
     
     new JoystickButton(driverController, XboxController.Button.kB.value)
         .whenPressed(teleDriveCommand::toggleReverseMode);
 
-    new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
-       .whenPressed(driveTrainSubsystem::saveCurrentPose);
-
-    new JoystickButton(driverController, XboxController.Button.kBumperRight.value).whenPressed(() ->
-      driveTrainSubsystem.createCommandForTrajectory(
-          TrajectoryGenerator.generateTrajectory(
-            driveTrainSubsystem.getCurrentPose(),
-            Collections.emptyList(),
-            driveTrainSubsystem.getSavedPose(),
-            new TrajectoryConfig(MAX_SPEED_AUTO, MAX_ACCELERATION_AUTO)
-                .setKinematics(DRIVE_KINEMATICS)
-                .addConstraint(VOLTAGE_CONSTRAINT)))
-      .schedule());
-
     new JoystickButton(driverController, XboxController.Button.kA.value)
         .whenHeld(shootCommand.perpetually());
 
-    new JoystickButton(driverController, XboxController.Button.kX.value)
+    new JoystickButton(driverController, XboxController.Button.kBumperRight.value)
         .whenHeld(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
         .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
 
-    new JoystickButton(driverController, XboxController.Button.kY.value)
+    new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
         .whenHeld(new RunCommand(intakeSubsystem::reverse, intakeSubsystem))
         .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
 
@@ -157,6 +137,7 @@ public class RobotContainer {
         .whenHeld(new RunCommand(indexerSubsystem::reverse, indexerSubsystem))
         .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
 
+    // Operator
     new JoystickButton(operatorConsole, XboxController.Button.kA.value)
         .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem))
         .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
@@ -170,6 +151,18 @@ public class RobotContainer {
 
     new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
         .whenHeld(setColorCommand);
+
+    new JoystickButton(operatorConsole, XboxController.Button.kBumperLeft.value)
+        .whenPressed(() -> {
+            highLimelightSubsystem.setProfile(Profile.NEAR);
+            lowLimelightSubsystem.setProfile(Profile.NEAR);
+        });
+    
+    new JoystickButton(operatorConsole, XboxController.Button.kBumperRight.value)
+        .whenPressed(() -> {
+            highLimelightSubsystem.setProfile(Profile.FAR);
+            lowLimelightSubsystem.setProfile(Profile.FAR);
+        });
   }
 
   private void configureSubsystemCommands() {
