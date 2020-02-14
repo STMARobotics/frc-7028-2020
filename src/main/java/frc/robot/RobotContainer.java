@@ -43,6 +43,7 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightConfig;
 import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.PixyVisionSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
 
@@ -68,6 +69,7 @@ public class RobotContainer {
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(indexerSubsystem::isReadyForBall);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+  private final PixyVisionSubsystem pixyVision = new PixyVisionSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
@@ -114,7 +116,6 @@ public class RobotContainer {
    * passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-
     // Driver
     new JoystickButton(driverController, XboxController.Button.kA.value)
         .whenPressed(teleDriveCommand::toggleSlowMode);
