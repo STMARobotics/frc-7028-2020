@@ -57,6 +57,8 @@ public class ShootCommand extends CommandBase {
 
   @Override
   public void execute() {
+    highLimelightSubsystem.enable();
+    lowLimelightSubsystem.enable();
     if (highLimelightSubsystem.getTargetAcquired() || lowLimelightSubsystem.getTargetAcquired()) {
       if (highLimelightSubsystem.getTargetAcquired()) {
         shooterSubsystem.prepareToShoot(highLimelightSubsystem.getDistanceToTarget());
@@ -90,6 +92,8 @@ public class ShootCommand extends CommandBase {
     shooterSubsystem.stopShooter();
     indexerSubsystem.stopIndexer();
     driveTrainSubsystem.stop();
+    highLimelightSubsystem.disable();
+    lowLimelightSubsystem.disable();
   }
 
 }
