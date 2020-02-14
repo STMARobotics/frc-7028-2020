@@ -32,6 +32,8 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.IndexCommand;
+import frc.robot.commands.AimShooterCommand;
+import frc.robot.commands.PixyAssistCommand;
 import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
@@ -45,6 +47,7 @@ import frc.robot.subsystems.LimelightConfig;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.PixyVisionSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -68,6 +71,8 @@ public class RobotContainer {
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(indexerSubsystem::isReadyForBall);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+  private final PixyVisionSubsystem pixyVision = new PixyVisionSubsystem();
+  private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
@@ -114,6 +119,8 @@ public class RobotContainer {
    * passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    new JoystickButton(driverController, XboxController.Button.kB.value)
+        .whenHeld(new PixyAssistCommand(driveTrainSubsystem, pixyVision));
 
     // Driver
     new JoystickButton(driverController, XboxController.Button.kA.value)
