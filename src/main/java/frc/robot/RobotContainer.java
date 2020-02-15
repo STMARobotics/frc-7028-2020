@@ -7,11 +7,13 @@
 
 package frc.robot;
 
+import static edu.wpi.first.wpilibj.util.Units.inchesToMeters;
 import static frc.robot.Constants.ControllerConstants.PORT_ID_DRIVER_CONTROLLER;
 import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -21,16 +23,21 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.LimeLightConstants;
+import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.PixyAssistCommand;
 import frc.robot.commands.RotateWheelCommand;
@@ -95,17 +102,7 @@ public class RobotContainer {
     configureSubsystemCommands();
     configureSubsystemDashboard();
     configureCommandDashboard();
-
-    try {
-      var straightTrajectory = loadTrajectory("Straight");
-      Transform2d transform = new Pose2d(0, 0, Rotation2d.fromDegrees(0)).minus(straightTrajectory.getInitialPose());
-      Trajectory newTrajectory = straightTrajectory.transformBy(transform);
-      var straightPathCommand = driveTrainSubsystem.createCommandForTrajectory(newTrajectory);
-      autoChooser.setDefaultOption("Straight", straightPathCommand);
-    } catch (IOException e) {
-      DriverStation.reportError("Failed to load auto trajectory: Straight", false);
-    }
-    SmartDashboard.putData("Auto Chooser", autoChooser);
+    configureAutonomous();
   }
 
   /**
@@ -116,9 +113,9 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Driver
-    new JoystickButton(driverController, XboxController.Button.kA.value)
+    new JoystickButton(driverController, XboxController.Button.kY.value)
         .whenPressed(teleDriveCommand::toggleSlowMode);
-    
+
     new JoystickButton(driverController, XboxController.Button.kB.value)
         .whenPressed(teleDriveCommand::toggleReverseMode);
 
@@ -179,6 +176,53 @@ public class RobotContainer {
   private void configureSubsystemCommands() {
     driveTrainSubsystem.setDefaultCommand(teleDriveCommand);
     indexerSubsystem.setDefaultCommand(indexCommand);
+  }
+
+  private void configureAutonomous() {
+    try {
+      var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-95), Rotation2d.fromDegrees(0));
+      var waypoints = List.of(new Translation2d(inchesToMeters(242), inchesToMeters(-26.5)));
+      var endPose = new Pose2d(inchesToMeters(326), inchesToMeters(-26.5), Rotation2d.fromDegrees(0));
+
+      var setPose = new InstantCommand(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem);
+
+      var shoot = new ShootCommand(
+          shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem);
+
+      var trajectoryCommand = driveTrainSubsystem.createCommandForTrajectory(
+          TrajectoryGenerator.generateTrajectory(
+            startPose,
+            waypoints,
+            endPose,
+            new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO, TrajectoryConstants.MAX_ACCELERATION_AUTO)
+                .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+                .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)));
+
+      var autoCommandGroup = setPose
+          .andThen(shoot)
+          .andThen(shoot)
+          .andThen(shoot)
+          .andThen(trajectoryCommand)
+          .andThen(shoot)
+          .andThen(shoot)
+          .andThen(shoot);
+        
+      autoChooser.setDefaultOption("DEFAULT", autoCommandGroup);
+    } catch (Exception e) {
+      DriverStation.reportError("Failed to load auto", true);
+    }
+
+
+    try {
+      var straightTrajectory = loadTrajectory("Straight");
+      Transform2d transform = new Pose2d(0, 0, Rotation2d.fromDegrees(0)).minus(straightTrajectory.getInitialPose());
+      Trajectory newTrajectory = straightTrajectory.transformBy(transform);
+      var straightPathCommand = driveTrainSubsystem.createCommandForTrajectory(newTrajectory);
+      autoChooser.addOption("PathWeaver", straightPathCommand);
+    } catch (IOException e) {
+      DriverStation.reportError("Failed to load auto trajectory: Straight", false);
+    }
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   private void configureSubsystemDashboard() {
