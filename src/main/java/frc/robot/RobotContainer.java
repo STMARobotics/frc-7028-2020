@@ -138,8 +138,8 @@ public class RobotContainer {
         .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
 
     var pixyHeldCommand = new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(1))
-        .alongWith(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.25, 0, false), driveTrainSubsystem).withTimeout(1));
+        .andThen(new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(1.5))
+        .alongWith(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.25, 0, false), driveTrainSubsystem).withTimeout(1.5));
     
     var pixyReleaseCommand = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
