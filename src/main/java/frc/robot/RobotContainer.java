@@ -100,8 +100,8 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
     configureSubsystemCommands();
-    configureSubsystemDashboard();
-    configureCommandDashboard();
+    // configureSubsystemDashboard();
+    // configureCommandDashboard();
     configureAutonomous();
   }
 
@@ -139,7 +139,7 @@ public class RobotContainer {
     var pixyHeldCommand = new PixyAssistCommand(driveTrainSubsystem, pixyVision)
         .andThen(new ParallelCommandGroup(
             new RunCommand(intakeSubsystem::intake, intakeSubsystem),
-            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.25, 0, false), driveTrainSubsystem).withTimeout(1)));
+            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(2)));
     
     var pixyReleaseCommand = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));

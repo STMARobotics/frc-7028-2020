@@ -37,7 +37,7 @@ public class PixyAssistCommand extends CommandBase{
     SmartDashboard.putNumber("X-Coordinate", pixyData.xCoord);
     if((lower<=pixyData.xCoord)&&(pixyData.xCoord<=upper)){
       //Within Safe Zone
-      driveTrainSubsystem.tankDrive(speed/2, speed/2, false);//drive straight towards the opject in view
+      driveTrainSubsystem.tankDrive(speed, speed, false);//drive straight towards the opject in view
       pixyData = pixy.getCoordinates();
       if(pixyData.yCoord>105){ //start intaking
 
@@ -63,7 +63,7 @@ public class PixyAssistCommand extends CommandBase{
 
   @Override
   public boolean isFinished() {
-    return (pixyData.yCoord>110); //start intaking
+    return (pixyData.yCoord>113); //start intaking
   }
 
   @Override

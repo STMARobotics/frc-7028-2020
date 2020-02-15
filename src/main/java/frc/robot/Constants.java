@@ -176,7 +176,7 @@ public final class Constants {
     public static final int DEVICE_ID_SHOOTER_MASTER = 2;
     public static final int DEVICE_ID_SHOOTER_SLAVE = 1;
 
-    public static final int CLOSED_LOOP_ERROR_RANGE = 50;
+    public static final int CLOSED_LOOP_ERROR_RANGE = 8;
 
     public static final double kS = 0.0763;
     public static final double kV = 0.14;

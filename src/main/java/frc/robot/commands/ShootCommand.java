@@ -61,6 +61,8 @@ public class ShootCommand extends CommandBase {
       if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
         indexerSubsystem.shoot();
         shot = true;
+      } else {
+        indexerSubsystem.stopIndexer();
       }
     } else {
       noTarget = true;
@@ -71,9 +73,9 @@ public class ShootCommand extends CommandBase {
   private void aimShooter(LimelightSubsystem selectedLimelightSubsystem) {
     double targetX = selectedLimelightSubsystem.getTargetX();
     double rotationSpeed = -pidController.calculate(targetX / selectedLimelightSubsystem.getMaxX());
-    if (rotationSpeed > 0) {
+    if (rotationSpeed > .07) {
       rotationSpeed += kF;
-    } else if (rotationSpeed < 0) {
+    } else if (rotationSpeed < -.07) {
       rotationSpeed -= kF;
     }
     driveTrainSubsystem.arcadeDrive(0.0, rotationSpeed, false);

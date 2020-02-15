@@ -60,9 +60,9 @@ public class ShooterSubsystem extends SubsystemBase {
     //     + (.9092 * (Math.pow(distanceToTarget, 2))) - (144.54 * distanceToTarget) + 10842;
     // targetSpeed = 2900;
     if (distanceToTarget > 150) {
-      targetSpeed = 2.857 * distanceToTarget + 2204.761;
+      targetSpeed = 2.857 * distanceToTarget + 2154.761;
     } else if (distanceToTarget <= 150) {
-      targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 75.833 * distanceToTarget + 8400;
+      targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 75.833 * distanceToTarget + 8350;
     }
     shooterPIDController.setReference(
         targetSpeed,
