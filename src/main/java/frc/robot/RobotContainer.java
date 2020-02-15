@@ -126,11 +126,11 @@ public class RobotContainer {
         .whenHeld(shootCommand.perpetually());
 
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value)
-        .whenHeld(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
-        .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
-
-    new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
         .whenHeld(new RunCommand(intakeSubsystem::reverse, intakeSubsystem))
+        .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
+            
+    new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
+        .whenHeld(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
         .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
 
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
