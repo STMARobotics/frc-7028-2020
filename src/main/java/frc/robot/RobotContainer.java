@@ -137,10 +137,6 @@ public class RobotContainer {
         .whenHeld(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
         .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
 
-    new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
-        .whenHeld(new RunCommand(indexerSubsystem::reverse, indexerSubsystem))
-        .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
-
     var pixyHeldCommand = new PixyAssistCommand(driveTrainSubsystem, pixyVision)
         .andThen(new ParallelCommandGroup(
             new RunCommand(intakeSubsystem::intake, intakeSubsystem),
