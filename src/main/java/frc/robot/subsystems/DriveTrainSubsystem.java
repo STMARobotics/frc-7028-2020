@@ -53,10 +53,10 @@ import frc.robot.Constants.TrajectoryConstants;
  */
 public class DriveTrainSubsystem extends SubsystemBase {
 
-  private final WPI_TalonSRX leftMaster = new WPI_TalonSRX(DEVICE_ID_LEFT_MASTER);
+  public final WPI_TalonSRX leftMaster = new WPI_TalonSRX(DEVICE_ID_LEFT_MASTER);
   private final WPI_VictorSPX leftSlaveOne = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE_ONE);
   private final WPI_VictorSPX leftSlaveTwo = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE_TWO);
-  private final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
+  public final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
   private final WPI_VictorSPX rightSlaveOne = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE_ONE);
   private final WPI_VictorSPX rightSlaveTwo = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE_TWO);
 
@@ -375,5 +375,4 @@ public class DriveTrainSubsystem extends SubsystemBase {
   public static double metersPerSecToEdgesPerDecisec(double metersPerSec) {
     return metersToEdges(metersPerSec) * .1d;
   }
-
 }
