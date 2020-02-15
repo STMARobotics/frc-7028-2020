@@ -201,11 +201,11 @@ public class RobotContainer {
       var autoCommandGroup = setPose
           .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
           .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
-          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
-          .andThen(trajectoryCommand)
-          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
-          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
           .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
+          // .andThen(trajectoryCommand)
+          // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
+          // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
+          // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
         
       autoChooser.setDefaultOption("Shooting", autoCommandGroup);
     } catch (Exception e) {
