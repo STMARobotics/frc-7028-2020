@@ -116,7 +116,7 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Driver
-    new JoystickButton(driverController, XboxController.Button.kA.value)
+    new JoystickButton(driverController, XboxController.Button.kY.value)
         .whenPressed(teleDriveCommand::toggleSlowMode);
     
     new JoystickButton(driverController, XboxController.Button.kB.value)
@@ -133,7 +133,7 @@ public class RobotContainer {
         .whenHeld(new RunCommand(intakeSubsystem::reverse, intakeSubsystem))
         .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
 
-    new JoystickButton(driverController, XboxController.Button.kY.value)
+    new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
         .whenHeld(new RunCommand(indexerSubsystem::reverse, indexerSubsystem))
         .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
 

@@ -5,6 +5,7 @@ import static frc.robot.Constants.AimConstants.kF;
 import static frc.robot.Constants.AimConstants.kP;
 
 import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -37,13 +38,10 @@ public class ShootCommand extends CommandBase {
     this.lowLimelightSubsystem = lowLimelightSubsystem;
     this.driveTrainSubsystem = driveTrainSubsystem;
 
-    addRequirements(shooterSubsystem);
-    addRequirements(indexerSubsystem);
-    addRequirements(highLimelightSubsystem);
-    addRequirements(lowLimelightSubsystem);
-    addRequirements(driveTrainSubsystem);
+    addRequirements(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem,
+        driveTrainSubsystem);
 
-    pidController.setTolerance(.01);
+    pidController.setTolerance(.03);
   }
 
   @Override
@@ -57,20 +55,16 @@ public class ShootCommand extends CommandBase {
   public void execute() {
     highLimelightSubsystem.enable();
     lowLimelightSubsystem.enable();
-    if (highLimelightSubsystem.getTargetAcquired() || lowLimelightSubsystem.getTargetAcquired()) {
-      if (highLimelightSubsystem.getTargetAcquired()) {
-        shooterSubsystem.prepareToShoot(highLimelightSubsystem.getDistanceToTarget());
-        aimShooter(highLimelightSubsystem);
-      } else {
-        shooterSubsystem.prepareToShoot(lowLimelightSubsystem.getDistanceToTarget());
-        aimShooter(lowLimelightSubsystem);
-      }
+    if (highLimelightSubsystem.getTargetAcquired()) {
+      shooterSubsystem.prepareToShoot(Units.metersToInches(highLimelightSubsystem.getDistanceToTarget()));
+      aimShooter(highLimelightSubsystem);
       if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
         indexerSubsystem.shoot();
         shot = true;
       }
     } else {
       noTarget = true;
+      driveTrainSubsystem.arcadeDrive(0.0, 0.0, false);
     }
   }
 
