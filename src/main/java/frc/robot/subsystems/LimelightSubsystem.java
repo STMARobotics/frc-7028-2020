@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.LimeLightConstants.PIPELINE_INDEX_FAR;
-import static frc.robot.Constants.LimeLightConstants.PIPELINE_INDEX_NEAR;
 import static frc.robot.Constants.LimeLightConstants.TARGET_ACQUIRED;
 import static frc.robot.Constants.LimeLightConstants.TARGET_X_MAX;
 
@@ -33,6 +31,7 @@ public class LimelightSubsystem extends SubsystemBase {
   private double targetY = 0.0;
   private boolean targetAcquired = false;
   private boolean enabled;
+  private Profile activeProfile = Profile.NEAR;
 
   public LimelightSubsystem(LimelightConfig limelightConfig) {
     this.limelightConfig = limelightConfig;
@@ -61,6 +60,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
     table.getEntry("ledMode").setDouble(enabled ? 0.0 : 1.0);
     table.getEntry("camMode").setDouble(enabled ? 0.0 : 1.0);
+    limelightNetworkTable.getEntry("pipeline").setDouble(activeProfile.pipelineId);
   }
 
   public boolean getTargetAcquired() {
@@ -114,14 +114,7 @@ public class LimelightSubsystem extends SubsystemBase {
   }
 
   public void setProfile(final Profile profile) {
-    switch (profile) {
-      case NEAR:
-        limelightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_NEAR);
-        break;
-      case MIDDLE:
-      case FAR:
-        limelightNetworkTable.getEntry("pipeline").setDouble(PIPELINE_INDEX_FAR);
-    }
+    activeProfile = profile;
   }
 
 }
