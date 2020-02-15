@@ -39,6 +39,9 @@ public class PixyAssistCommand extends CommandBase{
       //Within Safe Zone
       driveTrainSubsystem.tankDrive(speed/2, speed/2, false);//drive straight towards the opject in view
       pixyData = pixy.getCoordinates();
+      if(pixyData.yCoord>105){ //start intaking
+
+      }
       SmartDashboard.putString("Pixy Command", "Straight");
       SmartDashboard.putNumber("Object Width", pixyData.width);
       SmartDashboard.putNumber("Object Height", pixyData.height);
@@ -48,7 +51,7 @@ public class PixyAssistCommand extends CommandBase{
       driveTrainSubsystem.tankDrive((speed/4), speed, false);//turn left until object is within the safe zone
       pixyData = pixy.getCoordinates();
       SmartDashboard.putString("Pixy Command", "Left");
-      SmartDashboard.putNumber("Object Area", pixyData.area);
+      SmartDashboard.putNumber("Object Area", pixyData.  area);
     }else if(pixyData.xCoord>upper){
       //object is to the right of the bot
       driveTrainSubsystem.tankDrive(speed, (speed/4), false);//turn right until object is within the safe zone
@@ -60,7 +63,7 @@ public class PixyAssistCommand extends CommandBase{
 
   @Override
   public boolean isFinished() {
-    return false;
+    return (pixyData.yCoord>105); //start intaking
   }
 
   @Override
