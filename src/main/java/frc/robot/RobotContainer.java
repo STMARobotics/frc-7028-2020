@@ -95,8 +95,6 @@ public class RobotContainer {
     configureSubsystemDashboard();
     configureCommandDashboard();
 
-    highLimelightSubsystem.setProfile(Profile.FAR);
-
     try {
       var straightTrajectory = loadTrajectory("Straight");
       Transform2d transform = new Pose2d(0, 0, Rotation2d.fromDegrees(0)).minus(straightTrajectory.getInitialPose());
