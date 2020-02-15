@@ -63,7 +63,7 @@ public class PixyAssistCommand extends CommandBase{
 
   @Override
   public boolean isFinished() {
-    return (pixyData.yCoord>105); //start intaking
+    return (pixyData.yCoord>110); //start intaking
   }
 
   @Override

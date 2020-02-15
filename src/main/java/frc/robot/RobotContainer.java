@@ -142,9 +142,9 @@ public class RobotContainer {
     new JoystickButton(driverController, XboxController.Button.kX.value)
         .whenHeld(new PixyAssistCommand(driveTrainSubsystem, pixyVision)
         .andThen(new RunCommand(intakeSubsystem::intake, intakeSubsystem)
-        .withTimeout(1)
+        .withTimeout(1.5)
         .alongWith(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.25, 0, false),driveTrainSubsystem)
-        .withTimeout(1))))
+        .withTimeout(1.5))))
         .whenReleased(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(() -> driveTrainSubsystem.arcadeDrive(0, 0, false),driveTrainSubsystem)));
 
