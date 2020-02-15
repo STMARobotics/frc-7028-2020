@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.LimeLightConstants;
@@ -138,8 +139,9 @@ public class RobotContainer {
         .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
 
     var pixyHeldCommand = new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(1.5))
-        .alongWith(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.25, 0, false), driveTrainSubsystem).withTimeout(1.5));
+        .andThen(new ParallelCommandGroup(
+            new RunCommand(intakeSubsystem::intake, intakeSubsystem),
+            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.25, 0, false), driveTrainSubsystem).withTimeout(1)));
     
     var pixyReleaseCommand = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
