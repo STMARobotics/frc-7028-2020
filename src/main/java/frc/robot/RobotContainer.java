@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.IndexCommand;
+import frc.robot.commands.PixyAssistCommand;
 import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
@@ -137,6 +138,16 @@ public class RobotContainer {
     new JoystickButton(driverController, XboxController.Button.kY.value)
         .whenHeld(new RunCommand(indexerSubsystem::reverse, indexerSubsystem))
         .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
+
+    new JoystickButton(driverController, XboxController.Button.kX.value)
+        .whenHeld(new PixyAssistCommand(driveTrainSubsystem, pixyVision)
+        .andThen(new RunCommand(intakeSubsystem::intake, intakeSubsystem)
+        .withTimeout(1)
+        .alongWith(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.25, 0, false),driveTrainSubsystem)
+        .withTimeout(1))))
+        .whenReleased(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
+        .andThen(new InstantCommand(() -> driveTrainSubsystem.arcadeDrive(0, 0, false),driveTrainSubsystem)));
+
 
     // Operator
     new JoystickButton(operatorConsole, XboxController.Button.kA.value)
