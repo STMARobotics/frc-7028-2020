@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -194,9 +193,6 @@ public class RobotContainer {
 
       var setPose = new InstantCommand(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem);
 
-      var shoot = new ShootCommand(
-          shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem);
-
       var trajectoryCommand = driveTrainSubsystem.createCommandForTrajectory(
           TrajectoryGenerator.generateTrajectory(
             startPose,
@@ -207,29 +203,19 @@ public class RobotContainer {
                 .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)));
 
       var autoCommandGroup = setPose
-          .andThen(shoot)
-          .andThen(shoot)
-          .andThen(shoot)
+          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
+          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
+          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
           .andThen(trajectoryCommand)
-          .andThen(shoot)
-          .andThen(shoot)
-          .andThen(shoot);
+          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
+          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
+          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
         
-      autoChooser.setDefaultOption("DEFAULT", autoCommandGroup);
+      autoChooser.setDefaultOption("Shooting", autoCommandGroup);
     } catch (Exception e) {
       DriverStation.reportError("Failed to load auto", true);
     }
 
-
-    try {
-      var straightTrajectory = loadTrajectory("Straight");
-      Transform2d transform = new Pose2d(0, 0, Rotation2d.fromDegrees(0)).minus(straightTrajectory.getInitialPose());
-      Trajectory newTrajectory = straightTrajectory.transformBy(transform);
-      var straightPathCommand = driveTrainSubsystem.createCommandForTrajectory(newTrajectory);
-      autoChooser.addOption("PathWeaver", straightPathCommand);
-    } catch (IOException e) {
-      DriverStation.reportError("Failed to load auto trajectory: Straight", false);
-    }
     SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
