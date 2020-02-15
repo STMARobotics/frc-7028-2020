@@ -130,7 +130,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private void handleEncoderEntry(EntryNotification notification) {
     var entry = notification.getEntry();
     if(entry.getBoolean(true) && (!encodersAvailable || !useEncoders)) {
-      useEncoders = true;
+      useEncoders = false; // TODO allow turning on encoder drive
       enableEncoders();
     } else if (!entry.getBoolean(true)) {
       useEncoders = false;
@@ -155,9 +155,19 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * Resets the current pose to 0, 0, 0° and resets the saved pose
    */
   public void resetOdometry() {
+    setCurrentPose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+  }
+
+  /**
+   * Resets the current pose to the specified pose. This this ONLY be called
+   * when the robot's position on the field is known, like at the beginnig of
+   * a match. This will also reset the saved pose since the old pose could be invalidated.
+   * @param newPose new pose
+   */
+  public void setCurrentPose(Pose2d newPose) {
     zeroDriveTrainEncoders();
-    savedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
-    differentialDriveOdometry.resetPosition(savedPose, Rotation2d.fromDegrees(getHeading()));
+    savedPose = newPose;
+    differentialDriveOdometry.resetPosition(newPose, Rotation2d.fromDegrees(getHeading()));
   }
 
   @Override
@@ -177,12 +187,14 @@ public class DriveTrainSubsystem extends SubsystemBase {
    */
   public void arcadeDrive(double speed, double rotation, boolean useSquares) {
     if(useEncoders) {
-      var xSpeed = speedRateLimiter.calculate(safeClamp(speed));
-      var zRotation = -rotationRateLimiter.calculate(safeClamp(rotation));
+      var xSpeed = speed;
+      var zRotation = rotation;
       if (useSquares) {
         xSpeed *= Math.abs(xSpeed);
         zRotation *= Math.abs(zRotation);
       }
+      xSpeed = speedRateLimiter.calculate(safeClamp(speed));
+      zRotation = -rotationRateLimiter.calculate(safeClamp(rotation));
       xSpeed *= MAX_SPEED_ARCADE;
       zRotation *= MAX_ANGULAR_VEL_ARCADE;
       var wheelSpeeds = DRIVE_KINEMATICS.toWheelSpeeds(new ChassisSpeeds(xSpeed, 0.0, zRotation));
