@@ -5,8 +5,13 @@ package frc.robot.subsystems;
  */
 public enum Profile {
 
-  NEAR,
-  MIDDLE,
-  FAR
-  
+  NEAR(0.0),
+  FAR(1.0);
+
+  public final double pipelineId;
+
+  private Profile(double pipelineId) {
+    this.pipelineId = pipelineId;
+  }
+
 }

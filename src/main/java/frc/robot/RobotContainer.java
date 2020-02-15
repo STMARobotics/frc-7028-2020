@@ -96,8 +96,6 @@ public class RobotContainer {
     configureSubsystemDashboard();
     configureCommandDashboard();
 
-    highLimelightSubsystem.setProfile(Profile.FAR);
-
     try {
       var straightTrajectory = loadTrajectory("Straight");
       Transform2d transform = new Pose2d(0, 0, Rotation2d.fromDegrees(0)).minus(straightTrajectory.getInitialPose());
@@ -118,7 +116,7 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Driver
-    new JoystickButton(driverController, XboxController.Button.kA.value)
+    new JoystickButton(driverController, XboxController.Button.kY.value)
         .whenPressed(teleDriveCommand::toggleSlowMode);
     
     new JoystickButton(driverController, XboxController.Button.kB.value)
@@ -135,19 +133,20 @@ public class RobotContainer {
         .whenHeld(new RunCommand(intakeSubsystem::reverse, intakeSubsystem))
         .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
 
-    new JoystickButton(driverController, XboxController.Button.kY.value)
+    new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
         .whenHeld(new RunCommand(indexerSubsystem::reverse, indexerSubsystem))
         .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
 
-    new JoystickButton(driverController, XboxController.Button.kX.value)
-        .whenHeld(new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(new RunCommand(intakeSubsystem::intake, intakeSubsystem)
-        .withTimeout(1.5)
-        .alongWith(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.25, 0, false),driveTrainSubsystem)
-        .withTimeout(1.5))))
-        .whenReleased(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
-        .andThen(new InstantCommand(() -> driveTrainSubsystem.arcadeDrive(0, 0, false),driveTrainSubsystem)));
+    var pixyHeldCommand = new PixyAssistCommand(driveTrainSubsystem, pixyVision)
+        .andThen(new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(1))
+        .alongWith(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.25, 0, false), driveTrainSubsystem).withTimeout(1));
+    
+    var pixyReleaseCommand = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
+        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
 
+    new JoystickButton(driverController, XboxController.Button.kX.value)
+        .whenHeld(pixyHeldCommand)
+        .whenReleased(pixyReleaseCommand);
 
     // Operator
     new JoystickButton(operatorConsole, XboxController.Button.kA.value)
