@@ -6,7 +6,6 @@ import static frc.robot.Constants.AimConstants.kP;
 
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.util.Units;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -15,7 +14,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 /**
  * ShootCommand
  */
-public class ShootCommand extends CommandBase {
+public class ShootCommand extends VisionCommandBase {
 
   private final ShooterSubsystem shooterSubsystem;
   private final IndexerSubsystem indexerSubsystem;
@@ -31,6 +30,8 @@ public class ShootCommand extends CommandBase {
   public ShootCommand(ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem,
       LimelightSubsystem highLimelightSubsystem, LimelightSubsystem lowLimelightSubsystem,
       DriveTrainSubsystem driveTrainSubsystem) {
+
+    super(highLimelightSubsystem);
 
     this.shooterSubsystem = shooterSubsystem;
     this.indexerSubsystem = indexerSubsystem;
@@ -55,7 +56,7 @@ public class ShootCommand extends CommandBase {
   public void execute() {
     highLimelightSubsystem.enable();
     lowLimelightSubsystem.enable();
-    if (highLimelightSubsystem.getTargetAcquired()) {
+    if (getTargetAcquired()) {
       shooterSubsystem.prepareToShoot(Units.metersToInches(highLimelightSubsystem.getDistanceToTarget()));
       aimShooter(highLimelightSubsystem);
       if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
@@ -94,5 +95,4 @@ public class ShootCommand extends CommandBase {
     highLimelightSubsystem.disable();
     lowLimelightSubsystem.disable();
   }
-
 }

@@ -3,8 +3,6 @@ package frc.robot.subsystems;
 import static frc.robot.Constants.LimeLightConstants.TARGET_ACQUIRED;
 import static frc.robot.Constants.LimeLightConstants.TARGET_X_MAX;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
@@ -26,6 +24,9 @@ import frc.robot.networktables.DoubleEntryValue;
  * LimelightSubsystem
  */
 public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsystem {
+  //valid keys - https://docs.limelightvision.io/en/latest/networktables_api.html
+  private final static String ntPipelineLatency = "tl";
+  private final static String ntTargetValid = "tv";
 
   private final NetworkTable limelightNetworkTable;
   private final LimelightConfig limelightConfig;
@@ -40,8 +41,8 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     this.limelightConfig = limelightConfig;
     
     limelightNetworkTable = NetworkTableInstance.getDefault().getTable(limelightConfig.getNetworkTableName());
-    limelightNetworkTable.addEntryListener("tl", this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-    limelightNetworkTable.addEntryListener("tv", this::updateTargetAcquired, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    limelightNetworkTable.addEntryListener(ntPipelineLatency, this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    limelightNetworkTable.addEntryListener(ntTargetValid, this::updateTargetAcquired, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
 
     new Trigger(() -> RobotState.isEnabled()).whenActive(this::enable)
         .whenInactive(new InstantWhenDisabledCommand(this::disable));
@@ -73,17 +74,12 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
         targetValue = new DoubleEntryValue(value.getDouble());
       }
 
+  public DoubleEntryValue getRawTargetValid() {
+    return targetValue;
+  }
+
   public boolean getTargetAcquired() {
-    if (targetValue == null) { 
-      return false;
-    }
-
-    //putting a buffer on the logic here when switching from true to false, don't 'lose' the target unless we haven't seen it for N seconds
-    if (targetValue.Value == TARGET_ACQUIRED || Duration.between(targetValue.UpdateTime, LocalDateTime.now()).toMillis() < 500) {
-      return true;
-    }
-
-    return false;
+    return targetValue.Value == TARGET_ACQUIRED;
   }
 
   public double getTargetX() {
