@@ -58,9 +58,17 @@ public class LimelightSubsystem extends SubsystemBase {
     targetX = table.getEntry("tx").getDouble(0.0);
     targetY = table.getEntry("ty").getDouble(0.0);
 
+    // Flush NetworkTable to send LED mode and pipeline updates immediately
+    var shouldFlush = (table.getEntry("ledMode").getDouble(0.0) != (enabled ? 0.0 : 1.0) || 
+        limelightNetworkTable.getEntry("pipeline").getDouble(0.0) != activeProfile.pipelineId);
+    
     table.getEntry("ledMode").setDouble(enabled ? 0.0 : 1.0);
     table.getEntry("camMode").setDouble(enabled ? 0.0 : 1.0);
     limelightNetworkTable.getEntry("pipeline").setDouble(activeProfile.pipelineId);
+
+    if (shouldFlush)  {
+      NetworkTableInstance.getDefault().flush();
+    }
   }
 
   public boolean getTargetAcquired() {
