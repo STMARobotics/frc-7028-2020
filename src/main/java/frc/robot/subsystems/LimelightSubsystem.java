@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import static frc.robot.Constants.LimeLightConstants.TARGET_ACQUIRED;
 import static frc.robot.Constants.LimeLightConstants.TARGET_X_MAX;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
@@ -18,18 +20,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.InstantWhenDisabledCommand;
+import frc.robot.networktables.DoubleEntryValue;
 
 /**
  * LimelightSubsystem
  */
-public class LimelightSubsystem extends SubsystemBase {
+public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsystem {
 
   private final NetworkTable limelightNetworkTable;
   private final LimelightConfig limelightConfig;
 
   private double targetX = 0.0;
   private double targetY = 0.0;
-  private boolean targetAcquired = false;
+  private DoubleEntryValue targetValue;
   private boolean enabled;
   private Profile activeProfile = Profile.NEAR;
 
@@ -38,6 +41,7 @@ public class LimelightSubsystem extends SubsystemBase {
     
     limelightNetworkTable = NetworkTableInstance.getDefault().getTable(limelightConfig.getNetworkTableName());
     limelightNetworkTable.addEntryListener("tl", this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    limelightNetworkTable.addEntryListener("tv", this::updateTargetAcquired, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
 
     new Trigger(() -> RobotState.isEnabled()).whenActive(this::enable)
         .whenInactive(new InstantWhenDisabledCommand(this::disable));
@@ -54,7 +58,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
   private void update(final NetworkTable table, final String key, final NetworkTableEntry entry,
       final NetworkTableValue value, final int flags) {
-    targetAcquired = table.getEntry("tv").getDouble(0.0) == TARGET_ACQUIRED;
+    //targetAcquired = table.getEntry("tv").getDouble(0.0) == TARGET_ACQUIRED;
     targetX = table.getEntry("tx").getDouble(0.0);
     targetY = table.getEntry("ty").getDouble(0.0);
 
@@ -63,8 +67,23 @@ public class LimelightSubsystem extends SubsystemBase {
     limelightNetworkTable.getEntry("pipeline").setDouble(activeProfile.pipelineId);
   }
 
+  private void updateTargetAcquired(final NetworkTable table, final String key, final NetworkTableEntry entry,
+      final NetworkTableValue value, final int flags)
+      {
+        targetValue = new DoubleEntryValue(value.getDouble());
+      }
+
   public boolean getTargetAcquired() {
-    return targetAcquired;
+    if (targetValue == null) { 
+      return false;
+    }
+
+    //putting a buffer on the logic here when switching from true to false, don't 'lose' the target unless we haven't seen it for N seconds
+    if (targetValue.Value == TARGET_ACQUIRED || Duration.between(targetValue.UpdateTime, LocalDateTime.now()).toMillis() < 500) {
+      return true;
+    }
+
+    return false;
   }
 
   public double getTargetX() {
@@ -96,7 +115,7 @@ public class LimelightSubsystem extends SubsystemBase {
   }
 
   private double getLimelightDistanceToTarget() {
-    if (targetAcquired) {
+    if (getTargetAcquired()) {
       return (LimeLightConstants.TARGET_HEIGHT - limelightConfig.getMountHeight())
           / Math.tan(Units.degreesToRadians(limelightConfig.getMountAngle() + getTargetY()));
     }
