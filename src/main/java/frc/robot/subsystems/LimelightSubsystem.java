@@ -10,6 +10,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.wpilibj.MedianFilter;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
@@ -31,8 +32,11 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   private final NetworkTable limelightNetworkTable;
   private final LimelightConfig limelightConfig;
 
-  private double targetX = 0.0;
-  private double targetY = 0.0;
+  private double targetX = 0.0, filteredX = 0.0;
+  private double targetY = 0.0, filteredY = 0.0;
+
+  private MedianFilter xFilter, yFilter;
+
   private DoubleEntryValue targetValue;
   private boolean enabled;
   private Profile activeProfile = Profile.NEAR;
@@ -42,10 +46,15 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     
     limelightNetworkTable = NetworkTableInstance.getDefault().getTable(limelightConfig.getNetworkTableName());
     limelightNetworkTable.addEntryListener(ntPipelineLatency, this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    limelightNetworkTable.addEntryListener("tx", this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    limelightNetworkTable.addEntryListener("ty", this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
     limelightNetworkTable.addEntryListener(ntTargetValid, this::updateTargetAcquired, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
 
     new Trigger(() -> RobotState.isEnabled()).whenActive(this::enable)
         .whenInactive(new InstantWhenDisabledCommand(this::disable));
+
+    xFilter = new MedianFilter(5);
+    yFilter = new MedianFilter(5);
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
@@ -59,13 +68,23 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
 
   private void update(final NetworkTable table, final String key, final NetworkTableEntry entry,
       final NetworkTableValue value, final int flags) {
-    //targetAcquired = table.getEntry("tv").getDouble(0.0) == TARGET_ACQUIRED;
-    targetX = table.getEntry("tx").getDouble(0.0);
-    targetY = table.getEntry("ty").getDouble(0.0);
 
-    table.getEntry("ledMode").setDouble(enabled ? 0.0 : 1.0);
-    table.getEntry("camMode").setDouble(enabled ? 0.0 : 1.0);
-    limelightNetworkTable.getEntry("pipeline").setDouble(activeProfile.pipelineId);
+    switch(key)
+    {
+      case "tx":
+        targetX = value.getDouble();
+        filteredX = xFilter.calculate(targetX);
+      break;
+      case "ty":
+        targetY = value.getDouble();
+        filteredY = yFilter.calculate(targetY);
+      break;
+      case ntPipelineLatency:
+        table.getEntry("ledMode").setDouble(enabled ? 0.0 : 1.0);
+        table.getEntry("camMode").setDouble(enabled ? 0.0 : 1.0);
+        limelightNetworkTable.getEntry("pipeline").setDouble(activeProfile.pipelineId);
+      break;
+    }
   }
 
   private void updateTargetAcquired(final NetworkTable table, final String key, final NetworkTableEntry entry,
@@ -87,8 +106,16 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     return targetX;
   }
 
+  public double getFilteredX() {
+    return filteredX;
+  }
+
   public double getTargetY() {
     return targetY;
+  }
+
+  public double getFilteredY() {
+    return filteredY;
   }
 
   public double getMaxX() {
