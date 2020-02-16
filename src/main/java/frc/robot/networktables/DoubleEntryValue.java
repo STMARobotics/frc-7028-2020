@@ -1,16 +1,14 @@
 package frc.robot.networktables;
 
-import java.time.LocalDateTime;
-
 public class DoubleEntryValue {
 
   public DoubleEntryValue(double value) {
     super();
 
     Value = value;
-    UpdateTime = LocalDateTime.now();
+    UpdateTime = System.currentTimeMillis();
   }
-  
+
   public double Value;
-  public LocalDateTime UpdateTime;
+  public long UpdateTime;
 }
