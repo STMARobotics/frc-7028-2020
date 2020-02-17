@@ -74,7 +74,7 @@ public class VisionCommandBaseTest {
   public void testTargetValidValueFalseDelayPassed() {
     //arrange
     var passedValue = new DoubleEntryValue(0.0);
-    passedValue.UpdateTime = System.currentTimeMillis() - 1000; //set it to 1 second ago
+    passedValue.updateTime = System.currentTimeMillis() - 1000; //set it to 1 second ago
 
     when(limelightHigh.getRawTargetValid()).thenReturn(null);
     when(limelightLow.getRawTargetValid()).thenReturn(passedValue);

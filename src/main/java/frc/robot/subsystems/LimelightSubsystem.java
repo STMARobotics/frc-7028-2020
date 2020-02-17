@@ -92,13 +92,13 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
         var previousX = targetX;
         targetX = new DoubleEntryValue(value.getDouble(), xFilter.calculate(value.getDouble()));
 
-        updateMs = targetX.UpdateTime - previousX.UpdateTime;
+        updateMs = targetX.updateTime - previousX.updateTime;
       break;
       case ntTargetY:
         var previousY = targetY;
         targetY = new DoubleEntryValue(value.getDouble(), yFilter.calculate(value.getDouble()));
 
-        updateMs = targetY.UpdateTime - previousY.UpdateTime;
+        updateMs = targetY.updateTime - previousY.updateTime;
       break;
 
       case ntPipelineLatency:
@@ -118,7 +118,7 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
         var previousTargetValid = targetValid;
         targetValid = new DoubleEntryValue(value.getDouble());
 
-        updateMs = targetValid.UpdateTime - previousTargetValid.UpdateTime;
+        updateMs = targetValid.updateTime - previousTargetValid.updateTime;
       break;
     }
 
@@ -139,24 +139,24 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   }
 
   public boolean getTargetAcquired() {
-    return targetValid.Value == TARGET_ACQUIRED;
+    return targetValid.value == TARGET_ACQUIRED;
   }
 
   public double getTargetX() {
     // return targetX - getOffsetAngle();
-    return targetX.Value;
+    return targetX.value;
   }
 
   public double getFilteredX() {
-    return targetX.FilteredValue;
+    return targetX.filteredValue;
   }
 
   public double getTargetY() {
-    return targetY.Value;
+    return targetY.value;
   }
 
   public double getFilteredY() {
-    return targetY.FilteredValue;
+    return targetY.filteredValue;
   }
 
   public double getMaxX() {

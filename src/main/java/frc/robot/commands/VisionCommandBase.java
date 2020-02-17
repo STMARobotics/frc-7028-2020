@@ -41,7 +41,7 @@ public class VisionCommandBase extends CommandBase {
       }
   
       //putting a buffer on the logic here when switching from true to false, don't 'lose' the target unless we haven't seen it for N milliseconds
-      if (targetValue.Value == Constants.LimeLightConstants.TARGET_ACQUIRED || System.currentTimeMillis() - targetValue.UpdateTime < targetLostDelayMs) {
+      if (targetValue.value == Constants.LimeLightConstants.TARGET_ACQUIRED || System.currentTimeMillis() - targetValue.updateTime < targetLostDelayMs) {
         return true;
       }
   
