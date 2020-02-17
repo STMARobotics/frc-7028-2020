@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static frc.robot.Constants.LimeLightConstants.TARGET_ACQUIRED;
 import static frc.robot.Constants.LimeLightConstants.TARGET_X_MAX;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
@@ -28,16 +29,19 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   //valid keys - https://docs.limelightvision.io/en/latest/networktables_api.html
   private final static String ntPipelineLatency = "tl";
   private final static String ntTargetValid = "tv";
+  private final static String ntTargetX = "tx";
+  private final static String ntTargetY = "ty";
 
   private final NetworkTable limelightNetworkTable;
   private final LimelightConfig limelightConfig;
 
-  private double targetX = 0.0, filteredX = 0.0;
-  private double targetY = 0.0, filteredY = 0.0;
+  private DoubleEntryValue targetX = new DoubleEntryValue(0);
+  private DoubleEntryValue targetY = new DoubleEntryValue(0);
 
   private MedianFilter xFilter, yFilter;
+  private final HashMap<String, MedianFilter> updateFilterMap = new HashMap<String, MedianFilter>();
 
-  private DoubleEntryValue targetValue;
+  private DoubleEntryValue targetValid = new DoubleEntryValue(0);
   private boolean enabled;
   private Profile activeProfile = Profile.NEAR;
 
@@ -45,16 +49,26 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     this.limelightConfig = limelightConfig;
     
     limelightNetworkTable = NetworkTableInstance.getDefault().getTable(limelightConfig.getNetworkTableName());
-    limelightNetworkTable.addEntryListener(ntPipelineLatency, this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-    limelightNetworkTable.addEntryListener("tx", this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-    limelightNetworkTable.addEntryListener("ty", this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-    limelightNetworkTable.addEntryListener(ntTargetValid, this::updateTargetAcquired, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+
+    //this adds listeners on all values [I think]
+    //limelightNetworkTable.addEntryListener(this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    
+    //this adds listeners on an explicit list
+    addLimelightUpdateListeners(limelightNetworkTable, ntPipelineLatency, ntTargetValid, ntTargetX, ntTargetY);
 
     new Trigger(() -> RobotState.isEnabled()).whenActive(this::enable)
         .whenInactive(new InstantWhenDisabledCommand(this::disable));
 
     xFilter = new MedianFilter(5);
     yFilter = new MedianFilter(5);
+  }
+
+  private void addLimelightUpdateListeners(NetworkTable limelightTable, String... keys)
+  {
+    for (String key : keys) {
+      limelightNetworkTable.addEntryListener(key, this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+      updateFilterMap.putIfAbsent(key, new MedianFilter(20));
+    }
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
@@ -69,53 +83,65 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   private void update(final NetworkTable table, final String key, final NetworkTableEntry entry,
       final NetworkTableValue value, final int flags) {
 
+    long updateMs = 0;
     switch(key)
     {
-      case "tx":
-        targetX = value.getDouble();
-        filteredX = xFilter.calculate(targetX);
+      case ntTargetX:
+        var previousX = targetX;
+        targetX = new DoubleEntryValue(value.getDouble(), xFilter.calculate(value.getDouble()));
+
+        updateMs = targetX.UpdateTime - previousX.UpdateTime;
       break;
-      case "ty":
-        targetY = value.getDouble();
-        filteredY = yFilter.calculate(targetY);
+      case ntTargetY:
+        var previousY = targetY;
+        targetY = new DoubleEntryValue(value.getDouble(), yFilter.calculate(value.getDouble()));
+
+        updateMs = targetY.UpdateTime - previousY.UpdateTime;
       break;
+
       case ntPipelineLatency:
         table.getEntry("ledMode").setDouble(enabled ? 0.0 : 1.0);
         table.getEntry("camMode").setDouble(enabled ? 0.0 : 1.0);
         limelightNetworkTable.getEntry("pipeline").setDouble(activeProfile.pipelineId);
       break;
+      case ntTargetValid:
+        var previousTargetValid = targetValid;
+        targetValid = new DoubleEntryValue(value.getDouble());
+
+        updateMs = targetValid.UpdateTime - previousTargetValid.UpdateTime;
+      break;
+    }
+
+    if (updateMs > 0 && updateFilterMap.containsKey(key))
+    {
+      NetworkTableInstance.getDefault().getTable("LimelightDebug").getSubTable(limelightConfig.getNetworkTableName())
+        .getEntry(key + "_updateFrequencyMs").setNumber(updateFilterMap.get(key).calculate(updateMs));
     }
   }
 
-  private void updateTargetAcquired(final NetworkTable table, final String key, final NetworkTableEntry entry,
-      final NetworkTableValue value, final int flags)
-      {
-        targetValue = new DoubleEntryValue(value.getDouble());
-      }
-
   public DoubleEntryValue getRawTargetValid() {
-    return targetValue;
+    return targetValid;
   }
 
   public boolean getTargetAcquired() {
-    return targetValue.Value == TARGET_ACQUIRED;
+    return targetValid.Value == TARGET_ACQUIRED;
   }
 
   public double getTargetX() {
     // return targetX - getOffsetAngle();
-    return targetX;
+    return targetX.Value;
   }
 
   public double getFilteredX() {
-    return filteredX;
+    return targetX.FilteredValue;
   }
 
   public double getTargetY() {
-    return targetY;
+    return targetY.Value;
   }
 
   public double getFilteredY() {
-    return filteredY;
+    return targetY.FilteredValue;
   }
 
   public double getMaxX() {
