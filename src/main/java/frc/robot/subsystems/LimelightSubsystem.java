@@ -35,13 +35,15 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   private final NetworkTable limelightNetworkTable;
   private final LimelightConfig limelightConfig;
 
+  private long lastLatencyUpdate = System.currentTimeMillis();
+
+  private DoubleEntryValue targetValid = new DoubleEntryValue(0);
   private DoubleEntryValue targetX = new DoubleEntryValue(0);
   private DoubleEntryValue targetY = new DoubleEntryValue(0);
 
   private MedianFilter xFilter, yFilter;
-  private final HashMap<String, MedianFilter> updateFilterMap = new HashMap<String, MedianFilter>();
-
-  private DoubleEntryValue targetValid = new DoubleEntryValue(0);
+  private final HashMap<String, MedianFilter> updateFilterMap = new HashMap<>();
+  
   private boolean enabled;
   private Profile activeProfile = Profile.NEAR;
 
@@ -63,8 +65,7 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     yFilter = new MedianFilter(5);
   }
 
-  private void addLimelightUpdateListeners(NetworkTable limelightTable, String... keys)
-  {
+  private void addLimelightUpdateListeners(NetworkTable limelightTable, String... keys) {
     for (String key : keys) {
       limelightNetworkTable.addEntryListener(key, this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
       updateFilterMap.putIfAbsent(key, new MedianFilter(20));
@@ -84,8 +85,8 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
       final NetworkTableValue value, final int flags) {
 
     long updateMs = 0;
-    switch(key)
-    {
+    switch(key) {
+
       case ntTargetX:
         var previousX = targetX;
         targetX = new DoubleEntryValue(value.getDouble(), xFilter.calculate(value.getDouble()));
@@ -100,6 +101,9 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
       break;
 
       case ntPipelineLatency:
+        updateMs = System.currentTimeMillis() - lastLatencyUpdate; //update for debugging data
+
+        //we could maybe move these to a command that watches the subsystem, might be more consisent depending how often this is getting hit
         table.getEntry("ledMode").setDouble(enabled ? 0.0 : 1.0);
         table.getEntry("camMode").setDouble(enabled ? 0.0 : 1.0);
         limelightNetworkTable.getEntry("pipeline").setDouble(activeProfile.pipelineId);
@@ -112,8 +116,9 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
       break;
     }
 
-    if (updateMs > 0 && updateFilterMap.containsKey(key))
-    {
+    //write out debug information so we can get an idea how often these updates are coming through from the limelight
+    if (updateMs > 0 && updateFilterMap.containsKey(key)) {
+
       NetworkTableInstance.getDefault().getTable("LimelightDebug").getSubTable(limelightConfig.getNetworkTableName())
         .getEntry(key + "_updateFrequencyMs").setNumber(updateFilterMap.get(key).calculate(updateMs));
     }

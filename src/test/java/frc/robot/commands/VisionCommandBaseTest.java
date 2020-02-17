@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -22,8 +23,12 @@ public class VisionCommandBaseTest {
   @Mock
   private ILimelightSubsystem limelightLow;
 
-  private VisionCommandBase getCommand() {
-    return new VisionCommandBase(limelightHigh, limelightLow);
+  private VisionCommandBase command;
+
+  @Before
+  public void init() {
+    
+    command = new VisionCommandBase(limelightHigh, limelightLow);
   }
 
   @Test
@@ -32,8 +37,6 @@ public class VisionCommandBaseTest {
     when(limelightHigh.getRawTargetValid()).thenReturn(null);
     when(limelightLow.getRawTargetValid()).thenReturn(null);
     
-    var command = getCommand();
-
     //act
     var actual = command.getTargetAcquired();
 
@@ -47,8 +50,6 @@ public class VisionCommandBaseTest {
     when(limelightHigh.getRawTargetValid()).thenReturn(null);
     when(limelightLow.getRawTargetValid()).thenReturn(new DoubleEntryValue(Constants.LimeLightConstants.TARGET_ACQUIRED));
     
-    var command = getCommand();
-
     //act
     var actual = command.getTargetAcquired();
 
@@ -62,8 +63,6 @@ public class VisionCommandBaseTest {
     when(limelightHigh.getRawTargetValid()).thenReturn(null);
     when(limelightLow.getRawTargetValid()).thenReturn(new DoubleEntryValue(0.0));
     
-    var command = getCommand();
-
     //act
     var actual = command.getTargetAcquired();
 
@@ -80,8 +79,6 @@ public class VisionCommandBaseTest {
     when(limelightHigh.getRawTargetValid()).thenReturn(null);
     when(limelightLow.getRawTargetValid()).thenReturn(passedValue);
     
-    var command = getCommand();
-
     //act
     var actual = command.getTargetAcquired();
 

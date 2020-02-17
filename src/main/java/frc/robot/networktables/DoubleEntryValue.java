@@ -2,17 +2,6 @@ package frc.robot.networktables;
 
 public class DoubleEntryValue {
 
-  public DoubleEntryValue(double value) {
-    this(value, value);
-  }
-
-  public DoubleEntryValue(double value, double filteredValue) {
-    super();
-
-    Value = value;
-    UpdateTime = System.currentTimeMillis();
-  }
-
   /**
    * Raw Value from Network Table
    */
@@ -27,4 +16,15 @@ public class DoubleEntryValue {
    * Time (in ms) of update
    */
   public long UpdateTime;
+
+  public DoubleEntryValue(double value) {
+    this(value, value);
+  }
+
+  public DoubleEntryValue(double value, double filteredValue) {
+    super();
+
+    Value = value;
+    UpdateTime = System.currentTimeMillis();
+  }
 }
