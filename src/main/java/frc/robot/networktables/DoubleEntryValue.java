@@ -5,17 +5,17 @@ public class DoubleEntryValue {
   /**
    * Raw Value from Network Table
    */
-  public double Value;
+  public double value;
 
   /** 
    * Optional Filtered Value
    */
-  public double FilteredValue;
+  public double filteredValue;
 
   /**
    * Time (in ms) of update
    */
-  public long UpdateTime;
+  public long updateTime;
 
   public DoubleEntryValue(double value) {
     this(value, value);
@@ -24,7 +24,7 @@ public class DoubleEntryValue {
   public DoubleEntryValue(double value, double filteredValue) {
     super();
 
-    Value = value;
-    UpdateTime = System.currentTimeMillis();
+    this.value = value;
+    this.updateTime = System.currentTimeMillis();
   }
 }
