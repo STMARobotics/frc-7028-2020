@@ -12,7 +12,7 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
 /**
- * ShootCommand
+ * Aims at the target and shoots once.
  */
 public class ShootCommand extends VisionCommandBase {
 
@@ -50,12 +50,12 @@ public class ShootCommand extends VisionCommandBase {
     noTarget = false;
     shot = false;
     pidController.reset();
+    highLimelightSubsystem.enable();
+    lowLimelightSubsystem.enable();
   }
 
   @Override
   public void execute() {
-    highLimelightSubsystem.enable();
-    lowLimelightSubsystem.enable();
     if (getTargetAcquired()) {
       shooterSubsystem.prepareToShoot(Units.metersToInches(highLimelightSubsystem.getDistanceToTarget()));
       aimShooter(highLimelightSubsystem);
@@ -92,7 +92,5 @@ public class ShootCommand extends VisionCommandBase {
     shooterSubsystem.stopShooter();
     indexerSubsystem.stopIndexer();
     driveTrainSubsystem.stop();
-    highLimelightSubsystem.disable();
-    lowLimelightSubsystem.disable();
   }
 }

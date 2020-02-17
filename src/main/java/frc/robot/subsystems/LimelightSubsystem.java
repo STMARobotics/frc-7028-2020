@@ -84,6 +84,7 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   private void update(final NetworkTable table, final String key, final NetworkTableEntry entry,
       final NetworkTableValue value, final int flags) {
 
+    boolean shouldFlush = false;
     long updateMs = 0;
     switch(key) {
 
@@ -104,10 +105,15 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
         updateMs = System.currentTimeMillis() - lastLatencyUpdate; //update for debugging data
 
         //we could maybe move these to a command that watches the subsystem, might be more consisent depending how often this is getting hit
+        // Flush NetworkTable to send LED mode and pipeline updates immediately
+        shouldFlush = (table.getEntry("ledMode").getDouble(0.0) != (enabled ? 0.0 : 1.0) || 
+          limelightNetworkTable.getEntry("pipeline").getDouble(0.0) != activeProfile.pipelineId);
+
         table.getEntry("ledMode").setDouble(enabled ? 0.0 : 1.0);
         table.getEntry("camMode").setDouble(enabled ? 0.0 : 1.0);
         limelightNetworkTable.getEntry("pipeline").setDouble(activeProfile.pipelineId);
       break;
+
       case ntTargetValid:
         var previousTargetValid = targetValid;
         targetValid = new DoubleEntryValue(value.getDouble());
@@ -121,6 +127,10 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
 
       NetworkTableInstance.getDefault().getTable("LimelightDebug").getSubTable(limelightConfig.getNetworkTableName())
         .getEntry(key + "_updateFrequencyMs").setNumber(updateFilterMap.get(key).calculate(updateMs));
+    }
+
+    if (shouldFlush)  {
+      NetworkTableInstance.getDefault().flush();
     }
   }
 
