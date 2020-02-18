@@ -14,7 +14,6 @@ import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -40,12 +39,9 @@ import frc.robot.Constants.LimeLightConstants;
 import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.PixyAssistCommand;
-import frc.robot.commands.RotateWheelCommand;
-import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TeleOperateCommand;
-import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -65,7 +61,6 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
-  private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
   private final LimelightSubsystem highLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
       .withNetworkTableName("limelight-high").withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
@@ -93,8 +88,6 @@ public class RobotContainer {
       driveTrainSubsystem);
   
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
-  private RotateWheelCommand rotateWheelCommand = new RotateWheelCommand(controlPanelSubsystem);
-  private SetColorCommand setColorCommand = new SetColorCommand(controlPanelSubsystem);
 
   public RobotContainer() {
     // Configure the button bindings
@@ -157,12 +150,6 @@ public class RobotContainer {
         .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(-1.0), indexerSubsystem))
         .whenReleased(() -> indexerSubsystem.runManually(0.0), indexerSubsystem);
 
-    new JoystickButton(operatorConsole, XboxController.Button.kX.value)
-        .whenHeld(rotateWheelCommand);
-
-    new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
-        .whenHeld(setColorCommand);
-
     new JoystickButton(operatorConsole, XboxController.Button.kBumperLeft.value)
         .whenPressed(() -> {
             highLimelightSubsystem.setProfile(Profile.NEAR);
@@ -194,15 +181,12 @@ public class RobotContainer {
             startPose,
             waypoints,
             endPose,
-            new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO, TrajectoryConstants.MAX_ACCELERATION_AUTO)
+            new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO / 6, TrajectoryConstants.MAX_ACCELERATION_AUTO / 3)
                 .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
                 .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)));
 
       var autoCommandGroup = setPose
-          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
-          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
-          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
-          // .andThen(trajectoryCommand)
+        .andThen(trajectoryCommand);
           // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
           // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
           // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
@@ -231,11 +215,6 @@ public class RobotContainer {
     shooterSubsystem.addDashboardWidgets(shooterLayout);
     shooterLayout.add(shooterSubsystem);
 
-    var controlPanelLayout = Dashboard.subsystemsTab.getLayout("Control Panel", BuiltInLayouts.kGrid)
-        .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 5)).withSize(2, 5).withPosition(6, 0);
-    controlPanelSubsystem.addDashboardWidgets(controlPanelLayout);
-    controlPanelLayout.add(controlPanelSubsystem);
-
     var highLimelightLayout = Dashboard.limelightsTab.getLayout("High Limelight", BuiltInLayouts.kList)
         .withSize(2, 3).withPosition(0, 0);
     highLimelightSubsystem.addDashboardWidgets(highLimelightLayout);
@@ -251,17 +230,6 @@ public class RobotContainer {
     Dashboard.commandsTab.add(indexCommand).withSize(2, 1).withPosition(0, 0);
     Dashboard.commandsTab.add(shootCommand).withSize(2, 1).withPosition(0, 1);
     Dashboard.commandsTab.add(teleDriveCommand).withSize(2, 1).withPosition(2, 0);
-
-    var rotateWheelLayout = 
-        Dashboard.commandsTab.getLayout("Rotate Wheel", BuiltInLayouts.kList).withSize(2, 2).withPosition(4, 0);
-    rotateWheelCommand.addDashboardWidgets(rotateWheelLayout);
-    rotateWheelLayout.add(rotateWheelCommand);
-    
-    var setColorLayout =
-        Dashboard.commandsTab.getLayout("Set Color", BuiltInLayouts.kList).withSize(2, 2).withPosition(6, 0);
-    setColorCommand.addDashboardWidgets(setColorLayout);
-    setColorLayout.add(setColorCommand);
-    
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {

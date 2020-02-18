@@ -12,8 +12,8 @@ public class PixyAssistCommand extends CommandBase{
   private final DriveTrainSubsystem driveTrainSubsystem;
 
   private PixyVisionVariables pixyData;
-  private static final int lower = 92; 
-  private static final int upper = 162;
+  private static final int lower = 102; 
+  private static final int upper = 152;
   private static final double speed = 0.6;
 
   public PixyAssistCommand(DriveTrainSubsystem driveTrainSubsystem, PixyVisionSubsystem pixy) {
@@ -48,13 +48,13 @@ public class PixyAssistCommand extends CommandBase{
       SmartDashboard.putNumber("Object Area", pixyData.area);
     }else if(lower>pixyData.xCoord){
       //object is to the left of the bot
-      driveTrainSubsystem.tankDrive((speed/3), speed, false);//turn left until object is within the safe zone
+      driveTrainSubsystem.tankDrive((speed/5), speed, false);//turn left until object is within the safe zone
       pixyData = pixy.getCoordinates();
       SmartDashboard.putString("Pixy Command", "Left");
       SmartDashboard.putNumber("Object Area", pixyData.  area);
     }else if(pixyData.xCoord>upper){
       //object is to the right of the bot
-      driveTrainSubsystem.tankDrive(speed, (speed/3), false);//turn right until object is within the safe zone
+      driveTrainSubsystem.tankDrive(speed, (speed/5), false);//turn right until object is within the safe zone
       pixyData = pixy.getCoordinates();
       SmartDashboard.putString("Pixy Command", "Right");
       SmartDashboard.putNumber("Object Area", pixyData.area);

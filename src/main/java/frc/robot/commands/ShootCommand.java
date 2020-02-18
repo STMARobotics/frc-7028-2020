@@ -41,7 +41,7 @@ public class ShootCommand extends CommandBase {
     addRequirements(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem,
         driveTrainSubsystem);
 
-    pidController.setTolerance(.03);
+    pidController.setTolerance(.1);
   }
 
   @Override
@@ -62,7 +62,7 @@ public class ShootCommand extends CommandBase {
         indexerSubsystem.shoot();
         shot = true;
       } else {
-        indexerSubsystem.prepareToShoot();
+        indexerSubsystem.stopIndexer();
       }
     } else {
       noTarget = true;

@@ -125,7 +125,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private void handleEncoderEntry(EntryNotification notification) {
     var entry = notification.getEntry();
     if(entry.getBoolean(true) && (!encodersAvailable || !useEncoders)) {
-      useEncoders = false; // TODO allow turning on encoder drive
+      useEncoders = true;
       enableEncoders();
     } else if (!entry.getBoolean(true)) {
       useEncoders = false;
