@@ -12,8 +12,8 @@ public class PixyAssistCommand extends CommandBase{
   private final DriveTrainSubsystem driveTrainSubsystem;
 
   private PixyVisionVariables pixyData;
-  private static final int lower = 102; 
-  private static final int upper = 152;
+  private static final int lower = 107; 
+  private static final int upper = 147;
   private static final double speed = 0.6;
 
   public PixyAssistCommand(DriveTrainSubsystem driveTrainSubsystem, PixyVisionSubsystem pixy) {

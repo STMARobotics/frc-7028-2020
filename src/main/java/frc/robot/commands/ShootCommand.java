@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import static frc.robot.Constants.AimConstants.kD;
-import static frc.robot.Constants.AimConstants.kF;
 import static frc.robot.Constants.AimConstants.kP;
 
 import edu.wpi.first.wpilibj.controller.PIDController;
@@ -56,15 +55,26 @@ public class ShootCommand extends VisionCommandBase {
 
   @Override
   public void execute() {
-    if (getTargetAcquired()) {
-      shooterSubsystem.prepareToShoot(Units.metersToInches(highLimelightSubsystem.getDistanceToTarget()));
-      aimShooter(highLimelightSubsystem);
-      if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
-        indexerSubsystem.shoot();
-        shot = true;
-      } else {
-        indexerSubsystem.prepareToShoot();
-      }
+    if (highLimelightSubsystem.getTargetAcquired() || lowLimelightSubsystem.getTargetAcquired()) {
+      if (highLimelightSubsystem.getTargetAcquired()) {
+        shooterSubsystem.prepareToShoot(Units.metersToInches(highLimelightSubsystem.getDistanceToTarget()));
+        aimShooter(highLimelightSubsystem);
+        if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
+          indexerSubsystem.shoot();
+          shot = true;
+        } else {
+          indexerSubsystem.stopIndexer();
+        }
+      } else if (lowLimelightSubsystem.getTargetAcquired()) {
+        shooterSubsystem.prepareToShoot(Units.metersToInches(lowLimelightSubsystem.getDistanceToTarget()));
+        aimShooter(lowLimelightSubsystem);
+        if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
+          indexerSubsystem.shoot();
+          shot = true;
+        } else {
+          indexerSubsystem.stopIndexer();
+        }
+      } 
     } else {
       noTarget = true;
       driveTrainSubsystem.arcadeDrive(0.0, 0.0, false);
@@ -73,12 +83,12 @@ public class ShootCommand extends VisionCommandBase {
 
   private void aimShooter(LimelightSubsystem selectedLimelightSubsystem) {
     double targetX = selectedLimelightSubsystem.getTargetX();
-    double rotationSpeed = -pidController.calculate(targetX / selectedLimelightSubsystem.getMaxX());
-    if (rotationSpeed > .07) {
-      rotationSpeed += kF;
-    } else if (rotationSpeed < -.07) {
-      rotationSpeed -= kF;
-    }
+    double rotationSpeed = -pidController.calculate(targetX / 5);
+    // if (rotationSpeed > .07) {
+    //   rotationSpeed += kF;
+    // } else if (rotationSpeed < -.07) {
+    //   rotationSpeed -= kF;
+    // }
     driveTrainSubsystem.arcadeDrive(0.0, rotationSpeed, false);
   }
 
