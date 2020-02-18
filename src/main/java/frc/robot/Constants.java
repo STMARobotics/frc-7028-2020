@@ -137,7 +137,7 @@ public final class Constants {
     public static final double LOW_MOUNT_HEIGHT = Units.inchesToMeters(8.125);
 
     /** Distance Limelight is mounted from the front frame of the bot */
-    public static final double HIGH_DISTANCE_FROM_FRONT = Units.inchesToMeters(19.375);
+    public static final double HIGH_DISTANCE_FROM_FRONT = Units.inchesToMeters(16.5);
     public static final double LOW_DISTANCE_FROM_FRONT = Units.inchesToMeters(2.0);
 
     /** Distance Limelight is mounted from the centerline of the bot */
@@ -176,10 +176,10 @@ public final class Constants {
     public static final int DEVICE_ID_SHOOTER_MASTER = 2;
     public static final int DEVICE_ID_SHOOTER_SLAVE = 1;
 
-    public static final int CLOSED_LOOP_ERROR_RANGE = 8;
+    public static final int CLOSED_LOOP_ERROR_RANGE = 15;
 
     public static final double kS = 0.0763;
-    public static final double kV = 0.14;
+    public static final double kV = 0.137;
     public static final double kA = 0.0614;
 
   }
