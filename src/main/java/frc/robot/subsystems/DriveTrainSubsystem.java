@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SlewRateLimiter;
 import edu.wpi.first.wpilibj.controller.RamseteController;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
@@ -59,8 +58,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
   private final WPI_VictorSPX rightSlaveOne = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE_ONE);
   private final WPI_VictorSPX rightSlaveTwo = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE_TWO);
-
-  private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
 
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);
   private final DifferentialDriveOdometry differentialDriveOdometry;
@@ -109,8 +106,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
     leftSlaveTwo.follow(leftMaster);
     rightSlaveOne.follow(rightMaster);
     rightSlaveTwo.follow(rightMaster);
-
-    differentialDrive.setRightSideInverted(false);
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
@@ -130,7 +125,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
   private void handleEncoderEntry(EntryNotification notification) {
     var entry = notification.getEntry();
     if(entry.getBoolean(true) && (!encodersAvailable || !useEncoders)) {
-      useEncoders = false; // TODO allow turning on encoder drive
+      useEncoders = true;
       enableEncoders();
     } else if (!entry.getBoolean(true)) {
       useEncoders = false;
@@ -186,21 +181,22 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void arcadeDrive(double speed, double rotation, boolean useSquares) {
+    var xSpeed = speed;
+    var zRotation = rotation;
+    if (useSquares) {
+      xSpeed *= Math.abs(xSpeed);
+      zRotation *= Math.abs(zRotation);
+    }
+    xSpeed = speedRateLimiter.calculate(safeClamp(speed));
+    zRotation = -rotationRateLimiter.calculate(safeClamp(rotation));
+    xSpeed *= MAX_SPEED_ARCADE;
+    zRotation *= MAX_ANGULAR_VEL_ARCADE;
+    var wheelSpeeds = DRIVE_KINEMATICS.toWheelSpeeds(new ChassisSpeeds(xSpeed, 0.0, zRotation));
     if(useEncoders) {
-      var xSpeed = speed;
-      var zRotation = rotation;
-      if (useSquares) {
-        xSpeed *= Math.abs(xSpeed);
-        zRotation *= Math.abs(zRotation);
-      }
-      xSpeed = speedRateLimiter.calculate(safeClamp(speed));
-      zRotation = -rotationRateLimiter.calculate(safeClamp(rotation));
-      xSpeed *= MAX_SPEED_ARCADE;
-      zRotation *= MAX_ANGULAR_VEL_ARCADE;
-      var wheelSpeeds = DRIVE_KINEMATICS.toWheelSpeeds(new ChassisSpeeds(xSpeed, 0.0, zRotation));
       tankDriveVelocity(wheelSpeeds.leftMetersPerSecond, wheelSpeeds.rightMetersPerSecond);
     } else {
-      differentialDrive.arcadeDrive(speed, rotation, useSquares);
+      leftMaster.set(FEED_FORWARD.calculate(wheelSpeeds.leftMetersPerSecond) / 12);
+      rightMaster.set(FEED_FORWARD.calculate(wheelSpeeds.rightMetersPerSecond) / 12);
     }
   }
 
@@ -213,16 +209,17 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param useSquares if set, decreases input sensitivity at low speeds
    */
   public void tankDrive(double leftSpeed, double rightSpeed, boolean useSquares) {
+    var xLeftSpeed = safeClamp(leftSpeed) * MAX_SPEED_ARCADE;
+    var xRightSpeed = safeClamp(rightSpeed) * MAX_SPEED_ARCADE;
+    if (useSquares) {
+      xLeftSpeed *= Math.abs(xLeftSpeed);
+      xRightSpeed *= Math.abs(xRightSpeed);
+    }
     if(useEncoders) {
-      var xLeftSpeed = safeClamp(leftSpeed) * MAX_SPEED_ARCADE;
-      var xRightSpeed = safeClamp(rightSpeed) * MAX_SPEED_ARCADE;
-      if (useSquares) {
-        xLeftSpeed *= Math.abs(xLeftSpeed);
-        xRightSpeed *= Math.abs(xRightSpeed);
-      }
       tankDriveVelocity(xLeftSpeed, xRightSpeed);
     } else {
-      differentialDrive.tankDrive(leftSpeed, rightSpeed, useSquares);
+      leftMaster.set(FEED_FORWARD.calculate(xLeftSpeed) / 12);
+      rightMaster.set(FEED_FORWARD.calculate(xRightSpeed) / 12);
     }
   }
 
@@ -250,7 +247,6 @@ public class DriveTrainSubsystem extends SubsystemBase {
         metersPerSecToEdgesPerDecisec(rightVelocity),
         DemandType.ArbitraryFeedForward,
         rightFeedForwardVolts / 12);
-    differentialDrive.feed();
   }
 
   /**
