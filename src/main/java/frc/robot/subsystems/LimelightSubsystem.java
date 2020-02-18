@@ -102,7 +102,9 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
       break;
 
       case ntPipelineLatency:
-        updateMs = System.currentTimeMillis() - lastLatencyUpdate; //update for debugging data
+        var previousLatencyUpdate = lastLatencyUpdate;
+        lastLatencyUpdate = System.currentTimeMillis();
+        updateMs = lastLatencyUpdate - previousLatencyUpdate; //update for debugging data
 
         //we could maybe move these to a command that watches the subsystem, might be more consisent depending how often this is getting hit
         // Flush NetworkTable to send LED mode and pipeline updates immediately
