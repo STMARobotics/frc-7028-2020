@@ -92,7 +92,7 @@ public final class Constants {
     public static final double SLOW_MODE_SPEED_MULTIPLIER = .6;
     public static final double SLOW_MODE_ROTATION_MULTIPLIER = .9;
 
-    public static final double DEADBAND_HIGH = 0.09;
+    public static final double DEADBAND_HIGH = 0.11;
     public static final double DEADBAND_LOW = -DEADBAND_HIGH;
   }
 
@@ -104,7 +104,7 @@ public final class Constants {
     public static final double MAX_ANGULAR_VEL_ARCADE = Units.degreesToRadians(360);
 
     // Max rate of change for speed per second
-    public static final double SPEED_RATE_LIMIT_ARCADE = 1.5;
+    public static final double SPEED_RATE_LIMIT_ARCADE = 2.5;
 
     // Max rate of change for rotation per second
     public static final double ROTATE_RATE_LIMIT_ARCADE = 3.0;
@@ -137,7 +137,7 @@ public final class Constants {
     public static final double LOW_MOUNT_HEIGHT = Units.inchesToMeters(8.125);
 
     /** Distance Limelight is mounted from the front frame of the bot */
-    public static final double HIGH_DISTANCE_FROM_FRONT = Units.inchesToMeters(19.375);
+    public static final double HIGH_DISTANCE_FROM_FRONT = Units.inchesToMeters(16.5);
     public static final double LOW_DISTANCE_FROM_FRONT = Units.inchesToMeters(2.0);
 
     /** Distance Limelight is mounted from the centerline of the bot */
@@ -176,10 +176,10 @@ public final class Constants {
     public static final int DEVICE_ID_SHOOTER_MASTER = 2;
     public static final int DEVICE_ID_SHOOTER_SLAVE = 1;
 
-    public static final int CLOSED_LOOP_ERROR_RANGE = 8;
+    public static final int CLOSED_LOOP_ERROR_RANGE = 15;
 
     public static final double kS = 0.0763;
-    public static final double kV = 0.14;
+    public static final double kV = 0.137;
     public static final double kA = 0.0614;
 
   }

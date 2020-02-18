@@ -23,7 +23,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void intake() {
     if (isIndexerReady.get()) {
-      intakeMotor.set(0.2);
+      intakeMotor.set(0.3);
     } else {
       stopIntake();
     }

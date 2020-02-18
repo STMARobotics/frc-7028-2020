@@ -86,6 +86,14 @@ public class IndexerSubsystem extends SubsystemBase {
     }
   }
 
+  public void prepareToShoot() {
+    if (fullSensor.get()) {
+      belt.set(BELT_RUN_SPEED);
+    } else {
+      belt.set(0.0);
+    }
+  }
+
   public void shoot() {
     belt.set(1.0);
     shooting = true;
@@ -98,6 +106,10 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public void stopIndexer() {
     stop();
+  }
+
+  public boolean isFull() {
+    return !fullSensor.get();
   }
   
 }
