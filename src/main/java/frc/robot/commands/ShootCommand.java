@@ -62,7 +62,7 @@ public class ShootCommand extends CommandBase {
         indexerSubsystem.shoot();
         shot = true;
       } else {
-        indexerSubsystem.stopIndexer();
+        indexerSubsystem.prepareToShoot();
       }
     } else {
       noTarget = true;

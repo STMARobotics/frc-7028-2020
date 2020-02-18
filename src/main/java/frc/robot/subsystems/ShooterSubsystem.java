@@ -33,17 +33,18 @@ public class ShooterSubsystem extends SubsystemBase {
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV, ShooterConstants.kA);
 
   public ShooterSubsystem() {
-    shooterPIDController.setP(.0004);
+    shooterMaster.restoreFactoryDefaults();
+    shooterSlave.restoreFactoryDefaults();
+
+    shooterPIDController.setP(0.0005);
     shooterPIDController.setI(0);
     shooterPIDController.setD(0);
     shooterPIDController.setIZone(400);
     shooterPIDController.setFF(0);
     shooterPIDController.setOutputRange(-1.0, 1.0);
 
-    shooterMaster.restoreFactoryDefaults();
     shooterMaster.setIdleMode(IdleMode.kCoast);
 
-    shooterSlave.restoreFactoryDefaults();
     shooterSlave.setIdleMode(IdleMode.kCoast);
     shooterSlave.follow(shooterMaster, true);
 
@@ -56,19 +57,19 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void prepareToShoot(double distanceToTarget) {
-    // targetSpeed = (2.32 * (Math.pow(distanceToTarget, 4))) - (.00241 * (Math.pow(distanceToTarget, 3)))
-    //     + (.9092 * (Math.pow(distanceToTarget, 2))) - (144.54 * distanceToTarget) + 10842;
-    // targetSpeed = 2900;
     if (distanceToTarget > 150) {
-      targetSpeed = 2.857 * distanceToTarget + 2154.761;
+      targetSpeed = 2.600 * distanceToTarget + 2154.761;
     } else if (distanceToTarget <= 150) {
-      targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 75.833 * distanceToTarget + 8350;
+      targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 75.833 * distanceToTarget + 8420;
     }
     shooterPIDController.setReference(
         targetSpeed,
         ControlType.kVelocity,
         0,
-        motorFeedForward.calculate(targetSpeed / 60));
+        motorFeedForward.calculate(targetSpeed / 60, (targetSpeed - shooterEncoder.getVelocity()) / 60));
+    // SmartDashboard.putNumber("Velocity", shooterEncoder.getVelocity());
+    // SmartDashboard.putNumber("Power", shooterMaster.get());
+    // SmartDashboard.putNumber("P Value", shooterPIDController.getP());
   }
 
   public boolean isReadyToShoot() {
