@@ -38,10 +38,7 @@ public class EncoderTest implements ITestable {
       //if current reading is less than previous encoder is out of phase
       if (currentEncoderReading < encoderReading)
       {
-        var failure = new TestResult();
-        failure.success = false;
-        failure.message = testName + ": moving forward, encoder is out of phase";
-        result.add(failure);
+        result.add(new TestResult(testName + ": moving forward, encoder is out of phase"));
       }
     }
     else if (iterations - (maxIterations / 2) < 10) //deadzone for 10 iterations
@@ -54,18 +51,12 @@ public class EncoderTest implements ITestable {
 
       if (currentEncoderReading > encoderReading)
       {
-        var failure = new TestResult();
-        failure.success = false;
-        failure.message = testName + ": moving backward, encoder is out of phase";
-        result.add(failure);
+        result.add(new TestResult(testName + ": moving backward, encoder is out of phase"));
       }
     }
     else //we hit our max iterations, report a success
     {
-      var success = new TestResult();
-      success.success = true;
-      success.message = testName + " test succeeded";
-      result.add(success);
+      result.add(new TestResult(true, testName + " test succeeded"));
     }
 
     if (currentEncoderReading == encoderReading) {
@@ -74,10 +65,7 @@ public class EncoderTest implements ITestable {
 
     if (iterationsUnchanged > 25)
     {
-      var failure = new TestResult();
-      failure.success = false;
-      failure.message = testName + ": encoder is unchanged after 25 iterations, failing test";
-      result.add(failure);
+      result.add(new TestResult(testName + ": encoder is unchanged after 25 iterations, failing test"));
     }
 
     encoderReading = currentEncoderReading;
@@ -96,5 +84,4 @@ public class EncoderTest implements ITestable {
     
     return isFinished;
   }
-
 }

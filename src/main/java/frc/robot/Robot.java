@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.testMode.EncoderTest;
 import frc.robot.testMode.ITestable;
+import frc.robot.testMode.LimelightTest;
 import frc.robot.testMode.TestResult;
 
 public class Robot extends TimedRobot {
@@ -82,6 +83,8 @@ public class Robot extends TimedRobot {
 
     testables.add(new EncoderTest(robotContainer.driveTrainSubsystem.leftMaster, 200, "Left Encoder"));
     testables.add(new EncoderTest(robotContainer.driveTrainSubsystem.rightMaster, 200, "Right Encoder"));
+    testables.add(new LimelightTest(robotContainer.highLimelightSubsystem));
+    testables.add(new LimelightTest(robotContainer.lowLimelightSubsystem));
   }
 
   @Override

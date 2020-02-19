@@ -33,7 +33,7 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   private final static String ntTargetY = "ty";
 
   private final NetworkTable limelightNetworkTable;
-  private final LimelightConfig limelightConfig;
+  public final LimelightConfig limelightConfig;
 
   private long lastLatencyUpdate = System.currentTimeMillis();
 
