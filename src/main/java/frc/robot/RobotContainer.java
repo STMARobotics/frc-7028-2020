@@ -131,14 +131,16 @@ public class RobotContainer {
 
     var pixyHeldCommand = new PixyAssistCommand(driveTrainSubsystem, pixyVision)
         .andThen(new ParallelCommandGroup(
-            new RunCommand(intakeSubsystem::intake, intakeSubsystem),
-            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.5)));
+            new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(.5),
+            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
+        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
+        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))));
     
     var pixyReleaseCommand = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
 
     new JoystickButton(driverController, XboxController.Button.kX.value)
-        .whenHeld(pixyHeldCommand)
+        .whileHeld(pixyHeldCommand)
         .whenReleased(pixyReleaseCommand);
 
     // Operator
