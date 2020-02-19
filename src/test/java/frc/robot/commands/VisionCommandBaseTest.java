@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -41,7 +41,7 @@ public class VisionCommandBaseTest {
     var actual = command.getTargetAcquired();
 
     //assert
-    assertFalse("Target shouldn't be acquired with null values", actual);
+    assertNull("Target shouldn't be acquired with null values", actual);
   }
 
   @Test
@@ -54,7 +54,7 @@ public class VisionCommandBaseTest {
     var actual = command.getTargetAcquired();
 
     //assert
-    assertTrue("Target should be acquired with one value", actual);
+    assertNotNull("Target should be acquired with one value", actual);
   }
 
   @Test
@@ -67,7 +67,7 @@ public class VisionCommandBaseTest {
     var actual = command.getTargetAcquired();
 
     //assert
-    assertTrue("Target should be acquired with 500 ms delay in effect", actual);
+    assertNotNull("Target should be acquired with 500 ms delay in effect", actual);
   }
 
   @Test
@@ -83,6 +83,6 @@ public class VisionCommandBaseTest {
     var actual = command.getTargetAcquired();
 
     //assert
-    assertFalse("Target should not be acquired with last value 1 second old", actual);
+    assertNull("Target should not be acquired with last value 1 second old", actual);
   }
 }

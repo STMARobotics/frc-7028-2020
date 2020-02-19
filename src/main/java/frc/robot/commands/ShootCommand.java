@@ -75,7 +75,7 @@ public class ShootCommand extends VisionCommandBase {
   }
 
   private void aimShooter(ILimelightSubsystem selectedLimelightSubsystem) {
-    double targetX = selectedLimelightSubsystem.getTargetX();
+    double targetX = selectedLimelightSubsystem.getFilteredX(); //.getTargetX();
     double rotationSpeed = -pidController.calculate(targetX / 5);
     // if (rotationSpeed > .07) {
     //   rotationSpeed += kF;
