@@ -31,7 +31,7 @@ public class ShootCommand extends VisionCommandBase {
       LimelightSubsystem highLimelightSubsystem, LimelightSubsystem lowLimelightSubsystem,
       DriveTrainSubsystem driveTrainSubsystem) {
 
-    super(highLimelightSubsystem, lowLimelightSubsystem);
+    super(100, highLimelightSubsystem, lowLimelightSubsystem);
 
     this.shooterSubsystem = shooterSubsystem;
     this.indexerSubsystem = indexerSubsystem;
