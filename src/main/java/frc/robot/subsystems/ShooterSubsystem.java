@@ -36,11 +36,8 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterMaster.restoreFactoryDefaults();
     shooterSlave.restoreFactoryDefaults();
 
-    shooterPIDController.setP(0.0005);
-    shooterPIDController.setI(0);
-    shooterPIDController.setD(0);
+    shooterPIDController.setP(ShooterConstants.kP);
     shooterPIDController.setIZone(400);
-    shooterPIDController.setFF(0);
     shooterPIDController.setOutputRange(-1.0, 1.0);
 
     shooterMaster.setIdleMode(IdleMode.kCoast);
@@ -48,8 +45,7 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterSlave.setIdleMode(IdleMode.kCoast);
     shooterSlave.follow(shooterMaster, true);
 
-    shooterMaster.setClosedLoopRampRate(.2);
-    shooterSlave.setClosedLoopRampRate(.2);
+    shooterMaster.setClosedLoopRampRate(ShooterConstants.RAMP_RATE);
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
