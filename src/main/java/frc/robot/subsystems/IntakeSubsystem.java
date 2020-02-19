@@ -18,19 +18,23 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public IntakeSubsystem(Supplier<Boolean> isIndexerReady) {
     this.isIndexerReady = isIndexerReady;
+    intakeMotor.configFactoryDefault();
   }
 
   public void intake() {
-    isIndexerReady.get();
     if (isIndexerReady.get()) {
-      intakeMotor.set(1.0);
+      intakeMotor.set(0.3);
     } else {
-      intakeMotor.set(0.0);
+      stopIntake();
     }
   }
 
   public void reverse() {
-    intakeMotor.set(-1.0);
+    intakeMotor.set(-0.5);
+  }
+
+  public void stopIntake() {
+    intakeMotor.set(0.0);
   }
   
 }

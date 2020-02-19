@@ -27,13 +27,16 @@ public class ShooterSubsystem extends SubsystemBase {
   private final CANPIDController shooterPIDController = shooterMaster.getPIDController();
   private final CANEncoder shooterEncoder = shooterMaster.getEncoder();
 
-  private int targetSpeed;
+  private double targetSpeed;
 
   private final SimpleMotorFeedforward motorFeedForward = 
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV, ShooterConstants.kA);
 
   public ShooterSubsystem() {
-    shooterPIDController.setP(.0004);
+    shooterMaster.restoreFactoryDefaults();
+    shooterSlave.restoreFactoryDefaults();
+
+    shooterPIDController.setP(0.0005);
     shooterPIDController.setI(0);
     shooterPIDController.setD(0);
     shooterPIDController.setIZone(400);
@@ -41,8 +44,8 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterPIDController.setOutputRange(-1.0, 1.0);
 
     shooterMaster.setIdleMode(IdleMode.kCoast);
-    shooterSlave.setIdleMode(IdleMode.kCoast);
 
+    shooterSlave.setIdleMode(IdleMode.kCoast);
     shooterSlave.follow(shooterMaster, true);
 
     shooterMaster.setClosedLoopRampRate(.2);
@@ -54,12 +57,19 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void prepareToShoot(double distanceToTarget) {
-    targetSpeed = 2800;
+    if (distanceToTarget > 150) {
+      targetSpeed = 2.600 * distanceToTarget + 2154.761;
+    } else if (distanceToTarget <= 150) {
+      targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 75.833 * distanceToTarget + 8420;
+    }
     shooterPIDController.setReference(
         targetSpeed,
         ControlType.kVelocity,
         0,
-        motorFeedForward.calculate(targetSpeed / 60, (targetSpeed / 60 - shooterEncoder.getVelocity() / 60)) / .02);
+        motorFeedForward.calculate(targetSpeed / 60, (targetSpeed - shooterEncoder.getVelocity()) / 60));
+    // SmartDashboard.putNumber("Velocity", shooterEncoder.getVelocity());
+    // SmartDashboard.putNumber("Power", shooterMaster.get());
+    // SmartDashboard.putNumber("P Value", shooterPIDController.getP());
   }
 
   public boolean isReadyToShoot() {

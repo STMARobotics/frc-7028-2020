@@ -40,22 +40,22 @@ public final class Constants {
     public static final double WHEEL_CIRCUMFERENCE_INCHES = WHEEL_DIAMETER_INCHES * Math.PI;
     public static final double WHEEL_CIRCUMFERENCE_METERS = Units.inchesToMeters(WHEEL_DIAMETER_INCHES) * Math.PI;
 
-    public static final double TRACK_WIDTH_METERS = 0.555625;
+    public static final double TRACK_WIDTH_METERS = 0.8860688499115555;
     public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(
         TRACK_WIDTH_METERS);
 
     /** Voltage needed to overcome the motor’s static friction. kS */
-    public static final double kS = 0.829;
+    public static final double kS = 0.747;
 
     /** Voltage needed to hold (or "cruise") at a given constant velocity. kV */
-    public static final double kV = 3.04;
+    public static final double kV = 2.98;
 
     /** Voltage needed to induce a given acceleration in the motor shaft. kA */
-    public static final double kA = 0.676;
+    public static final double kA = 0.474;
 
     public static final SimpleMotorFeedforward FEED_FORWARD = new SimpleMotorFeedforward(kS, kV, kA);
 
-    public static final double kP = 0.75;
+    public static final double kP = 0.154;
 
     public static final double CLOSED_LOOP_RAMP = .2;
     public static final double OPEN_LOOP_RAMP = .25;
@@ -92,7 +92,7 @@ public final class Constants {
     public static final double SLOW_MODE_SPEED_MULTIPLIER = .6;
     public static final double SLOW_MODE_ROTATION_MULTIPLIER = .9;
 
-    public static final double DEADBAND_HIGH = 0.09;
+    public static final double DEADBAND_HIGH = 0.11;
     public static final double DEADBAND_LOW = -DEADBAND_HIGH;
   }
 
@@ -104,7 +104,7 @@ public final class Constants {
     public static final double MAX_ANGULAR_VEL_ARCADE = Units.degreesToRadians(360);
 
     // Max rate of change for speed per second
-    public static final double SPEED_RATE_LIMIT_ARCADE = 1.5;
+    public static final double SPEED_RATE_LIMIT_ARCADE = 2.5;
 
     // Max rate of change for rotation per second
     public static final double ROTATE_RATE_LIMIT_ARCADE = 3.0;
@@ -112,8 +112,9 @@ public final class Constants {
 
   public static final class AimConstants {
 
-    public static final double kP = 0.50;
-    public static final double kD = 0.0;
+    public static final double kP = 1.1;
+    public static final double kD = 0.3;
+    public static final double kF = 0.25;
 
     public static final double RANGE_HIGH = 1;
     public static final double RANGE_LOW = -1;
@@ -129,19 +130,19 @@ public final class Constants {
     public static final double PIPELINE_INDEX_FAR = 1.0;
 
     /** Height of the target in meters */
-    public static final double TARGET_HEIGHT = Units.inchesToMeters(98.25);
+    public static final double TARGET_HEIGHT = Units.inchesToMeters(80.875);
 
     /** Height of the limelight on the bot in meters */
-    public static final double HIGH_MOUNT_HEIGHT = Units.inchesToMeters(23.75);
+    public static final double HIGH_MOUNT_HEIGHT = Units.inchesToMeters(22.375);
     public static final double LOW_MOUNT_HEIGHT = Units.inchesToMeters(8.125);
 
     /** Distance Limelight is mounted from the front frame of the bot */
-    public static final double HIGH_DISTANCE_FROM_FRONT = Units.inchesToMeters(19.375);
+    public static final double HIGH_DISTANCE_FROM_FRONT = Units.inchesToMeters(16.5);
     public static final double LOW_DISTANCE_FROM_FRONT = Units.inchesToMeters(2.0);
 
     /** Distance Limelight is mounted from the centerline of the bot */
-    public static final double HIGH_DISTANCE_FROM_CENTER = Units.inchesToMeters(42);
-    public static final double LOW_DISTANCE_FROM_CENTER = Units.inchesToMeters(43);
+    public static final double HIGH_DISTANCE_FROM_CENTER = Units.inchesToMeters(0);
+    public static final double LOW_DISTANCE_FROM_CENTER = Units.inchesToMeters(7.125);
 
     /** Angle of the limelight in degrees */
     public static final double HIGH_MOUNT_ANGLE = 20.0;
@@ -175,10 +176,10 @@ public final class Constants {
     public static final int DEVICE_ID_SHOOTER_MASTER = 2;
     public static final int DEVICE_ID_SHOOTER_SLAVE = 1;
 
-    public static final int CLOSED_LOOP_ERROR_RANGE = 150;
+    public static final int CLOSED_LOOP_ERROR_RANGE = 15;
 
     public static final double kS = 0.0763;
-    public static final double kV = 0.13;
+    public static final double kV = 0.137;
     public static final double kA = 0.0614;
 
   }
