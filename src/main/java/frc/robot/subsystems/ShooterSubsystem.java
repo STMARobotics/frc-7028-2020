@@ -46,6 +46,8 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterSlave.follow(shooterMaster, true);
 
     shooterMaster.setClosedLoopRampRate(ShooterConstants.RAMP_RATE);
+    shooterMaster.burnFlash();
+    shooterSlave.burnFlash();
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
