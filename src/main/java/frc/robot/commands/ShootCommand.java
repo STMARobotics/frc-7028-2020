@@ -6,6 +6,7 @@ import static frc.robot.Constants.AimConstants.kP;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.util.Units;
 import frc.robot.subsystems.DriveTrainSubsystem;
+import frc.robot.subsystems.ILimelightSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -30,7 +31,7 @@ public class ShootCommand extends VisionCommandBase {
       LimelightSubsystem highLimelightSubsystem, LimelightSubsystem lowLimelightSubsystem,
       DriveTrainSubsystem driveTrainSubsystem) {
 
-    super(highLimelightSubsystem);
+    super(highLimelightSubsystem, lowLimelightSubsystem);
 
     this.shooterSubsystem = shooterSubsystem;
     this.indexerSubsystem = indexerSubsystem;
@@ -55,33 +56,25 @@ public class ShootCommand extends VisionCommandBase {
 
   @Override
   public void execute() {
-    if (highLimelightSubsystem.getTargetAcquired() || lowLimelightSubsystem.getTargetAcquired()) {
-      if (highLimelightSubsystem.getTargetAcquired()) {
-        shooterSubsystem.prepareToShoot(Units.metersToInches(highLimelightSubsystem.getDistanceToTarget()));
-        aimShooter(highLimelightSubsystem);
+
+    var limelightWithTarget = getTargetAcquired();
+
+    if (limelightWithTarget != null) {
+        shooterSubsystem.prepareToShoot(Units.metersToInches(limelightWithTarget.getDistanceToTarget()));
+        aimShooter(limelightWithTarget);
         if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
           indexerSubsystem.shoot();
           shot = true;
         } else {
           indexerSubsystem.stopIndexer();
         }
-      } else if (lowLimelightSubsystem.getTargetAcquired()) {
-        shooterSubsystem.prepareToShoot(Units.metersToInches(lowLimelightSubsystem.getDistanceToTarget()));
-        aimShooter(lowLimelightSubsystem);
-        if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
-          indexerSubsystem.shoot();
-          shot = true;
-        } else {
-          indexerSubsystem.stopIndexer();
-        }
-      } 
     } else {
       noTarget = true;
       driveTrainSubsystem.arcadeDrive(0.0, 0.0, false);
     }
   }
 
-  private void aimShooter(LimelightSubsystem selectedLimelightSubsystem) {
+  private void aimShooter(ILimelightSubsystem selectedLimelightSubsystem) {
     double targetX = selectedLimelightSubsystem.getTargetX();
     double rotationSpeed = -pidController.calculate(targetX / 5);
     // if (rotationSpeed > .07) {

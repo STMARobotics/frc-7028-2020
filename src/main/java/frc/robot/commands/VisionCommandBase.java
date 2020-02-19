@@ -1,7 +1,5 @@
 package frc.robot.commands;
 
-import java.util.Arrays;
-
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.ILimelightSubsystem;
@@ -15,7 +13,7 @@ public class VisionCommandBase extends CommandBase {
    * @param limelights
    */
   public VisionCommandBase(ILimelightSubsystem... limelights) {
-    this(500, limelights);
+    this(100, limelights);
   }
 
   public VisionCommandBase(int delayMs, ILimelightSubsystem... limelights) {
@@ -29,24 +27,25 @@ public class VisionCommandBase extends CommandBase {
    * Returns true if tv == 1.0, once acquired delays returning false for configured amount of time
    * @return
    */
-  public boolean getTargetAcquired() {
-    return Arrays.stream(limelights).anyMatch(limelight -> {
+  public ILimelightSubsystem getTargetAcquired() {
 
+    //loop the limelights and return the first successful one
+    for (ILimelightSubsystem limelight : limelights) {
       //get the latest target value from limelight
       var targetValue = limelight.getRawTargetValid();
 
       //if we don't have a value yet then we haven't acquired the target yet
       if (targetValue == null) { 
-        return false;
+        continue;
       }
   
       //putting a buffer on the logic here when switching from true to false, don't 'lose' the target unless we haven't seen it for N milliseconds
       if (targetValue.value == Constants.LimeLightConstants.TARGET_ACQUIRED || System.currentTimeMillis() - targetValue.updateTime < targetLostDelayMs) {
-        return true;
+        return limelight;
       }
-  
-      //if we made it this far we don't meet the requirements
-      return false;
-    });
+    }
+
+    //if we made it this far we don't meet the requirements
+    return null;
   }
 }
