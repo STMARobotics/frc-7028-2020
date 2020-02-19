@@ -5,8 +5,8 @@ import static frc.robot.Constants.AimConstants.kP;
 
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.util.Units;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrainSubsystem;
+import frc.robot.subsystems.ILimelightSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -14,7 +14,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 /**
  * Aims at the target and shoots once.
  */
-public class ShootCommand extends CommandBase {
+public class ShootCommand extends VisionCommandBase {
 
   private final ShooterSubsystem shooterSubsystem;
   private final IndexerSubsystem indexerSubsystem;
@@ -30,6 +30,8 @@ public class ShootCommand extends CommandBase {
   public ShootCommand(ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem,
       LimelightSubsystem highLimelightSubsystem, LimelightSubsystem lowLimelightSubsystem,
       DriveTrainSubsystem driveTrainSubsystem) {
+
+    super(100, highLimelightSubsystem, lowLimelightSubsystem);
 
     this.shooterSubsystem = shooterSubsystem;
     this.indexerSubsystem = indexerSubsystem;
@@ -54,34 +56,26 @@ public class ShootCommand extends CommandBase {
 
   @Override
   public void execute() {
-    if (highLimelightSubsystem.getTargetAcquired() || lowLimelightSubsystem.getTargetAcquired()) {
-      if (highLimelightSubsystem.getTargetAcquired()) {
-        shooterSubsystem.prepareToShoot(Units.metersToInches(highLimelightSubsystem.getDistanceToTarget()));
-        aimShooter(highLimelightSubsystem);
+
+    var limelightWithTarget = getTargetAcquired();
+
+    if (limelightWithTarget != null) {
+        shooterSubsystem.prepareToShoot(Units.metersToInches(limelightWithTarget.getDistanceToTarget()));
+        aimShooter(limelightWithTarget);
         if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
           indexerSubsystem.shoot();
           shot = true;
         } else {
           indexerSubsystem.stopIndexer();
         }
-      } else if (lowLimelightSubsystem.getTargetAcquired()) {
-        shooterSubsystem.prepareToShoot(Units.metersToInches(lowLimelightSubsystem.getDistanceToTarget()));
-        aimShooter(lowLimelightSubsystem);
-        if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
-          indexerSubsystem.shoot();
-          shot = true;
-        } else {
-          indexerSubsystem.stopIndexer();
-        }
-      } 
     } else {
       noTarget = true;
       driveTrainSubsystem.arcadeDrive(0.0, 0.0, false);
     }
   }
 
-  private void aimShooter(LimelightSubsystem selectedLimelightSubsystem) {
-    double targetX = selectedLimelightSubsystem.getTargetX();
+  private void aimShooter(ILimelightSubsystem selectedLimelightSubsystem) {
+    double targetX = selectedLimelightSubsystem.getFilteredX(); //.getTargetX();
     double rotationSpeed = -pidController.calculate(targetX / 5);
     // if (rotationSpeed > .07) {
     //   rotationSpeed += kF;
@@ -102,5 +96,4 @@ public class ShootCommand extends CommandBase {
     indexerSubsystem.stopIndexer();
     driveTrainSubsystem.stop();
   }
-
 }

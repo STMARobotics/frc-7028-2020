@@ -42,6 +42,7 @@ import frc.robot.commands.PixyAssistCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TeleOperateCommand;
+import frc.robot.commands.WaitForTargetCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -131,14 +132,16 @@ public class RobotContainer {
 
     var pixyHeldCommand = new PixyAssistCommand(driveTrainSubsystem, pixyVision)
         .andThen(new ParallelCommandGroup(
-            new RunCommand(intakeSubsystem::intake, intakeSubsystem),
-            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.5)));
+            new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(.5),
+            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
+        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
+        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))));
     
     var pixyReleaseCommand = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
 
     new JoystickButton(driverController, XboxController.Button.kX.value)
-        .whenHeld(pixyHeldCommand)
+        .whileHeld(pixyHeldCommand)
         .whenReleased(pixyReleaseCommand);
 
     // Operator
@@ -186,7 +189,11 @@ public class RobotContainer {
                 .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)));
 
       var autoCommandGroup = setPose
-        .andThen(trajectoryCommand);
+          .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
+          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
+          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
+          // .andThen(trajectoryCommand)
           // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
           // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
           // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));

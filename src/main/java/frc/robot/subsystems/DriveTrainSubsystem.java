@@ -253,7 +253,10 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * Sets the drivetrain to zero velocity and rotation.
    */
   public void stop() {
-    tankDriveVelocity(0, 0);
+    leftMaster.set(0);
+    rightMaster.set(0);
+    speedRateLimiter.reset(0);
+    rotationRateLimiter.reset(0);
   }
 
   /**

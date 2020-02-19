@@ -12,7 +12,7 @@ public class PixyAssistCommand extends CommandBase{
   private final DriveTrainSubsystem driveTrainSubsystem;
 
   private PixyVisionVariables pixyData;
-  private static final int lower = 107; 
+  private static final int lower = 102; 
   private static final int upper = 147;
   private static final double speed = 0.6;
 
@@ -22,13 +22,6 @@ public class PixyAssistCommand extends CommandBase{
     addRequirements(driveTrainSubsystem, pixy);
   }
 
-  /** Safe Zone Stuff
-   * Possible save zones
-   * +/- 27 = 100 to 154
-   * +/- 30 = 97 to 157
-   * +/- 35 = 92 to 162
-   * +/- 40 = 87 to 167
-   */
 
 
   @Override
@@ -37,24 +30,21 @@ public class PixyAssistCommand extends CommandBase{
     SmartDashboard.putNumber("X-Coordinate", pixyData.xCoord);
     if((lower<=pixyData.xCoord)&&(pixyData.xCoord<=upper)){
       //Within Safe Zone
-      driveTrainSubsystem.tankDrive(speed, speed, false);//drive straight towards the opject in view
+      driveTrainSubsystem.tankDrive(speed, speed, false);//drive straight towards the object in view
       pixyData = pixy.getCoordinates();
-      if(pixyData.yCoord>105){ //start intaking
-
-      }
       SmartDashboard.putString("Pixy Command", "Straight");
       SmartDashboard.putNumber("Object Width", pixyData.width);
       SmartDashboard.putNumber("Object Height", pixyData.height);
       SmartDashboard.putNumber("Object Area", pixyData.area);
     }else if(lower>pixyData.xCoord){
       //object is to the left of the bot
-      driveTrainSubsystem.tankDrive((speed/5), speed, false);//turn left until object is within the safe zone
+      driveTrainSubsystem.tankDrive((speed/6), speed, false);//turn left until object is within the safe zone
       pixyData = pixy.getCoordinates();
       SmartDashboard.putString("Pixy Command", "Left");
       SmartDashboard.putNumber("Object Area", pixyData.  area);
     }else if(pixyData.xCoord>upper){
       //object is to the right of the bot
-      driveTrainSubsystem.tankDrive(speed, (speed/5), false);//turn right until object is within the safe zone
+      driveTrainSubsystem.tankDrive(speed, (speed/6), false);//turn right until object is within the safe zone
       pixyData = pixy.getCoordinates();
       SmartDashboard.putString("Pixy Command", "Right");
       SmartDashboard.putNumber("Object Area", pixyData.area);
@@ -63,7 +53,7 @@ public class PixyAssistCommand extends CommandBase{
 
   @Override
   public boolean isFinished() {
-    return (pixyData.yCoord>113); //start intaking
+    return (pixyData.yCoord>115); //start intaking
   }
 
   @Override
