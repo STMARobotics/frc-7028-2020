@@ -111,5 +111,9 @@ public class IndexerSubsystem extends SubsystemBase {
   public boolean isFull() {
     return !fullSensor.get();
   }
+
+  public boolean isRunning() {
+    return belt.get() != 0;
+  }
   
 }
