@@ -18,7 +18,7 @@ public class DriveTrainSubsystemTest {
   public void testEdgesPerDecisecToMetersPerSec() {
     assertEquals(4.107491268336169, DriveTrainSubsystem.edgesPerDecisecToMetersPerSec(7028), 0);
   }
-  
+
   @Test
   public void testMetersToEdges() {
     assertEquals(24714.0, DriveTrainSubsystem.metersToEdges(1.4444015254077984d), 0);
@@ -29,4 +29,4 @@ public class DriveTrainSubsystemTest {
     assertEquals(7028d, DriveTrainSubsystem.metersPerSecToEdgesPerDecisec(4.107491268336169), 0);
   }
 
-}
+} 
