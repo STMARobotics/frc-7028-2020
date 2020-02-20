@@ -38,6 +38,7 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   private long lastLatencyUpdate = System.currentTimeMillis();
 
   private DoubleEntryValue targetValid = new DoubleEntryValue(0);
+  private long targetLastSeen = 0;
   private DoubleEntryValue targetX = new DoubleEntryValue(0);
   private DoubleEntryValue targetY = new DoubleEntryValue(0);
 
@@ -120,6 +121,10 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
         var previousTargetValid = targetValid;
         targetValid = new DoubleEntryValue(value.getDouble());
 
+        if (targetValid.value == TARGET_ACQUIRED) {
+          targetLastSeen = targetValid.updateTime;
+        }
+
         updateMs = targetValid.updateTime - previousTargetValid.updateTime;
       break;
     }
@@ -142,6 +147,10 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
 
   public boolean getTargetAcquired() {
     return targetValid.value == TARGET_ACQUIRED;
+  }
+
+  public long getTargetLastSeen() {
+    return targetLastSeen;
   }
 
   public double getTargetX() {

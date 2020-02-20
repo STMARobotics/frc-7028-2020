@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
@@ -228,7 +227,6 @@ public class ShootCommandTest {
   }
 
   @Test
-  @Ignore("This test is broken by lost target buffer")
   public void testNoTarget() {
 
     when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(0.0));
