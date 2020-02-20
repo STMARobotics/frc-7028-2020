@@ -55,7 +55,7 @@ public class ShootCommandTest {
   @Before
   public void setUp() {
     commandScheduler = CommandScheduler.getInstance();
-    shootCommand = spy(new ShootCommand(shooter, indexer, highLimelight, lowLimelight, drivetrain));
+    shootCommand = spy(new ShootCommand(0, shooter, indexer, highLimelight, lowLimelight, drivetrain));
     when(shootCommand.runsWhenDisabled()).thenReturn(true);
   }
 

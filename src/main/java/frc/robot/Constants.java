@@ -114,7 +114,7 @@ public final class Constants {
 
     public static final double kP = 1.1;
     public static final double kD = 0.3;
-    public static final double kF = 0.25;
+    public static final double AIM_TOLERANCE = 0.1;
 
     public static final double RANGE_HIGH = 1;
     public static final double RANGE_LOW = -1;

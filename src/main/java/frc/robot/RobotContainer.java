@@ -13,7 +13,7 @@ import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.Collections;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -82,20 +81,21 @@ public class RobotContainer {
   private final TeleOperateCommand teleOperateCommand = new TeleOperateCommand(operatorConsole, indexerSubsystem);
   private final IndexCommand indexCommand = new IndexCommand(indexerSubsystem);
   private final ShootCommand shootCommand = new ShootCommand(
-      shooterSubsystem, 
-      indexerSubsystem, 
-      highLimelightSubsystem, 
-      lowLimelightSubsystem, 
-      driveTrainSubsystem);
-  
+    0,
+    shooterSubsystem, 
+    indexerSubsystem, 
+    highLimelightSubsystem, 
+    lowLimelightSubsystem, 
+    driveTrainSubsystem);
+
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
     configureSubsystemCommands();
-    // configureSubsystemDashboard();
-    // configureCommandDashboard();
+    configureSubsystemDashboard();
+    configureCommandDashboard();
     configureAutonomous();
   }
 
@@ -115,7 +115,7 @@ public class RobotContainer {
 
     new JoystickButton(driverController, XboxController.Button.kA.value)
         .whenHeld(shootCommand.perpetually());
-            
+    
     new JoystickButton(driverController, XboxController.Button.kBumperRight.value)
         .whenHeld(new RunCommand(() -> {
           intakeSubsystem.reverse();
@@ -174,36 +174,65 @@ public class RobotContainer {
   private void configureAutonomous() {
     try {
       var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-95), Rotation2d.fromDegrees(0));
-      var waypoints = List.of(new Translation2d(inchesToMeters(242), inchesToMeters(-26.5)));
-      var endPose = new Pose2d(inchesToMeters(326), inchesToMeters(-26.5), Rotation2d.fromDegrees(0));
+      // var waypoints = List.of(new Translation2d(inchesToMeters(242), inchesToMeters(-26.5)));
+      var endPose = new Pose2d(inchesToMeters(210 - 32), inchesToMeters(-36), Rotation2d.fromDegrees(0));
 
-      var setPose = new InstantCommand(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem);
+      var trajectory = TrajectoryGenerator.generateTrajectory(
+          startPose,
+          Collections.emptyList(),
+          endPose,
+          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO / 2, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT));
 
-      var trajectoryCommand = driveTrainSubsystem.createCommandForTrajectory(
-          TrajectoryGenerator.generateTrajectory(
-            startPose,
-            waypoints,
-            endPose,
-            new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO / 6, TrajectoryConstants.MAX_ACCELERATION_AUTO / 3)
-                .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
-                .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)));
-
-      var autoCommandGroup = setPose
+      var autoCommandGroup =
+          new InstantCommand(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
+          .andThen(() -> highLimelightSubsystem.setProfile(Profile.NEAR), highLimelightSubsystem)
+          .andThen(() -> lowLimelightSubsystem.setProfile(Profile.NEAR), lowLimelightSubsystem)
           .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
-          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
-          .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
-          // .andThen(trajectoryCommand)
-          // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
-          // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem))
-          // .andThen(new ShootCommand(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
+          .andThen(new ShootCommand(3, shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem).withTimeout(8))
+          .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
+          .andThen(() -> highLimelightSubsystem.setProfile(Profile.FAR), highLimelightSubsystem)
+          .andThen(() -> lowLimelightSubsystem.setProfile(Profile.FAR), lowLimelightSubsystem)
+          .andThen(makePixyCommand())
+          .andThen(makePixyCommand())
+          .andThen(makePixyCommand())
+          .andThen(driveTrainSubsystem::stop, driveTrainSubsystem)
+          .andThen(new ShootCommand(3, shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem));
         
       autoChooser.setDefaultOption("Shooting", autoCommandGroup);
     } catch (Exception e) {
       DriverStation.reportError("Failed to load auto", true);
     }
 
+    try {
+      var trajectory = TrajectoryGenerator.generateTrajectory(
+          new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
+          Collections.emptyList(),
+          new Pose2d(3, 0, Rotation2d.fromDegrees(0)),
+          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO / 2, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT));
+
+      var autoCommandGroup =
+          driveTrainSubsystem.createCommandForTrajectory(trajectory)
+          .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
+        
+      autoChooser.setDefaultOption("Straight", autoCommandGroup);
+    } catch (Exception e) {
+      DriverStation.reportError("Failed to load auto", true);
+    }    
+
     SmartDashboard.putData("Auto Chooser", autoChooser);
+  }
+
+  private Command makePixyCommand() {
+    return new PixyAssistCommand(driveTrainSubsystem, pixyVision)
+        .andThen(new ParallelCommandGroup(
+            new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(1),
+            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25).andThen(driveTrainSubsystem::stop))
+        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
+        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))));
   }
 
   private void configureSubsystemDashboard() {
