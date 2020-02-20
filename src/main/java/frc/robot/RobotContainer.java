@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.DriveTrainConstants;
@@ -189,8 +188,8 @@ public class RobotContainer {
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
               .andThen(makeLimelightProfileCommand(Profile.FAR))
               .andThen(makePixyAutoCommand())
-              .andThen(makePixyAutoCommand())
-              .andThen(makePixyAutoCommand())
+              .andThen(makePixyAutoCommand().andThen(makePixyAutoCommand()
+                  .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))))
               .andThen(driveTrainSubsystem::stop, driveTrainSubsystem)
               .andThen(makeShootCommand(3));
         
@@ -225,12 +224,13 @@ public class RobotContainer {
    * @return command
    */
   private Command makePixyAutoCommand() {
+    // Pixy until ball within target and then drive for 250ms
+    // At the same time, run the intake and indexer
+    // Finally, stop the intake
     return new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(new ParallelDeadlineGroup(
-            new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(1),
-            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25)
-                .andThen(driveTrainSubsystem::stop),
-            new IndexCommand(indexerSubsystem)))
+        .andThen(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25)
+        .andThen(driveTrainSubsystem::stop) 
+        .deadlineWith(new RunCommand(intakeSubsystem::intake, intakeSubsystem), new IndexCommand(indexerSubsystem))
         .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem));
   }
 
