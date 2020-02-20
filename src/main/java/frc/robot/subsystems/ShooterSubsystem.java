@@ -54,6 +54,10 @@ public class ShooterSubsystem extends SubsystemBase {
     dashboard.addNumber("Velocity", shooterEncoder::getVelocity);
   }
 
+  /**
+   * Prepare to shoot the given distance in INCHES
+   * @param distanceToTarget distance in INCHES
+   */
   public void prepareToShoot(double distanceToTarget) {
     if (distanceToTarget > 150) {
       targetSpeed = 2.600 * distanceToTarget + 2154.761;
@@ -65,9 +69,6 @@ public class ShooterSubsystem extends SubsystemBase {
         ControlType.kVelocity,
         0,
         motorFeedForward.calculate(targetSpeed / 60, (targetSpeed - shooterEncoder.getVelocity()) / 60));
-    // SmartDashboard.putNumber("Velocity", shooterEncoder.getVelocity());
-    // SmartDashboard.putNumber("Power", shooterMaster.get());
-    // SmartDashboard.putNumber("P Value", shooterPIDController.getP());
   }
 
   public boolean isReadyToShoot() {

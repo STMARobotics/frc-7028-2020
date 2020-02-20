@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.util.Units;
 import frc.robot.Constants.AimConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.ILimelightSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -55,7 +56,7 @@ public class ShootCommand extends VisionCommandBase {
   public void initialize() {
     noTarget = false;
     ballsShot = 0;
-    wasFull = false;
+    wasFull = indexerSubsystem.isFull();
     endTimer.reset();
     pidController.reset();
     highLimelightSubsystem.enable();
@@ -78,7 +79,7 @@ public class ShootCommand extends VisionCommandBase {
       driveTrainSubsystem.stop();;
     }
     var isFull = indexerSubsystem.isFull();
-    if ((wasFull && !isFull) && (ballsShot++ >= ballsToShoot)) {
+    if ((wasFull && !isFull) && (++ballsShot >= ballsToShoot)) {
       endTimer.start();
     }
     wasFull = isFull;
@@ -92,7 +93,7 @@ public class ShootCommand extends VisionCommandBase {
 
   @Override
   public boolean isFinished() {
-    return noTarget || (ballsShot >= ballsToShoot && endTimer.hasPeriodPassed(.5));
+    return noTarget || (ballsShot >= ballsToShoot && endTimer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
   }
 
   @Override
