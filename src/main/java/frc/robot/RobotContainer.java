@@ -14,7 +14,9 @@ import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Map;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -24,7 +26,6 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
@@ -35,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.LimeLightConstants;
@@ -66,11 +68,11 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
   private final LimelightSubsystem highLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
-      .withNetworkTableName("limelight-high").withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
+      .withNetworkTableName(LimeLightConstants.HIGH_NAME).withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
       .withMountDistanceFromCenter(LimeLightConstants.HIGH_DISTANCE_FROM_CENTER).build());
   private final LimelightSubsystem lowLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
-      .withNetworkTableName("limelight-low").withMountDepth(LimeLightConstants.LOW_DISTANCE_FROM_FRONT)
+      .withNetworkTableName(LimeLightConstants.LOW_NAME).withMountDepth(LimeLightConstants.LOW_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.LOW_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.LOW_MOUNT_ANGLE)
       .withMountDistanceFromCenter(LimeLightConstants.LOW_DISTANCE_FROM_CENTER).build());
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
@@ -84,13 +86,8 @@ public class RobotContainer {
   private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
   private final TeleOperateCommand teleOperateCommand = new TeleOperateCommand(operatorConsole, indexerSubsystem);
   private final IndexCommand indexCommand = new IndexCommand(indexerSubsystem);
-  private final ShootCommand shootCommand = new ShootCommand(
-    0,
-    shooterSubsystem, 
-    indexerSubsystem, 
-    highLimelightSubsystem, 
-    lowLimelightSubsystem, 
-    driveTrainSubsystem);
+  private final ShootCommand shootCommand = new ShootCommand(Integer.MAX_VALUE, shooterSubsystem, indexerSubsystem, 
+    highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem);
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
@@ -99,7 +96,8 @@ public class RobotContainer {
     configureButtonBindings();
     configureSubsystemCommands();
     configureSubsystemDashboard();
-    configureCommandDashboard();
+    // configureCommandDashboard();
+    configureDriverDashboard();
     configureAutonomous();
   }
 
@@ -179,22 +177,35 @@ public class RobotContainer {
           startPose,
           Collections.emptyList(),
           endPose,
-          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO / 2, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
               .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
               .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
               .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.6));
 
+      var pickupAndSpinUp = makePixyAutoCommand()
+          .andThen(new WaitUntilCommand(() -> indexerSubsystem.getBallCount() >= 3).withTimeout(3))
+          .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem));
+
+      var trenchPickup = makePixyAutoCommand()
+          .andThen(makePixyAutoCommand())
+          .andThen(pickupAndSpinUp)
+          .deadlineWith(
+              new RunCommand(intakeSubsystem::intake, intakeSubsystem),
+              new IndexCommand(indexerSubsystem))
+          .andThen(intakeSubsystem::stopIntake);
+
       var autoCommandGroup =
-          new InstantCommand(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
+          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+              .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
               .andThen(makeLimelightProfileCommand(Profile.NEAR))
               .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-              .andThen(makeShootCommand(3).withTimeout(5))
+              .andThen(makeShootCommand(3))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
               .andThen(makeLimelightProfileCommand(Profile.FAR))
-              .andThen(makePixyAutoCommand())
-              .andThen(makePixyAutoCommand().andThen(makePixyAutoCommand()
-                  .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))))
+              .andThen(trenchPickup)
+              .andThen(intakeSubsystem::stopIntake, intakeSubsystem)
               .andThen(driveTrainSubsystem::stop, driveTrainSubsystem)
+              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
               .andThen(makeShootCommand(3));
         
       autoChooser.setDefaultOption("Shooting", autoCommandGroup);
@@ -219,8 +230,6 @@ public class RobotContainer {
     } catch (Exception e) {
       DriverStation.reportError("Failed to load auto", true);
     }    
-
-    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   /**
@@ -232,10 +241,8 @@ public class RobotContainer {
     // At the same time, run the intake and indexer
     // Finally, stop the intake
     return new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25)
-        .andThen(driveTrainSubsystem::stop) 
-        .deadlineWith(new RunCommand(intakeSubsystem::intake, intakeSubsystem), new IndexCommand(indexerSubsystem))
-        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem));
+        .andThen(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.5))
+        .andThen(driveTrainSubsystem::stop);
   }
 
   /**
@@ -291,6 +298,26 @@ public class RobotContainer {
     Dashboard.commandsTab.add(indexCommand).withSize(2, 1).withPosition(0, 0);
     Dashboard.commandsTab.add(shootCommand).withSize(2, 1).withPosition(0, 1);
     Dashboard.commandsTab.add(teleDriveCommand).withSize(2, 1).withPosition(2, 0);
+  }
+
+  private void configureDriverDashboard() {
+    Dashboard.driverTab.add("Auto Chooser", autoChooser).withSize(2, 1).withPosition(0, 0);
+
+    var indexerLayout = Dashboard.driverTab.getLayout("Indexer", BuiltInLayouts.kGrid)
+        .withSize(2, 1).withPosition(0, 1)
+        .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
+    indexerLayout.addBoolean("Full", indexerSubsystem::isFull);
+    indexerLayout.addBoolean("Running", indexerSubsystem::isRunning);
+
+    var lowLimelight = CameraServer.getInstance().getServer(LimeLightConstants.LOW_NAME);
+    if (lowLimelight != null) {
+      Dashboard.driverTab.add(lowLimelight.getSource()).withSize(2, 2).withPosition(1, 0);
+    }
+
+    var highLimelight = CameraServer.getInstance().getServer(LimeLightConstants.HIGH_NAME);
+    if (highLimelight != null) {
+      Dashboard.driverTab.add(highLimelight.getSource()).withSize(2, 2).withPosition(3, 0);
+    }
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {

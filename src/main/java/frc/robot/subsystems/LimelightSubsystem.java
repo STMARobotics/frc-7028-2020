@@ -59,8 +59,7 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     //this adds listeners on an explicit list
     addLimelightUpdateListeners(limelightNetworkTable, ntPipelineLatency, ntTargetValid, ntTargetX, ntTargetY);
 
-    new Trigger(() -> RobotState.isEnabled()).whenActive(this::enable)
-        .whenInactive(new InstantWhenDisabledCommand(this::disable));
+    new Trigger(RobotState::isEnabled).whenInactive(new InstantWhenDisabledCommand(this::disable));
 
     xFilter = new MedianFilter(5);
     yFilter = new MedianFilter(5);

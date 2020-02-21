@@ -148,6 +148,9 @@ public final class Constants {
     public static final double HIGH_MOUNT_ANGLE = 20.0;
     public static final double LOW_MOUNT_ANGLE = 25.0;
 
+    public static final String LOW_NAME = "limelight-low";
+    public static final String HIGH_NAME = "limelight-high";
+
   }
 
   public static final class ControlPanelConstants {
@@ -197,7 +200,7 @@ public final class Constants {
     public static final int PORT_ID_SPACER_SENSOR = 1;
     public static final int PORT_ID_FULL_SENSOR = 2;
 
-    public static final double BELT_RUN_SPEED = 0.4;
+    public static final double BELT_RUN_SPEED = 0.5;
 
   }
 

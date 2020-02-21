@@ -14,4 +14,8 @@ public interface ILimelightSubsystem {
   double getDistanceToTarget();
 
   long getTargetLastSeen();
+
+  void enable();
+
+  void disable();
 }

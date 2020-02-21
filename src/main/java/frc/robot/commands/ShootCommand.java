@@ -21,8 +21,6 @@ public class ShootCommand extends VisionCommandBase {
 
   private final ShooterSubsystem shooterSubsystem;
   private final IndexerSubsystem indexerSubsystem;
-  private final LimelightSubsystem highLimelightSubsystem;
-  private final LimelightSubsystem lowLimelightSubsystem;
   private final DriveTrainSubsystem driveTrainSubsystem;
 
   private final PIDController pidController = new PIDController(kP, 0, kD);
@@ -42,8 +40,6 @@ public class ShootCommand extends VisionCommandBase {
     this.ballsToShoot = ballsToShoot;
     this.shooterSubsystem = shooterSubsystem;
     this.indexerSubsystem = indexerSubsystem;
-    this.highLimelightSubsystem = highLimelightSubsystem;
-    this.lowLimelightSubsystem = lowLimelightSubsystem;
     this.driveTrainSubsystem = driveTrainSubsystem;
 
     addRequirements(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem,
@@ -54,17 +50,17 @@ public class ShootCommand extends VisionCommandBase {
 
   @Override
   public void initialize() {
+    super.initialize();
     noTarget = false;
     ballsShot = 0;
     wasFull = indexerSubsystem.isFull();
     endTimer.reset();
     pidController.reset();
-    highLimelightSubsystem.enable();
-    lowLimelightSubsystem.enable();
   }
 
   @Override
   public void execute() {
+    super.execute();
     var limelightWithTarget = getTargetAcquired();
     if (limelightWithTarget != null) {
       shooterSubsystem.prepareToShoot(Units.metersToInches(limelightWithTarget.getDistanceToTarget()));
@@ -98,6 +94,7 @@ public class ShootCommand extends VisionCommandBase {
 
   @Override
   public void end(boolean interrupted) {
+    super.end(interrupted);
     shooterSubsystem.stopShooter();
     indexerSubsystem.stopIndexer();
     driveTrainSubsystem.stop();
