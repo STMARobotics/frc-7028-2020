@@ -89,7 +89,7 @@ public class ShootCommand extends VisionCommandBase {
 
   @Override
   public boolean isFinished() {
-    return noTarget || (ballsShot >= ballsToShoot && endTimer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    return noTarget || (ballsShot >= ballsToShoot && endTimer.hasElapsed(ShooterConstants.SHOOT_TIME));
   }
 
   @Override
