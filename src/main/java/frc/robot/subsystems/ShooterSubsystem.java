@@ -46,6 +46,8 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterSlave.follow(shooterMaster, true);
 
     shooterMaster.setClosedLoopRampRate(ShooterConstants.RAMP_RATE);
+    shooterMaster.enableVoltageCompensation(12);
+    shooterSlave.enableVoltageCompensation(12);
     shooterMaster.burnFlash();
     shooterSlave.burnFlash();
   }

@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import java.util.Arrays;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.ILimelightSubsystem;
@@ -21,6 +23,16 @@ public class VisionCommandBase extends CommandBase {
 
     this.limelights = limelights;
     this.targetLostDelayMs = delayMs;
+  }
+
+  @Override
+  public void initialize() {
+    Arrays.stream(limelights).forEach((l) -> l.enable());
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    Arrays.stream(limelights).forEach((l) -> l.disable());
   }
 
   /**

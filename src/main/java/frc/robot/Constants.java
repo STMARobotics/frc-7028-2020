@@ -200,7 +200,7 @@ public final class Constants {
     public static final int PORT_ID_SPACER_SENSOR = 1;
     public static final int PORT_ID_FULL_SENSOR = 2;
 
-    public static final double BELT_RUN_SPEED = 0.4;
+    public static final double BELT_RUN_SPEED = 0.5;
 
   }
 

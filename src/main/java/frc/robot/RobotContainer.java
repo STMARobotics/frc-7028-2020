@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.LimeLightConstants;
@@ -172,22 +173,35 @@ public class RobotContainer {
           startPose,
           Collections.emptyList(),
           endPose,
-          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO / 2, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
               .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
               .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
               .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.6));
 
+      var pickupAndSpinUp = makePixyAutoCommand()
+          .andThen(new WaitUntilCommand(() -> indexerSubsystem.getBallCount() >= 3).withTimeout(3))
+          .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem));
+
+      var trenchPickup = makePixyAutoCommand()
+          .andThen(makePixyAutoCommand())
+          .andThen(pickupAndSpinUp)
+          .deadlineWith(
+              new RunCommand(intakeSubsystem::intake, intakeSubsystem),
+              new IndexCommand(indexerSubsystem))
+          .andThen(intakeSubsystem::stopIntake);
+
       var autoCommandGroup =
-          new InstantCommand(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
+          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+              .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
               .andThen(makeLimelightProfileCommand(Profile.NEAR))
               .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-              .andThen(makeShootCommand(3).withTimeout(5))
+              .andThen(makeShootCommand(3))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
               .andThen(makeLimelightProfileCommand(Profile.FAR))
-              .andThen(makePixyAutoCommand())
-              .andThen(makePixyAutoCommand().andThen(makePixyAutoCommand()
-                  .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))))
+              .andThen(trenchPickup)
+              .andThen(intakeSubsystem::stopIntake, intakeSubsystem)
               .andThen(driveTrainSubsystem::stop, driveTrainSubsystem)
+              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
               .andThen(makeShootCommand(3));
         
       autoChooser.setDefaultOption("Shooting", autoCommandGroup);
@@ -223,10 +237,8 @@ public class RobotContainer {
     // At the same time, run the intake and indexer
     // Finally, stop the intake
     return new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25)
-        .andThen(driveTrainSubsystem::stop) 
-        .deadlineWith(new RunCommand(intakeSubsystem::intake, intakeSubsystem), new IndexCommand(indexerSubsystem))
-        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem));
+        .andThen(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.5))
+        .andThen(driveTrainSubsystem::stop);
   }
 
   /**
