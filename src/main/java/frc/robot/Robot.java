@@ -89,16 +89,20 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    
-    for (ITestable testable : testables) {
-      if (testable.testableIsFinished()) {
-        continue;
-      }
 
+    //get a copy so we can remove testables from list as we go
+    var remainingTestables = testables;
+    
+    for (ITestable testable : remainingTestables) {
+      
       var results = testable.testablePeriodic();
 
       for (TestResult testResult : results) {
         NetworkTableInstance.getDefault().getTable("Test Mode").getEntry(testResult.message).setValue(testResult.success);
+      }
+
+      if (testable.testableIsFinished()) {
+        testables.remove(testable);
       }
     }
   }
