@@ -91,7 +91,8 @@ public class AutoGenerator {
           .deadlineWith(
               new RunCommand(intakeSubsystem::intake, intakeSubsystem),
               new IndexCommand(indexerSubsystem))
-          .andThen(intakeSubsystem::stopIntake);
+          .andThen(intakeSubsystem::stopIntake)
+          .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
 
       var autoCommandGroup =
           new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
@@ -102,8 +103,6 @@ public class AutoGenerator {
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
               .andThen(makeLimelightProfileCommand(Profile.FAR))
               .andThen(trenchPickup)
-              .andThen(intakeSubsystem::stopIntake, intakeSubsystem)
-              .andThen(driveTrainSubsystem::stop, driveTrainSubsystem)
               .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
               .andThen(makeShootCommand(3));
         
