@@ -115,6 +115,7 @@ public final class Constants {
     public static final double kP = 1.1;
     public static final double kD = 0.3;
     public static final double AIM_TOLERANCE = 0.1;
+    public static final double AIM_VELOCITY_TOLERANCE = 1;
 
     public static final double RANGE_HIGH = 1;
     public static final double RANGE_LOW = -1;
@@ -145,7 +146,7 @@ public final class Constants {
     public static final double LOW_DISTANCE_FROM_CENTER = Units.inchesToMeters(7.125);
 
     /** Angle of the limelight in degrees */
-    public static final double HIGH_MOUNT_ANGLE = 20.0;
+    public static final double HIGH_MOUNT_ANGLE = 25.0;
     public static final double LOW_MOUNT_ANGLE = 25.0;
 
     public static final String LOW_NAME = "limelight-low";
@@ -213,4 +214,11 @@ public final class Constants {
   public static final class TestModeConstants {
     public static final String NetworkTableName = "Test Mode";
   }
+  
+  public static final class ClimbConstants {
+    
+    public static final int DEVICE_ID_CLIMB = 8;
+
+  }
+
 }
