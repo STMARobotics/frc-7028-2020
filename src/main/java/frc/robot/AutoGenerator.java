@@ -83,7 +83,7 @@ public class AutoGenerator {
               .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.6));
 
       var pickupAndSpinUp = makePixyAutoCommand()
-          .andThen(new WaitUntilCommand(() -> indexerSubsystem.getBallCount() >= 3).withTimeout(3))
+          .andThen(makeWaitForBallCount(3).withTimeout(3))
           .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem));
 
       var trenchPickup = makePixyAutoCommand()
@@ -143,7 +143,7 @@ public class AutoGenerator {
           .andThen(makePixyAutoCommand())
           .andThen(makePixyAutoCommand())
           .andThen(makePixyAutoCommand())
-          .andThen(new WaitUntilCommand(() -> indexerSubsystem.getBallCount() >= 4).withTimeout(3))
+          .andThen(makeWaitForBallCount(4).withTimeout(3))
           .deadlineWith(
               new RunCommand(intakeSubsystem::intake, intakeSubsystem),
               new IndexCommand(indexerSubsystem))
@@ -162,13 +162,13 @@ public class AutoGenerator {
               .andThen(makeLimelightProfileCommand(Profile.FAR))
               .andThen(trenchPickup)
               .andThen(intakeSubsystem::stopIntake, intakeSubsystem)
-              .andThen(driveTrainSubsystem::stop, driveTrainSubsystem)
+              .andThen(new TurnToAngleCommand(0, driveTrainSubsystem))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo)
                   .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
                   .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))
               .andThen(makeShootCommand(4));
         
-      autoChooser.setDefaultOption("Right Auto", autoCommandGroup);
+      autoChooser.addOption("Right", autoCommandGroup);
     } catch (Exception e) {
       DriverStation.reportError("Failed to load auto: right", true);
     }
@@ -218,14 +218,16 @@ public class AutoGenerator {
               .andThen(makeLimelightProfileCommand(Profile.FAR))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
               .andThen(makePixyWithIntakeCommand())
+              .andThen(makeWaitForBallCount(4).withTimeout(3))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo))
               .andThen(makePixyWithIntakeCommand())
+              .andThen(makeWaitForBallCount(5).withTimeout(3))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
                   .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
                   .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))
               .andThen(makeShootCommand(5));
         
-      autoChooser.setDefaultOption("Center Auto", autoCommandGroup);
+      autoChooser.addOption("Center Auto", autoCommandGroup);
     } catch (Exception e) {
       DriverStation.reportError("Failed to load auto: center", true);
     }
@@ -297,6 +299,19 @@ public class AutoGenerator {
     }, highLimelightSubsystem, lowLimelightSubsystem);
   }
 
+  /**
+   * Makes a command to wait for at least a given ball count of balls inthe indexer or for the indexer to be full.
+   * @param ballCount minimun number of balls to wait for
+   * @return command
+   */
+  private Command makeWaitForBallCount(int ballCount) {
+    return new WaitUntilCommand(() -> indexerSubsystem.getBallCount() >= ballCount || indexerSubsystem.isFull());
+  }
+
+  /**
+   * Gets the selected autonomous command
+   * @return
+   */
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
   }
