@@ -233,6 +233,65 @@ public class AutoGenerator {
     }
   }
 
+  private void configureStealAuto() {
+    try {
+      var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-296), Rotation2d.fromDegrees(0));
+      var endPose = new Pose2d(inchesToMeters(240), inchesToMeters(-296), Rotation2d.fromDegrees(0));      
+
+      var trajectory = TrajectoryGenerator.generateTrajectory(
+          startPose,
+          Collections.emptyList(),
+          endPose,
+          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
+              .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.6));
+
+      var startPoseTwo = new Pose2d(inchesToMeters(250), inchesToMeters(-296), Rotation2d.fromDegrees(0));
+      var endPoseTwo = new Pose2d(inchesToMeters(240), inchesToMeters(-296), Rotation2d.fromDegrees(-62));    
+
+      var trajectoryTwo = TrajectoryGenerator.generateTrajectory(
+        startPoseTwo,
+        Collections.emptyList(),
+        endPoseTwo,
+        new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+            .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+            .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
+            .setReversed(true));
+
+      var startPoseThree = new Pose2d(inchesToMeters(250), inchesToMeters(-305), Rotation2d.fromDegrees(-62));
+      var endPoseThree = new Pose2d(inchesToMeters(180), inchesToMeters(-162), Rotation2d.fromDegrees(-35));    
+      
+      var trajectoryThree = TrajectoryGenerator.generateTrajectory(
+        startPoseThree,
+        Collections.emptyList(),
+        endPoseThree,
+        new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+            .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+            .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
+            .setReversed(true));
+
+      var autoCommandGroup =
+          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+              .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
+              .andThen(makeLimelightProfileCommand(Profile.FAR))
+              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
+              .andThen(makePixyWithIntakeCommand())
+              .andThen(makeWaitForBallCount(4).withTimeout(3))
+              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo))
+              .andThen(makePixyWithIntakeCommand())
+              .andThen(makeWaitForBallCount(5).withTimeout(3))
+              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
+                  .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
+                  .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))
+              .andThen(makeShootCommand(5));
+        
+      autoChooser.addOption("Steal", autoCommandGroup);
+    } catch (Exception e) {
+      DriverStation.reportError("Failed to load auto: steal", true);
+    }
+  }
+
   private void configureMoveAuto() {
     try {
       var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(0), Rotation2d.fromDegrees(0));
