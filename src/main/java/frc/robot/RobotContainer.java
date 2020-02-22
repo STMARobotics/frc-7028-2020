@@ -7,28 +7,20 @@
 
 package frc.robot;
 
-import static edu.wpi.first.wpilibj.util.Units.inchesToMeters;
 import static frc.robot.Constants.ControllerConstants.PORT_ID_DRIVER_CONTROLLER;
 import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Map;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -36,18 +28,14 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.LimeLightConstants;
-import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.InstantWhenDisabledCommand;
 import frc.robot.commands.PixyAssistCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TeleOperateCommand;
-import frc.robot.commands.WaitForTargetCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -89,7 +77,8 @@ public class RobotContainer {
   private final ShootCommand shootCommand = new ShootCommand(Integer.MAX_VALUE, shooterSubsystem, indexerSubsystem, 
     highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem);
 
-  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, highLimelightSubsystem,
+    lowLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem, pixyVision);
 
   public RobotContainer() {
     // Configure the button bindings
@@ -98,7 +87,7 @@ public class RobotContainer {
     configureSubsystemDashboard();
     // configureCommandDashboard();
     configureDriverDashboard();
-    configureAutonomous();
+    autoGenerator.configureAutonomous();
   }
 
   /**
@@ -168,93 +157,6 @@ public class RobotContainer {
     indexerSubsystem.setDefaultCommand(indexCommand);
   }
 
-  private void configureAutonomous() {
-    try {
-      var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-95), Rotation2d.fromDegrees(0));
-      var endPose = new Pose2d(inchesToMeters(178), inchesToMeters(-36), Rotation2d.fromDegrees(0));
-
-      var trajectory = TrajectoryGenerator.generateTrajectory(
-          startPose,
-          Collections.emptyList(),
-          endPose,
-          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
-              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
-              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
-              .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.6));
-
-      var pickupAndSpinUp = makePixyAutoCommand()
-          .andThen(new WaitUntilCommand(() -> indexerSubsystem.getBallCount() >= 3).withTimeout(3))
-          .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem));
-
-      var trenchPickup = makePixyAutoCommand()
-          .andThen(makePixyAutoCommand())
-          .andThen(pickupAndSpinUp)
-          .deadlineWith(
-              new RunCommand(intakeSubsystem::intake, intakeSubsystem),
-              new IndexCommand(indexerSubsystem))
-          .andThen(intakeSubsystem::stopIntake);
-
-      var autoCommandGroup =
-          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
-              .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
-              .andThen(makeLimelightProfileCommand(Profile.NEAR))
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-              .andThen(makeShootCommand(3))
-              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
-              .andThen(makeLimelightProfileCommand(Profile.FAR))
-              .andThen(trenchPickup)
-              .andThen(intakeSubsystem::stopIntake, intakeSubsystem)
-              .andThen(driveTrainSubsystem::stop, driveTrainSubsystem)
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-              .andThen(makeShootCommand(3));
-        
-      autoChooser.setDefaultOption("Shooting", autoCommandGroup);
-    } catch (Exception e) {
-      DriverStation.reportError("Failed to load auto", true);
-    }
-
-    try {
-      var trajectory = TrajectoryGenerator.generateTrajectory(
-          new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
-          Collections.emptyList(),
-          new Pose2d(3, 0, Rotation2d.fromDegrees(0)),
-          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO / 2, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
-              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
-              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT));
-
-      var autoCommandGroup =
-          driveTrainSubsystem.createCommandForTrajectory(trajectory)
-          .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
-        
-      autoChooser.setDefaultOption("Straight", autoCommandGroup);
-    } catch (Exception e) {
-      DriverStation.reportError("Failed to load auto", true);
-    }    
-  }
-
-  /**
-   * Makes a command that will pick up one ball with the Pixy
-   * @return command
-   */
-  private Command makePixyAutoCommand() {
-    // Pixy until ball within target and then drive for 250ms
-    // At the same time, run the intake and indexer
-    // Finally, stop the intake
-    return new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.5))
-        .andThen(driveTrainSubsystem::stop);
-  }
-
-  /**
-   * Makes a command to shoot the specified number of balls
-   * @param ballsToShoot number of balls to shoot
-   * @return command
-   */
-  private Command makeShootCommand(int ballsToShoot) {
-    return new ShootCommand(ballsToShoot, shooterSubsystem, indexerSubsystem, highLimelightSubsystem, 
-        lowLimelightSubsystem, driveTrainSubsystem);
-  }
-
   /**
    * Makes a command to select the limelight profile
    * @param profile profile to select
@@ -301,8 +203,7 @@ public class RobotContainer {
   }
 
   private void configureDriverDashboard() {
-    Dashboard.driverTab.add("Auto Chooser", autoChooser).withSize(2, 1).withPosition(0, 0);
-
+    autoGenerator.addDashboardWidgets(Dashboard.commandsTab);
     var indexerLayout = Dashboard.driverTab.getLayout("Indexer", BuiltInLayouts.kGrid)
         .withSize(2, 1).withPosition(0, 1)
         .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
@@ -331,7 +232,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    return autoGenerator.getAutonomousCommand();
   }
 
   public void resetOdometry() {
