@@ -33,6 +33,8 @@ public class TestEncoderCommand extends TestCommand {
 
     leftEncoderStart = driveTrain.getLeftEncoderPosition();
     rightEncoderStart = driveTrain.getRightEncoderPosition();
+    leftEncoder = leftEncoderStart;
+    rightEncoder = rightEncoderStart;
   }
 
   @Override
@@ -80,7 +82,7 @@ public class TestEncoderCommand extends TestCommand {
       rightSideEntry.setBoolean(rightEncoder - rightEncoderStart > 1000);
     } else if (this.power < 0) {
       leftSideEntry.setBoolean(leftEncoderStart - leftEncoder > 1000);
-      rightSideEntry.setBoolean(rightEncoderStart - rightEncoder < 1000);      
+      rightSideEntry.setBoolean(rightEncoderStart - rightEncoder > 1000);      
     }
 
     //stop drivetrain

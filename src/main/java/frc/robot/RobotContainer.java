@@ -60,6 +60,7 @@ import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.testMode.TestEncoderCommand;
 import frc.robot.testMode.TestIndexerCommand;
+import frc.robot.testMode.TestIntakeCommand;
 import frc.robot.testMode.TestLimelightCommand;
 
 /**
@@ -343,7 +344,7 @@ public class RobotContainer {
     new InstantCommand(driveTrainSubsystem::resetOdometry, driveTrainSubsystem).schedule();
   }
 
-  Command[] getTestModeCommands() {
+  public Command[] getTestModeCommands() {
     var commands = new ArrayList<Command>();
 
     //add encoder commands, chain forward/reverse with a 1 second wait in between to allow the drivetrain to stop
@@ -351,6 +352,11 @@ public class RobotContainer {
       .andThen(new WaitCommand(1))
       //add a 5 second reverse test
       .andThen(new TestEncoderCommand(-.25, driveTrainSubsystem).withTimeout(5)));
+    
+    // add intake encoder commands, run each direction with 1 second in between
+    commands.add(new TestIntakeCommand(true, intakeSubsystem).withTimeout(5)
+      .andThen(new WaitCommand(1))
+      .andThen(new TestIntakeCommand(false, intakeSubsystem)).withTimeout(5));
 
     //add commands for each limelight system
     commands.add(new TestLimelightCommand(highLimelightSubsystem).withTimeout(10));
