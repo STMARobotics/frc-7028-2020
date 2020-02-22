@@ -4,8 +4,8 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import frc.robot.commands.WaitForTargetCommand;
 import frc.robot.subsystems.LimelightSubsystem;
 
-public class TestLimelightCommand extends TestCommand
-{
+public class TestLimelightCommand extends TestCommand {
+
   private LimelightSubsystem limelight;
   private final WaitForTargetCommand waitCommand;
   
@@ -19,9 +19,15 @@ public class TestLimelightCommand extends TestCommand
     addRequirements(limelight);
 
     waitCommand = new WaitForTargetCommand(limelight);
-    limelight.enable();
-
+    
     networkTableEntry = getTestModeEntry(limelight.limelightConfig.getNetworkTableName() + "_TargetAcquired");
+  }
+
+  @Override
+  public void initialize() {
+    super.initialize();
+
+    waitCommand.initialize();
   }
 
   @Override

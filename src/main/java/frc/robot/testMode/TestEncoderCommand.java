@@ -3,14 +3,12 @@ package frc.robot.testMode;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import frc.robot.subsystems.DriveTrainSubsystem;
 
-public class TestEncoderCommand extends TestCommand
-{
+public class TestEncoderCommand extends TestCommand {
+
   private final double power;
   private final DriveTrainSubsystem driveTrain;
 
   private int leftEncoder = 0, rightEncoder = 0, leftEncoderStart, rightEncoderStart;
-
-  private boolean isFinished = false;
 
   NetworkTableEntry leftSideEntry, rightSideEntry;
   
@@ -43,10 +41,10 @@ public class TestEncoderCommand extends TestCommand
 
     driveTrain.tankDriveRaw(power, power);
 
-    AssertEncoderPositions();
+    assertEncoderPositions();
   }
 
-  private void AssertEncoderPositions() {
+  private void assertEncoderPositions() {
 
     var previousleft = leftEncoder;
     var previousRight = rightEncoder;
@@ -54,11 +52,11 @@ public class TestEncoderCommand extends TestCommand
     leftEncoder = driveTrain.getLeftEncoderPosition();
     rightEncoder = driveTrain.getRightEncoderPosition();
 
-    AssertEncoderPosition(leftSideEntry, previousleft, leftEncoder);
-    AssertEncoderPosition(rightSideEntry, previousRight, rightEncoder);
+    assertEncoderPosition(leftSideEntry, previousleft, leftEncoder);
+    assertEncoderPosition(rightSideEntry, previousRight, rightEncoder);
   }
 
-  private void AssertEncoderPosition(NetworkTableEntry tableEntry, int previous, int current){
+  private void assertEncoderPosition(NetworkTableEntry tableEntry, int previous, int current){
     
     //moving forward
     if (this.power > 0) {
@@ -68,10 +66,9 @@ public class TestEncoderCommand extends TestCommand
     }
   }
 
-
   @Override
   public boolean isFinished() {
-    return isFinished;
+    return false;
   }
 
   @Override

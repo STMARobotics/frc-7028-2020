@@ -3,8 +3,8 @@ package frc.robot.testMode;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import frc.robot.subsystems.IndexerSubsystem;
 
-public class TestIndexerCommand extends TestCommand
-{
+public class TestIndexerCommand extends TestCommand {
+
   private IndexerSubsystem indexer;
   private boolean reverse = false;
 
@@ -19,8 +19,13 @@ public class TestIndexerCommand extends TestCommand
     addRequirements(indexer);
 
     fullSensorEntry = getTestModeEntry("IndexerFullSensor");
+    fullSensorEntry.setBoolean(false);
+
     ballCountIntake = getTestModeEntry("BallCountIntakeTest");
+    ballCountIntake.setBoolean(false);
+    
     ballCountReverse = getTestModeEntry("BallCountReverseTest");
+    ballCountReverse.setBoolean(false);
   }
 
   @Override
@@ -41,10 +46,10 @@ public class TestIndexerCommand extends TestCommand
         indexer.runManually(.5);
         return;
       } 
-      else {
-        reverse = true;
-        fullSensorEntry.setBoolean(true);
-      }
+      
+      //indexer is full let's reverse
+      reverse = true;
+      fullSensorEntry.setBoolean(true);
     }
 
     //if we're reversing and ballcount greater than zero run the belt backward
