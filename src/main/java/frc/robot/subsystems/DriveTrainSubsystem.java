@@ -52,10 +52,10 @@ import frc.robot.Constants.TrajectoryConstants;
  */
 public class DriveTrainSubsystem extends SubsystemBase {
 
-  public final WPI_TalonSRX leftMaster = new WPI_TalonSRX(DEVICE_ID_LEFT_MASTER);
+  private final WPI_TalonSRX leftMaster = new WPI_TalonSRX(DEVICE_ID_LEFT_MASTER);
   private final WPI_VictorSPX leftSlaveOne = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE_ONE);
   private final WPI_VictorSPX leftSlaveTwo = new WPI_VictorSPX(DEVICE_ID_LEFT_SLAVE_TWO);
-  public final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
+  private final WPI_TalonSRX rightMaster = new WPI_TalonSRX(DEVICE_ID_RIGHT_MASTER);
   private final WPI_VictorSPX rightSlaveOne = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE_ONE);
   private final WPI_VictorSPX rightSlaveTwo = new WPI_VictorSPX(DEVICE_ID_RIGHT_SLAVE_TWO);
 
@@ -216,9 +216,18 @@ public class DriveTrainSubsystem extends SubsystemBase {
     if(useEncoders) {
       tankDriveVelocity(xLeftSpeed, xRightSpeed);
     } else {
-      leftMaster.set(FEED_FORWARD.calculate(xLeftSpeed) / 12);
-      rightMaster.set(FEED_FORWARD.calculate(xRightSpeed) / 12);
+      tankDriveRaw(FEED_FORWARD.calculate(xLeftSpeed) / 12, FEED_FORWARD.calculate(xRightSpeed) / 12);
     }
+  }
+
+  /**
+   * WARNING this method doesn't used encoders, squaring, or feed forward logic. Use at your own risk!
+   * @param leftSpeed
+   * @param rightSpeed
+   */
+  public void tankDriveRaw(double leftSpeed, double rightSpeed) {
+    leftMaster.set(leftSpeed);
+    rightMaster.set(rightSpeed);
   }
 
   /**

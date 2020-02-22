@@ -210,4 +210,7 @@ public final class Constants {
 
   }
 
+  public static final class TestModeConstants {
+    public static final String NetworkTableName = "Test Mode";
+  }
 }

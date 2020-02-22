@@ -13,6 +13,7 @@ import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
@@ -36,6 +37,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.DriveTrainConstants;
@@ -56,6 +58,8 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.PixyVisionSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.testMode.TestEncoderCommand;
+import frc.robot.testMode.TestLimelightCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -66,12 +70,12 @@ import frc.robot.subsystems.ShooterSubsystem;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
-  final LimelightSubsystem highLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
+  private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
+  private final LimelightSubsystem highLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
       .withNetworkTableName(LimeLightConstants.HIGH_NAME).withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
       .withMountDistanceFromCenter(LimeLightConstants.HIGH_DISTANCE_FROM_CENTER).build());
-  final LimelightSubsystem lowLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
+  private final LimelightSubsystem lowLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
       .withNetworkTableName(LimeLightConstants.LOW_NAME).withMountDepth(LimeLightConstants.LOW_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.LOW_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.LOW_MOUNT_ANGLE)
       .withMountDistanceFromCenter(LimeLightConstants.LOW_DISTANCE_FROM_CENTER).build());
@@ -336,5 +340,22 @@ public class RobotContainer {
 
   public void resetOdometry() {
     new InstantCommand(driveTrainSubsystem::resetOdometry, driveTrainSubsystem).schedule();
+  }
+
+  Command[] getTestModeCommands() {
+    var commands = new ArrayList<Command>();
+
+    //add encoder commands, chain forward/reverse with a 1 second wait in between to allow the drivetrain to stop
+    commands.add(new TestEncoderCommand(.25, driveTrainSubsystem).withTimeout(5)
+      .andThen(new WaitCommand(1))
+      //add a 5 second reverse test
+      .andThen(new TestEncoderCommand(-.25, driveTrainSubsystem).withTimeout(5)));
+
+    //add commands for each limelight system
+    commands.add(new TestLimelightCommand(highLimelightSubsystem).withTimeout(10));
+    commands.add(new TestLimelightCommand(lowLimelightSubsystem).withTimeout(10));
+
+    Command[] arr = new Command[commands.size()];
+    return arr;
   }
 }
