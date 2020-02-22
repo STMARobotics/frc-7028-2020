@@ -16,6 +16,8 @@ public class TestLimelightCommand extends TestCommand
 
     this.limelight = limelight;
 
+    addRequirements(limelight);
+
     waitCommand = new WaitForTargetCommand(limelight);
     limelight.enable();
 

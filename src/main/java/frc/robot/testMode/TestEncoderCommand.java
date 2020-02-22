@@ -18,7 +18,7 @@ public class TestEncoderCommand extends TestCommand
     this.power = power;
     this.driveTrain = driveTrain;
 
-    hasRequirement(driveTrain);
+    addRequirements(driveTrain);
 
     var direction = "Reverse";
     if (power > 0) {
