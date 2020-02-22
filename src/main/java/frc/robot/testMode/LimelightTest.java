@@ -34,6 +34,8 @@ public class LimelightTest implements ITestable {
 
       result.add(new TestResult(true, message));
       isFinished = true;
+
+      limelight.disable();
     }
 
     return result;
