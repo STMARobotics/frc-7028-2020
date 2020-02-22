@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.InstantWhenDisabledCommand;
@@ -36,6 +37,7 @@ import frc.robot.commands.PixyAssistCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TeleOperateCommand;
+import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -135,6 +137,18 @@ public class RobotContainer {
         .whileHeld(new ConditionalCommand(new StartEndCommand(() -> driverController.setRumble(RumbleType.kLeftRumble, 1)
         , () -> driverController.setRumble(RumbleType.kLeftRumble, 0)), pixyHeldCommand, indexerSubsystem::isFull))
         .whenReleased(pixyReleaseCommand);
+
+    new POVButton(driverController, 0)
+        .whenPressed(new TurnToAngleCommand(0, driveTrainSubsystem));
+
+    new POVButton(driverController, 90)
+        .whenPressed(new TurnToAngleCommand(90, driveTrainSubsystem));
+
+    new POVButton(driverController, 180)
+        .whenPressed(new TurnToAngleCommand(180, driveTrainSubsystem));
+
+    new POVButton(driverController, 270)
+        .whenPressed(new TurnToAngleCommand(-90, driveTrainSubsystem));
 
     // Operator
     new JoystickButton(operatorConsole, XboxController.Button.kA.value)
