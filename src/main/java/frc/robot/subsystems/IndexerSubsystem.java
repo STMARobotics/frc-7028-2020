@@ -41,26 +41,26 @@ public class IndexerSubsystem extends SubsystemBase {
     new Trigger(() -> spacerSensor.get()).whenActive(this::spaceSensorCleared).whenInactive(this::spaceSensorTripped);
   }
 
-  private void fullSensorTripped() {
+  void fullSensorTripped() {
     //should we set an isFull here or rely on the sensor always?
   }
 
-  private void fullSensorCleared() {
-    if(belt.get() >= 0) {
+  void fullSensorCleared() {
+    if(getBeltValue() >= 0) {
       decrementBallCount();
     }
   }
 
-  private void spaceSensorTripped() {
+  void spaceSensorTripped() {
 
-    if (belt.get() >= 0) {
+    if (getBeltValue() >= 0) {
       incrementBallCount(); //if we're moving forward then increment count as soon as we hold a ball here
     }
   }
 
-  private void spaceSensorCleared() {
+  void spaceSensorCleared() {
 
-    if (belt.get() < 0) {
+    if (getBeltValue() < 0) {
       decrementBallCount(); //if we clear the space sensor moving in reverse we lost a ball
     }
   }
@@ -71,6 +71,10 @@ public class IndexerSubsystem extends SubsystemBase {
 
   private void incrementBallCount() {
     ballCount = MathUtil.clamp(ballCount + 1, 0, 5);
+  }
+
+  public double getBeltValue() {
+    return belt.get();
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
