@@ -29,14 +29,48 @@ public class IndexerSubsystem extends SubsystemBase {
   private final DigitalInput spacerSensor = new DigitalInput(PORT_ID_SPACER_SENSOR);
   private final DigitalInput fullSensor = new DigitalInput(PORT_ID_FULL_SENSOR);
 
-  private boolean running;
   private boolean shooting;
   private int ballCount = 0;
 
   public IndexerSubsystem() {
     belt.configFactoryDefault();
     belt.setInverted(true);
-    new Trigger(() -> this.fullSensor.get()).whenActive(() -> ballCount = MathUtil.clamp(ballCount - 1, 0, 5));
+    
+    //add triggers for ball count management
+    new Trigger(() -> fullSensor.get()).whenActive(this::fullSensorCleared).whenInactive(this::fullSensorTripped);
+    new Trigger(() -> spacerSensor.get()).whenActive(this::spaceSensorCleared).whenInactive(this::spaceSensorTripped);
+  }
+
+  private void fullSensorTripped() {
+    //should we set an isFull here or rely on the sensor always?
+  }
+
+  private void fullSensorCleared() {
+    if(belt.get() >= 0) {
+      decrementBallCount();
+    }
+  }
+
+  private void spaceSensorTripped() {
+
+    if (belt.get() >= 0) {
+      incrementBallCount(); //if we're moving forward then increment count as soon as we hold a ball here
+    }
+  }
+
+  private void spaceSensorCleared() {
+
+    if (belt.get() < 0) {
+      decrementBallCount(); //if we clear the space sensor moving in reverse we lost a ball
+    }
+  }
+
+  private void decrementBallCount() {
+    ballCount = MathUtil.clamp(ballCount - 1, 0, 5);
+  }
+
+  private void incrementBallCount() {
+    ballCount = MathUtil.clamp(ballCount + 1, 0, 5);
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
@@ -57,13 +91,11 @@ public class IndexerSubsystem extends SubsystemBase {
   private void run() {
     belt.set(BELT_RUN_SPEED);
     shooting = false;
-    running = true;
   }
   
   private void stop() {
     belt.set(0.0);
     shooting = false;
-    running = false;
   }
 
   public void reverse() {
@@ -75,9 +107,7 @@ public class IndexerSubsystem extends SubsystemBase {
     // sensors return false when something is detected
     if ((intakeSensor.get() && spacerSensor.get() && fullSensor.get()) ||
         (!fullSensor.get() || (spacerSensor.get() && intakeSensor.get()))) {
-      if (running) {
-        ballCount = MathUtil.clamp(ballCount + 1, 0, 5);
-      }
+      
       stop();
     } else {
       run();
