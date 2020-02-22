@@ -115,6 +115,7 @@ public final class Constants {
     public static final double kP = 1.1;
     public static final double kD = 0.3;
     public static final double AIM_TOLERANCE = 0.1;
+    public static final double AIM_VELOCITY_TOLERANCE = 1;
 
     public static final double RANGE_HIGH = 1;
     public static final double RANGE_LOW = -1;
@@ -207,6 +208,12 @@ public final class Constants {
   public static final class IntakeConstants {
 
     public static final int DEVICE_ID_INTAKE = 7;
+
+  }
+
+  public static final class ClimbConstants {
+    
+    public static final int DEVICE_ID_CLIMB = 8;
 
   }
 
