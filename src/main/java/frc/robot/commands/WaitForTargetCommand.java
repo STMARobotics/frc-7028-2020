@@ -20,4 +20,10 @@ public class WaitForTargetCommand extends VisionCommandBase {
   public boolean isFinished() {
     return getTargetAcquired() != null;
   }
+
+  @Override
+  public void end(boolean interrupted) {
+    // Don't call super so the Limelight stays enabled
+  }
+
 }
