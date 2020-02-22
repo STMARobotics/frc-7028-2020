@@ -12,4 +12,10 @@ public interface ILimelightSubsystem {
   double getFilteredY();
 
   double getDistanceToTarget();
+
+  long getTargetLastSeen();
+
+  void enable();
+
+  void disable();
 }

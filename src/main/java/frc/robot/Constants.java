@@ -114,7 +114,7 @@ public final class Constants {
 
     public static final double kP = 1.1;
     public static final double kD = 0.3;
-    public static final double kF = 0.25;
+    public static final double AIM_TOLERANCE = 0.1;
 
     public static final double RANGE_HIGH = 1;
     public static final double RANGE_LOW = -1;
@@ -147,6 +147,9 @@ public final class Constants {
     /** Angle of the limelight in degrees */
     public static final double HIGH_MOUNT_ANGLE = 20.0;
     public static final double LOW_MOUNT_ANGLE = 25.0;
+
+    public static final String LOW_NAME = "limelight-low";
+    public static final String HIGH_NAME = "limelight-high";
 
   }
 
@@ -182,6 +185,11 @@ public final class Constants {
     public static final double kV = 0.137;
     public static final double kA = 0.0614;
 
+    public static final double kP = 0.0005;
+    public static final double RAMP_RATE = 0.2;
+
+    public static final double SHOOT_TIME = 0.5;
+
   }
 
   public static final class IndexerConstants {
@@ -192,7 +200,7 @@ public final class Constants {
     public static final int PORT_ID_SPACER_SENSOR = 1;
     public static final int PORT_ID_FULL_SENSOR = 2;
 
-    public static final double BELT_RUN_SPEED = 0.4;
+    public static final double BELT_RUN_SPEED = 0.5;
 
   }
 

@@ -94,6 +94,7 @@ Icon
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
+networktables.ini
 
 # Directories potentially created on remote AFP share
 .AppleDB

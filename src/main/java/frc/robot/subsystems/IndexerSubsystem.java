@@ -31,18 +31,18 @@ public class IndexerSubsystem extends SubsystemBase {
 
   private boolean running;
   private boolean shooting;
-  private int state = 0;
+  private int ballCount = 0;
 
   public IndexerSubsystem() {
     belt.configFactoryDefault();
     belt.setInverted(true);
-    new Trigger(() -> this.fullSensor.get()).whenActive(() -> state = MathUtil.clamp(state - 1, 0, 5));
+    new Trigger(() -> this.fullSensor.get()).whenActive(() -> ballCount = MathUtil.clamp(ballCount - 1, 0, 5));
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
     var detailDashboard = dashboard.getLayout("Detail", BuiltInLayouts.kGrid)
         .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
-    dashboard.addNumber("Balls", () -> state).withWidget(BuiltInWidgets.kDial)
+    dashboard.addNumber("Balls", () -> ballCount).withWidget(BuiltInWidgets.kDial)
         .withProperties(Map.of("min", 0, "max", 5));
     detailDashboard.addBoolean("Intake", () -> intakeSensor.get());
     detailDashboard.addBoolean("Spacer", () -> spacerSensor.get());
@@ -76,9 +76,7 @@ public class IndexerSubsystem extends SubsystemBase {
     if ((intakeSensor.get() && spacerSensor.get() && fullSensor.get()) ||
         (!fullSensor.get() || (spacerSensor.get() && intakeSensor.get()))) {
       if (running) {
-        state = MathUtil.clamp(state + 1, 0, 5);
-      } if (!fullSensor.get()) {
-        state = 5;
+        ballCount = MathUtil.clamp(ballCount + 1, 0, 5);
       }
       stop();
     } else {
@@ -110,6 +108,18 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public boolean isFull() {
     return !fullSensor.get();
+  }
+
+  public boolean isRunning() {
+    return belt.get() != 0;
+  }
+
+  public int getBallCount() {
+    return ballCount;
+  }
+
+  public void resetBallCount(int ballCount) {
+    this.ballCount = ballCount;
   }
   
 }

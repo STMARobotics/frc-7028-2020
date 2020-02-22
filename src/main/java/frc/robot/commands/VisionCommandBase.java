@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import java.util.Arrays;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.ILimelightSubsystem;
@@ -23,6 +25,16 @@ public class VisionCommandBase extends CommandBase {
     this.targetLostDelayMs = delayMs;
   }
 
+  @Override
+  public void initialize() {
+    Arrays.stream(limelights).forEach((l) -> l.enable());
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    Arrays.stream(limelights).forEach((l) -> l.disable());
+  }
+
   /**
    * Returns true if tv == 1.0, once acquired delays returning false for configured amount of time
    * @return
@@ -40,7 +52,7 @@ public class VisionCommandBase extends CommandBase {
       }
   
       //putting a buffer on the logic here when switching from true to false, don't 'lose' the target unless we haven't seen it for N milliseconds
-      if (targetValue.value == Constants.LimeLightConstants.TARGET_ACQUIRED || System.currentTimeMillis() - targetValue.updateTime < targetLostDelayMs) {
+      if (targetValue.value == Constants.LimeLightConstants.TARGET_ACQUIRED || System.currentTimeMillis() - limelight.getTargetLastSeen() < targetLostDelayMs) {
         return limelight;
       }
     }

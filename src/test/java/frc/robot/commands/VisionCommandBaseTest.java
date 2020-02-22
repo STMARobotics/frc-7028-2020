@@ -28,7 +28,7 @@ public class VisionCommandBaseTest {
   @Before
   public void init() {
     
-    command = new VisionCommandBase(limelightHigh, limelightLow);
+    command = new VisionCommandBase(500, limelightHigh, limelightLow);
   }
 
   @Test
@@ -60,8 +60,11 @@ public class VisionCommandBaseTest {
   @Test
   public void testTargetValidValueFalseDelayNotPassed() {
     //arrange
+    var lastSeen = System.currentTimeMillis();
     when(limelightHigh.getRawTargetValid()).thenReturn(null);
-    when(limelightLow.getRawTargetValid()).thenReturn(new DoubleEntryValue(0.0));
+    
+    when(limelightLow.getRawTargetValid()).thenReturn(new DoubleEntryValue(0));
+    when(limelightLow.getTargetLastSeen()).thenReturn(lastSeen);
     
     //act
     var actual = command.getTargetAcquired();

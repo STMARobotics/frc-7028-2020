@@ -91,14 +91,14 @@ public class DriveTrainSubsystem extends SubsystemBase {
     leftSlaveTwo.configFactoryDefault();
 
     enableEncoders();
-
+    
     setNeutralMode(NeutralMode.Brake);
-
+    
+    rightMaster.setSensorPhase(false);
     rightMaster.setInverted(true);
     rightSlaveOne.setInverted(true);
     rightSlaveTwo.setInverted(true);
-    rightMaster.setSensorPhase(true);
-    leftMaster.setSensorPhase(true);
+    leftMaster.setSensorPhase(false);
     rightMaster.overrideLimitSwitchesEnable(false);
     leftMaster.overrideLimitSwitchesEnable(false);
 
@@ -109,10 +109,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
-    dashboard.add(rightMaster);
-    dashboard.add(leftMaster);
     dashboard.addString("Pose", () -> differentialDriveOdometry.getPoseMeters().toString());
-    
+
     var useEncodersEntry = dashboard.addPersistent("Use encoders", useEncoders)
         .withWidget(BuiltInWidgets.kToggleSwitch).getEntry();
     useEncodersEntry.addListener(this::handleEncoderEntry, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
@@ -231,11 +229,8 @@ public class DriveTrainSubsystem extends SubsystemBase {
    * @param rightVelocity right velocity in meters per second
    */
   public void tankDriveVelocity(double leftVelocity, double rightVelocity) {
-    var leftAccel = (leftVelocity - edgesPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity())) / .02;
-    var rightAccel = (rightVelocity - edgesPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity())) / .02;
-    
-    var leftFeedForwardVolts = FEED_FORWARD.calculate(leftVelocity, leftAccel);
-    var rightFeedForwardVolts = FEED_FORWARD.calculate(rightVelocity, rightAccel);
+    var leftFeedForwardVolts = FEED_FORWARD.calculate(leftVelocity);
+    var rightFeedForwardVolts = FEED_FORWARD.calculate(rightVelocity);
 
     leftMaster.set(
         ControlMode.Velocity, 
@@ -346,7 +341,7 @@ public class DriveTrainSubsystem extends SubsystemBase {
             new RamseteController(TrajectoryConstants.RAMSETE_B, TrajectoryConstants.RAMSETE_ZETA),
             DriveTrainConstants.DRIVE_KINEMATICS,
             this::tankDriveVelocity,
-            this).andThen(this::stop, this),
+            this),
         new PrintCommand("Cannot run trajectory because encoders are unavailable!!"),
         this::isEncodersAvailable);
   }
