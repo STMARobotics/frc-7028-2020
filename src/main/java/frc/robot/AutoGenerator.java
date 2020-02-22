@@ -21,6 +21,7 @@ import frc.robot.commands.IndexCommand;
 import frc.robot.commands.InstantWhenDisabledCommand;
 import frc.robot.commands.PixyAssistCommand;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.commands.WaitForTargetCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -59,6 +60,7 @@ public class AutoGenerator {
   public void configureAutonomous() {
     configureShootingAuto();
     configureMoveAuto();
+    configureRightAuto();
   }
 
   public void addDashboardWidgets(ShuffleboardTab dashboard) {
@@ -108,6 +110,67 @@ public class AutoGenerator {
       autoChooser.setDefaultOption("Shooting", autoCommandGroup);
     } catch (Exception e) {
       DriverStation.reportError("Failed to load auto: shooting", true);
+    }
+  }
+
+  private void configureRightAuto() {
+    try {
+      var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-36), Rotation2d.fromDegrees(26));
+      var endPose = new Pose2d(inchesToMeters(178), inchesToMeters(-36), Rotation2d.fromDegrees(0));      
+
+      var trajectory = TrajectoryGenerator.generateTrajectory(
+          startPose,
+          Collections.emptyList(),
+          endPose,
+          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
+              .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.6));
+
+      var startPoseTwo = new Pose2d(inchesToMeters(379), inchesToMeters(-26), Rotation2d.fromDegrees(0));
+      var endPoseTwo = new Pose2d(inchesToMeters(315), inchesToMeters(-36), Rotation2d.fromDegrees(20));    
+
+      var trajectoryTwo = TrajectoryGenerator.generateTrajectory(
+        startPoseTwo,
+        Collections.emptyList(),
+        endPoseTwo,
+        new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+            .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+            .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
+            .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.6));
+
+      var trenchPickup = makePixyAutoCommand()
+          .andThen(makePixyAutoCommand())
+          .andThen(makePixyAutoCommand())
+          .andThen(makePixyAutoCommand())
+          .andThen(new WaitUntilCommand(() -> indexerSubsystem.getBallCount() >= 4).withTimeout(3))
+          .deadlineWith(
+              new RunCommand(intakeSubsystem::intake, intakeSubsystem),
+              new IndexCommand(indexerSubsystem))
+          .andThen(intakeSubsystem::stopIntake);
+
+      var initialPose = new Pose2d(trajectory.getInitialPose().getTranslation(), Rotation2d.fromDegrees(0));
+
+      var autoCommandGroup =
+          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+              .andThen(()-> driveTrainSubsystem.setCurrentPose(initialPose), driveTrainSubsystem)
+              .andThen(makeLimelightProfileCommand(Profile.NEAR))
+              .andThen(new TurnToAngleCommand(26, driveTrainSubsystem))
+              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+              .andThen(makeShootCommand(3))
+              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
+              .andThen(makeLimelightProfileCommand(Profile.FAR))
+              .andThen(trenchPickup)
+              .andThen(intakeSubsystem::stopIntake, intakeSubsystem)
+              .andThen(driveTrainSubsystem::stop, driveTrainSubsystem)
+              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo)
+                  .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
+                  .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))
+              .andThen(makeShootCommand(4));
+        
+      autoChooser.setDefaultOption("Right Auto", autoCommandGroup);
+    } catch (Exception e) {
+      DriverStation.reportError("Failed to load auto: right", true);
     }
   }
 
