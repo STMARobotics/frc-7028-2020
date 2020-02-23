@@ -92,10 +92,12 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
     configureSubsystemCommands();
+    
+    autoGenerator.configureAutonomous();
+
     configureSubsystemDashboard();
     // configureCommandDashboard();
     configureDriverDashboard();
-    autoGenerator.configureAutonomous();
   }
 
   /**
@@ -223,7 +225,7 @@ public class RobotContainer {
   }
 
   private void configureDriverDashboard() {
-    autoGenerator.addDashboardWidgets(Dashboard.commandsTab);
+    autoGenerator.addDashboardWidgets(Dashboard.driverTab);
     var indexerLayout = Dashboard.driverTab.getLayout("Indexer", BuiltInLayouts.kGrid)
         .withSize(2, 1).withPosition(0, 1)
         .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
