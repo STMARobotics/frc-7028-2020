@@ -109,8 +109,8 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public void intake() {
     // sensors return false when something is detected
-    if ((intakeSensor.get() && spacerSensor.get() && fullSensor.get()) ||
-        (!fullSensor.get() || (spacerSensor.get() && intakeSensor.get()))) {
+    if ((intakeSensor.get() && spacerSensor.get() && fullSensor.get()) || //if all sensors are clear stop the belt
+        (!fullSensor.get() || (spacerSensor.get() && intakeSensor.get()))) {  //if fullsensor is tripped OR intake and 2nd sensor are clear
       
       stop();
     } else {

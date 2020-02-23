@@ -218,9 +218,18 @@ public class DriveTrainSubsystem extends SubsystemBase {
     if(useEncoders) {
       tankDriveVelocity(xLeftSpeed, xRightSpeed);
     } else {
-      leftMaster.set(FEED_FORWARD.calculate(xLeftSpeed) / 12);
-      rightMaster.set(FEED_FORWARD.calculate(xRightSpeed) / 12);
+      tankDriveRaw(FEED_FORWARD.calculate(xLeftSpeed) / 12, FEED_FORWARD.calculate(xRightSpeed) / 12);
     }
+  }
+
+  /**
+   * WARNING this method doesn't used encoders, squaring, or feed forward logic. Use at your own risk!
+   * @param leftSpeed
+   * @param rightSpeed
+   */
+  public void tankDriveRaw(double leftSpeed, double rightSpeed) {
+    leftMaster.set(leftSpeed);
+    rightMaster.set(rightSpeed);
   }
 
   /**
@@ -384,5 +393,4 @@ public class DriveTrainSubsystem extends SubsystemBase {
   public static double metersPerSecToEdgesPerDecisec(double metersPerSec) {
     return metersToEdges(metersPerSec) * .1d;
   }
-
 }

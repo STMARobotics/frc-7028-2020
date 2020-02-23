@@ -4,6 +4,7 @@ import static frc.robot.Constants.IntakeConstants.DEVICE_ID_INTAKE;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,6 +20,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public IntakeSubsystem(Supplier<Boolean> isIndexerReady) {
     this.isIndexerReady = isIndexerReady;
     intakeMotor.configFactoryDefault();
+    intakeMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);
   }
 
   public void intake() {
@@ -35,6 +37,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void stopIntake() {
     intakeMotor.set(0.0);
+  }
+
+  public int getEncoderPosition() {
+    return intakeMotor.getSelectedSensorPosition();
   }
   
 }

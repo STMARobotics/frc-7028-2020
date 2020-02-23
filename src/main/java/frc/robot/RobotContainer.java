@@ -12,6 +12,7 @@ import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Map;
 
 import edu.wpi.first.cameraserver.CameraServer;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.LimeLightConstants;
@@ -47,6 +49,10 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.PixyVisionSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.testMode.TestEncoderCommand;
+import frc.robot.testMode.TestIndexerCommand;
+import frc.robot.testMode.TestIntakeCommand;
+import frc.robot.testMode.TestLimelightCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -256,5 +262,36 @@ public class RobotContainer {
 
   public void resetOdometry() {
     new InstantCommand(driveTrainSubsystem::resetOdometry, driveTrainSubsystem).schedule();
+  }
+
+  public Command[] getTestModeCommands() {
+    var commands = new ArrayList<Command>();
+
+    var testDrivetrainEntry = Dashboard.testModeTab.addPersistent("Test Drivetrain", false)
+        .withWidget(BuiltInWidgets.kToggleSwitch).getEntry();
+    
+    var testDrivetrain = testDrivetrainEntry.getBoolean(false);
+
+    if (testDrivetrain) {
+      //add encoder commands, chain forward/reverse with a 1 second wait in between to allow the drivetrain to stop
+      commands.add(new TestEncoderCommand(.25, driveTrainSubsystem).withTimeout(5)
+        .andThen(new WaitCommand(1))
+        //add a 5 second reverse test
+        .andThen(new TestEncoderCommand(-.25, driveTrainSubsystem).withTimeout(5)));
+    }
+
+    // add intake encoder commands, run each direction with 1 second in between
+    commands.add(new TestIntakeCommand(true, intakeSubsystem).withTimeout(5)
+      .andThen(new WaitCommand(1))
+      .andThen(new TestIntakeCommand(false, intakeSubsystem)).withTimeout(5));
+
+    //add commands for each limelight system
+    commands.add(new TestLimelightCommand(highLimelightSubsystem).withTimeout(10));
+    commands.add(new TestLimelightCommand(lowLimelightSubsystem).withTimeout(10));
+
+    commands.add(new TestIndexerCommand(indexerSubsystem).withTimeout(60));
+
+    Command[] arr = new Command[commands.size()];
+    return commands.toArray(arr);
   }
 }

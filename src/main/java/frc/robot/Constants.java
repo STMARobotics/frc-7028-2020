@@ -211,6 +211,10 @@ public final class Constants {
 
   }
 
+  public static final class TestModeConstants {
+    public static final String NetworkTableName = "Test Mode";
+  }
+  
   public static final class ClimbConstants {
     
     public static final int DEVICE_ID_CLIMB = 8;
