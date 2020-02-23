@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -264,12 +265,19 @@ public class RobotContainer {
   public Command[] getTestModeCommands() {
     var commands = new ArrayList<Command>();
 
-    //add encoder commands, chain forward/reverse with a 1 second wait in between to allow the drivetrain to stop
-    commands.add(new TestEncoderCommand(.25, driveTrainSubsystem).withTimeout(5)
-      .andThen(new WaitCommand(1))
-      //add a 5 second reverse test
-      .andThen(new TestEncoderCommand(-.25, driveTrainSubsystem).withTimeout(5)));
+    var testDrivetrainEntry = Dashboard.testModeTab.addPersistent("Test Drivetrain", false)
+        .withWidget(BuiltInWidgets.kToggleSwitch).getEntry();
     
+    var testDrivetrain = testDrivetrainEntry.getBoolean(false);
+
+    if (testDrivetrain) {
+      //add encoder commands, chain forward/reverse with a 1 second wait in between to allow the drivetrain to stop
+      commands.add(new TestEncoderCommand(.25, driveTrainSubsystem).withTimeout(5)
+        .andThen(new WaitCommand(1))
+        //add a 5 second reverse test
+        .andThen(new TestEncoderCommand(-.25, driveTrainSubsystem).withTimeout(5)));
+    }
+
     // add intake encoder commands, run each direction with 1 second in between
     commands.add(new TestIntakeCommand(true, intakeSubsystem).withTimeout(5)
       .andThen(new WaitCommand(1))

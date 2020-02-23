@@ -38,7 +38,7 @@ public class TestIndexerCommand extends TestCommand {
       ballCountIntake.setBoolean(indexer.getBallCount() > 0);
     
       if (indexer.getBallCount() == 0) {
-        indexer.intake();
+        indexer.intake(); //this will run the belt only if both
         return;
       }
 
