@@ -84,9 +84,11 @@ public class DriveTrainSubsystem extends SubsystemBase {
     talonConfig.openloopRamp = DriveTrainConstants.OPEN_LOOP_RAMP;
 
     rightMaster.configAllSettings(talonConfig);
+    rightMaster.enableVoltageCompensation(true);
     rightSlaveOne.configFactoryDefault();
     rightSlaveTwo.configFactoryDefault();
     leftMaster.configAllSettings(talonConfig);
+    leftMaster.enableVoltageCompensation(true);
     leftSlaveOne.configFactoryDefault();
     leftSlaveTwo.configFactoryDefault();
 
