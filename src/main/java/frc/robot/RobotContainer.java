@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -224,7 +225,9 @@ public class RobotContainer {
         .withSize(2, 1).withPosition(0, 1)
         .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
     indexerLayout.addBoolean("Full", indexerSubsystem::isFull);
-    indexerLayout.addBoolean("Running", indexerSubsystem::isRunning);
+    indexerLayout.addBoolean("Running", indexerSubsystem::isRunning);    
+    indexerLayout.addNumber("Balls", indexerSubsystem::getBallCount).withWidget(BuiltInWidgets.kDial)
+        .withProperties(Map.of("min", 0, "max", 5));
 
     var lowLimelight = CameraServer.getInstance().getServer(LimeLightConstants.LOW_NAME);
     if (lowLimelight != null) {
