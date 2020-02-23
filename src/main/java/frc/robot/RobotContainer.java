@@ -279,7 +279,7 @@ public class RobotContainer {
     commands.add(new TestLimelightCommand(highLimelightSubsystem).withTimeout(10));
     commands.add(new TestLimelightCommand(lowLimelightSubsystem).withTimeout(10));
 
-    commands.add(new TestIndexerCommand(indexerSubsystem).withTimeout(20));
+    commands.add(new TestIndexerCommand(indexerSubsystem).withTimeout(60));
 
     Command[] arr = new Command[commands.size()];
     return commands.toArray(arr);
