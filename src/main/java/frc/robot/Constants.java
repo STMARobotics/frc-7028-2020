@@ -45,13 +45,13 @@ public final class Constants {
         TRACK_WIDTH_METERS);
 
     /** Voltage needed to overcome the motor’s static friction. kS */
-    public static final double kS = 0.747;
+    public static final double kS = 1.26;
 
     /** Voltage needed to hold (or "cruise") at a given constant velocity. kV */
-    public static final double kV = 2.98;
+    public static final double kV = 2.96;
 
     /** Voltage needed to induce a given acceleration in the motor shaft. kA */
-    public static final double kA = 0.474;
+    public static final double kA = 0.813;
 
     public static final SimpleMotorFeedforward FEED_FORWARD = new SimpleMotorFeedforward(kS, kV, kA);
 
@@ -201,7 +201,7 @@ public final class Constants {
     public static final int PORT_ID_SPACER_SENSOR = 1;
     public static final int PORT_ID_FULL_SENSOR = 2;
 
-    public static final double BELT_RUN_SPEED = 0.5;
+    public static final double BELT_RUN_SPEED = 0.4;
 
   }
 

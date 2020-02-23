@@ -58,17 +58,18 @@ public class AutoGenerator {
   }
 
   public void configureAutonomous() {
-    configureShootingAuto();
+    configureCenterTrenchAuto();
     configureMoveAuto();
-    configureRightAuto();
-    configureCenterAuto();
+    configureRightTrenchAuto();
+    configureShieldGeneratorAuto();
+    configureStealAuto();
   }
 
   public void addDashboardWidgets(ShuffleboardTab dashboard) {
     dashboard.add("Auto Chooser", autoChooser).withSize(2, 1).withPosition(0, 0);
   }
 
-  private void configureShootingAuto() {
+  private void configureCenterTrenchAuto() {
     try {
       var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-95), Rotation2d.fromDegrees(0));
       var endPose = new Pose2d(inchesToMeters(178), inchesToMeters(-36), Rotation2d.fromDegrees(0));
@@ -107,13 +108,13 @@ public class AutoGenerator {
               .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
               .andThen(makeShootCommand(3));
         
-      autoChooser.setDefaultOption("Shooting", autoCommandGroup);
+      autoChooser.setDefaultOption("Center Trench", autoCommandGroup);
     } catch (Exception e) {
-      DriverStation.reportError("Failed to load auto: shooting", true);
+      DriverStation.reportError("Failed to load auto: Center Trench", true);
     }
   }
 
-  private void configureRightAuto() {
+  private void configureRightTrenchAuto() {
     try {
       var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-36), Rotation2d.fromDegrees(26));
       var endPose = new Pose2d(inchesToMeters(178), inchesToMeters(-36), Rotation2d.fromDegrees(0));      
@@ -165,16 +166,15 @@ public class AutoGenerator {
               .andThen(new TurnToAngleCommand(0, driveTrainSubsystem))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo)
                   .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
-                  .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))
               .andThen(makeShootCommand(4));
         
-      autoChooser.addOption("Right", autoCommandGroup);
+      autoChooser.addOption("Right Trench", autoCommandGroup);
     } catch (Exception e) {
-      DriverStation.reportError("Failed to load auto: right", true);
+      DriverStation.reportError("Failed to load auto: Right Trench", true);
     }
   }
 
-  private void configureCenterAuto() {
+  private void configureShieldGeneratorAuto() {
     try {
       var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-175), Rotation2d.fromDegrees(0));
       var endPose = new Pose2d(inchesToMeters(235), inchesToMeters(-187), Rotation2d.fromDegrees(22.5));      
@@ -227,9 +227,9 @@ public class AutoGenerator {
                   .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))
               .andThen(makeShootCommand(5));
         
-      autoChooser.addOption("Center Auto", autoCommandGroup);
+      autoChooser.addOption("Shield Generator", autoCommandGroup);
     } catch (Exception e) {
-      DriverStation.reportError("Failed to load auto: center", true);
+      DriverStation.reportError("Failed to load auto: Shield Generator", true);
     }
   }
 
@@ -304,6 +304,7 @@ public class AutoGenerator {
           new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
               .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
               .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
+              .setReversed(true)
               .setEndVelocity(0));
 
       var autoCommandGroup =
