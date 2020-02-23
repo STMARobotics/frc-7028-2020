@@ -112,8 +112,8 @@ public final class Constants {
 
   public static final class AimConstants {
 
-    public static final double kP = 1.1;
-    public static final double kD = 0.3;
+    public static final double kP = 2;
+    public static final double kD = 0.6;
     public static final double AIM_TOLERANCE = 0.1;
     public static final double AIM_VELOCITY_TOLERANCE = 1;
 
