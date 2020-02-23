@@ -64,7 +64,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testInit() {
-    CommandScheduler.getInstance().cancelAll();
+    var scheduler = CommandScheduler.getInstance();
+    scheduler.cancelAll();
     
     var testModeTable = NetworkTableInstance.getDefault().getTable(TestModeConstants.NetworkTableName);
 
@@ -72,7 +73,8 @@ public class Robot extends TimedRobot {
       testModeTable.delete(key);
     }
 
-    CommandScheduler.getInstance().schedule(robotContainer.getTestModeCommands());
+    scheduler.enable();
+    scheduler.schedule(robotContainer.getTestModeCommands());
   }
 
   @Override

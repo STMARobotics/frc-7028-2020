@@ -37,10 +37,10 @@ public class TestIndexerCommand extends TestCommand {
       //if we're moving forward set this based on ball count
       ballCountIntake.setBoolean(indexer.getBallCount() > 0);
     
-      if (indexer.getBallCount() == 0) {
-        indexer.intake();
-        return;
-      }
+      // if (indexer.getBallCount() == 0) {
+      //   indexer.intake();
+      //   return;
+      // }
 
       if (!indexer.isFull()) {
         indexer.runManually(.5);
