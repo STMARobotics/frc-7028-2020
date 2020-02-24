@@ -14,14 +14,15 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.JustShootCommand;
 import frc.robot.commands.PIDPixyAssistCommand;
+import frc.robot.commands.RunIntakeCommand;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.SpinUpShooterCommand;
 import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.commands.WaitForTargetCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
@@ -73,39 +74,8 @@ public class AutoGenerator {
   private void configureCenterTrenchAuto() {
     try {
       var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-95), Rotation2d.fromDegrees(0));
-      var endPose = new Pose2d(inchesToMeters(178), inchesToMeters(-42), Rotation2d.fromDegrees(0));
 
-      var trajectory = TrajectoryGenerator.generateTrajectory(
-          startPose,
-          Collections.emptyList(),
-          endPose,
-          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
-              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
-              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
-              .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.2));
-
-      var pickupAndSpinUp = makePixyAutoCommand()
-          .andThen(makeWaitForBallCount(3).withTimeout(3))
-          .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
-          .deadlineWith(new StartEndCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem::stopShooter, shooterSubsystem));
-
-      var trenchPickup = makePixyAutoCommand()
-          .andThen(makePixyAutoCommand())
-          .andThen(pickupAndSpinUp)
-          .deadlineWith(
-              new StartEndCommand(intakeSubsystem::intake, intakeSubsystem::stopIntake, intakeSubsystem),
-              new IndexCommand(indexerSubsystem))
-          .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
-
-      var autoCommandGroup =
-          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
-              .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
-              .andThen(new JustShootCommand(3, 125, shooterSubsystem, indexerSubsystem))
-              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
-              .andThen(makeLimelightProfileCommand(Profile.FAR))
-              .andThen(trenchPickup)
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-              .andThen(makeShootCommand(3));
+      var autoCommandGroup = makeShootPathTrenchShoot(125, startPose);
         
       autoChooser.setDefaultOption("Center Trench", autoCommandGroup);
     } catch (Exception e) {
@@ -115,44 +85,57 @@ public class AutoGenerator {
 
   private void configureRightTrenchAuto() {
     try {
-      var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-36), Rotation2d.fromDegrees(20));
-      var endPose = new Pose2d(inchesToMeters(178), inchesToMeters(-36), Rotation2d.fromDegrees(0));      
+      var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-42), Rotation2d.fromDegrees(20));
 
-      var trajectory = TrajectoryGenerator.generateTrajectory(
-          startPose,
-          Collections.emptyList(),
-          endPose,
-          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
-              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
-              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
-              .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.2));
-
-      var pickupAndSpinUp = makePixyAutoCommand()
-          .andThen(makeWaitForBallCount(3).withTimeout(3))
-          .deadlineWith(new StartEndCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem::stopShooter, shooterSubsystem));
-    
-      var trenchPickup = makePixyAutoCommand()
-          .andThen(makePixyAutoCommand())
-          .andThen(pickupAndSpinUp)
-          .deadlineWith(
-              new StartEndCommand(intakeSubsystem::intake, intakeSubsystem::stopIntake, intakeSubsystem),
-              new IndexCommand(indexerSubsystem))
-          .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
-
-      var autoCommandGroup =
-          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
-              .andThen(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem)
-              .andThen(new JustShootCommand(3, 140, shooterSubsystem, indexerSubsystem))
-              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
-              .andThen(makeLimelightProfileCommand(Profile.FAR))
-              .andThen(trenchPickup)
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-              .andThen(makeShootCommand(3));
+      var autoCommandGroup = makeShootPathTrenchShoot(140, startPose);
         
       autoChooser.addOption("Right Trench", autoCommandGroup);
     } catch (Exception e) {
       DriverStation.reportError("Failed to load auto: Right Trench", true);
     }
+  }
+
+  /**
+   * Makes a sequence that shoots 3 balls a given distance, drives from startPose to the trench, then picks up 3 balls
+   * in the trench and shoots.
+   * 
+   * @param distanceToTarget starting distance to the target
+   * @param startPose starting pose of the bot
+   * @param trenchPose ending pose of the bot
+   * @return command group
+   */
+  private Command makeShootPathTrenchShoot( int distanceToTarget, Pose2d startPose) {
+    var trenchPose = new Pose2d(inchesToMeters(178), inchesToMeters(-42), Rotation2d.fromDegrees(0));
+    var trajectory = TrajectoryGenerator.generateTrajectory(
+        startPose,
+        Collections.emptyList(),
+        trenchPose,
+        new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO * .5)
+            .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+            .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
+            .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.2));
+
+    var pickupAndSpinUp = makePixyAutoCommand()
+        .andThen(makeWaitForBallCount(3).withTimeout(3))
+        .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
+        .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+        .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem));
+
+    var trenchPickup = makePixyAutoCommand()
+        .andThen(makePixyAutoCommand())
+        .andThen(pickupAndSpinUp)
+        .deadlineWith(
+            new RunIntakeCommand(intakeSubsystem),
+            new IndexCommand(indexerSubsystem))
+        .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
+
+    return new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+        .andThen(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem)
+        .andThen(new JustShootCommand(3, distanceToTarget, shooterSubsystem, indexerSubsystem))
+        .andThen(makeLimelightProfileCommand(Profile.FAR))
+        .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
+        .andThen(trenchPickup)
+        .andThen(makeShootCommand(3));
   }
 
   private void configureShieldGeneratorAuto() {
@@ -205,7 +188,7 @@ public class AutoGenerator {
               .andThen(makeWaitForBallCount(5).withTimeout(3))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
                   .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
-                  .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))
+                  .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem))
               .andThen(makeShootCommand(5));
         
       autoChooser.addOption("Shield Generator", autoCommandGroup);
@@ -232,40 +215,39 @@ public class AutoGenerator {
       var endPoseTwo = new Pose2d(inchesToMeters(240), inchesToMeters(-296), Rotation2d.fromDegrees(-62));    
 
       var trajectoryTwo = TrajectoryGenerator.generateTrajectory(
-        startPoseTwo,
-        Collections.emptyList(),
-        endPoseTwo,
-        new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
-            .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
-            .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
-            .setReversed(true));
+          startPoseTwo,
+          Collections.emptyList(),
+          endPoseTwo,
+          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
+              .setReversed(true));
 
       var startPoseThree = new Pose2d(inchesToMeters(250), inchesToMeters(-305), Rotation2d.fromDegrees(-62));
       var endPoseThree = new Pose2d(inchesToMeters(180), inchesToMeters(-162), Rotation2d.fromDegrees(-35));    
       
       var trajectoryThree = TrajectoryGenerator.generateTrajectory(
-        startPoseThree,
-        Collections.emptyList(),
-        endPoseThree,
-        new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
-            .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
-            .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
-            .setReversed(true));
+          startPoseThree,
+          Collections.emptyList(),
+          endPoseThree,
+          new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
+              .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
+              .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
+              .setReversed(true));
 
-      var autoCommandGroup =
-          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
-              .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
-              .andThen(makeLimelightProfileCommand(Profile.FAR))
-              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
-              .andThen(makePixyWithIntakeCommand())
-              .andThen(makeWaitForBallCount(4).withTimeout(3))
-              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo))
-              .andThen(makePixyWithIntakeCommand())
-              .andThen(makeWaitForBallCount(5).withTimeout(3))
-              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
-                  .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
-                  .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem))
-              .andThen(makeShootCommand(5));
+      var autoCommandGroup = new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+          .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
+          .andThen(makeLimelightProfileCommand(Profile.FAR))
+          .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
+          .andThen(makePixyWithIntakeCommand())
+          .andThen(makeWaitForBallCount(4).withTimeout(3))
+          .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo))
+          .andThen(makePixyWithIntakeCommand())
+          .andThen(makeWaitForBallCount(5).withTimeout(3))
+          .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
+              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
+              .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem))
+          .andThen(makeShootCommand(5));
         
       autoChooser.addOption("Steal", autoCommandGroup);
     } catch (Exception e) {
@@ -288,14 +270,13 @@ public class AutoGenerator {
               .setReversed(true)
               .setEndVelocity(0));
 
-      var autoCommandGroup =
-          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
-              .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
-              .andThen(makeLimelightProfileCommand(Profile.NEAR))
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-              .andThen(makeShootCommand(3))
-              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
-              .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
+      var autoCommandGroup = new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+          .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
+          .andThen(makeLimelightProfileCommand(Profile.NEAR))
+          .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+          .andThen(makeShootCommand(3))
+          .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
+          .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
         
       autoChooser.addOption("Move", autoCommandGroup);
     } catch (Exception e) {

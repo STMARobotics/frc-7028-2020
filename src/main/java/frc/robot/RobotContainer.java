@@ -38,9 +38,11 @@ import frc.robot.commands.IndexCommand;
 import frc.robot.commands.InstantWhenDisabledCommand;
 import frc.robot.commands.PIDPixyAssistCommand;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.SpinUpShooterCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TeleOperateCommand;
 import frc.robot.commands.TurnToAngleCommand;
+import frc.robot.commands.WaitForTargetCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -188,6 +190,10 @@ public class RobotContainer {
             highLimelightSubsystem.disable();
             lowLimelightSubsystem.disable();
           }));
+    
+    new JoystickButton(operatorConsole, XboxController.Button.kY.value)
+        .whenPressed(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).perpetually()
+          .alongWith(new SpinUpShooterCommand(125, shooterSubsystem)));
   }
 
   private void configureSubsystemCommands() {
