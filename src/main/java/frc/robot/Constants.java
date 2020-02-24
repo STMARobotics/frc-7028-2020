@@ -187,7 +187,7 @@ public final class Constants {
     public static final double kP = 0.0005;
     public static final double RAMP_RATE = 0.2;
 
-    public static final double SHOOT_TIME = 0.5;
+    public static final double SHOOT_TIME = 0.25;
 
   }
 
