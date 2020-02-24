@@ -104,4 +104,8 @@ public class ShootCommand extends VisionCommandBase {
     indexerSubsystem.stopIndexer();
     driveTrainSubsystem.stop();
   }
+
+  public int getBallsShot() {
+    return ballsShot;
+  }
 }

@@ -1,26 +1,20 @@
 package frc.robot.commands;
 
-import static frc.robot.Constants.AimConstants.kD;
-import static frc.robot.Constants.AimConstants.kP;
-
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Constants.AimConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
 /**
- * Aims at the target and shoots at least a given number of times.
+ * Shoots at a target a specified distance away, at least a given number of
+ * times. This command does NOT aim it just shoots.
  */
 public class JustShootCommand extends CommandBase {
 
   private final ShooterSubsystem shooterSubsystem;
   private final IndexerSubsystem indexerSubsystem;
 
-  private final PIDController pidController = new PIDController(kP, 0, kD);
-  
   private final int ballsToShoot;
   private final int distance;
   private int ballsShot = 0;
@@ -35,7 +29,8 @@ public class JustShootCommand extends CommandBase {
    * @param shooterSubsystem
    * @param indexerSubsystem
    */
-  public JustShootCommand(int ballsToShoot, int distance, ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem) {
+  public JustShootCommand(
+        int ballsToShoot, int distance, ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem) {
 
     this.ballsToShoot = ballsToShoot;
     this.distance = distance;
@@ -43,25 +38,20 @@ public class JustShootCommand extends CommandBase {
     this.indexerSubsystem = indexerSubsystem;
 
     addRequirements(shooterSubsystem, indexerSubsystem);
-
-    pidController.setTolerance(AimConstants.AIM_TOLERANCE);
   }
 
   @Override
   public void initialize() {
-    super.initialize();
     noTarget = false;
     ballsShot = 0;
     wasFull = indexerSubsystem.isFull();
     endTimer.reset();
-    pidController.reset();
   }
 
   @Override
   public void execute() {
-    super.execute();
     shooterSubsystem.prepareToShoot(distance);
-    if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
+    if (shooterSubsystem.isReadyToShoot()) {
       indexerSubsystem.shoot();
     } else {
       indexerSubsystem.prepareToShoot();
@@ -80,8 +70,11 @@ public class JustShootCommand extends CommandBase {
 
   @Override
   public void end(boolean interrupted) {
-    super.end(interrupted);
     shooterSubsystem.stopShooter();
     indexerSubsystem.stopIndexer();
+  }
+
+  public int getBallsShot() {
+    return ballsShot;
   }
 }
