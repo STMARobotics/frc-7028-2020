@@ -1,9 +1,6 @@
 package frc.robot.commands;
 
-import static frc.robot.Constants.AimConstants.AIM_TOLERANCE;
-import static frc.robot.Constants.AimConstants.AIM_VELOCITY_TOLERANCE;
 import static frc.robot.Constants.AimConstants.kD;
-import static frc.robot.Constants.AimConstants.kP;
 
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -15,12 +12,13 @@ import frc.robot.subsystems.DriveTrainSubsystem;
 public class TurnToAngleCommand extends CommandBase {
 
   private final DriveTrainSubsystem driveTrainSubsystem;
-  private final PIDController pidController = new PIDController(kP, 0.0, kD);
+  private final PIDController pidController = new PIDController(.75, 0.0, kD);
 
   public TurnToAngleCommand(double angle, DriveTrainSubsystem driveTrainSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;
-    this.pidController.setTolerance(AIM_TOLERANCE, AIM_VELOCITY_TOLERANCE);
+    this.pidController.setTolerance(3);
     pidController.setSetpoint(angle);
+    pidController.enableContinuousInput(-180, 180);
 
     addRequirements(driveTrainSubsystem);
   }
@@ -32,7 +30,7 @@ public class TurnToAngleCommand extends CommandBase {
 
   @Override
   public void execute() {
-    double rotation = pidController.calculate(driveTrainSubsystem.getHeading());
+    double rotation = -pidController.calculate(driveTrainSubsystem.getCurrentPose().getRotation().getDegrees());
     driveTrainSubsystem.arcadeDrive(0, rotation, false);
   }
 
@@ -43,7 +41,7 @@ public class TurnToAngleCommand extends CommandBase {
 
   @Override
   public void end(boolean interrupted) {
-    driveTrainSubsystem.arcadeDrive(0, 0, false);
+    driveTrainSubsystem.stop();
   }
   
 }

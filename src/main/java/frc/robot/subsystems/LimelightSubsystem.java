@@ -210,4 +210,8 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     activeProfile = profile;
   }
 
+  public Profile getProfile() {
+    return activeProfile;
+  }
+
 }

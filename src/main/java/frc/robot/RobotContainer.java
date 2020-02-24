@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Map;
 
+import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -27,7 +28,6 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -36,7 +36,7 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.InstantWhenDisabledCommand;
-import frc.robot.commands.PixyAssistCommand;
+import frc.robot.commands.PIDPixyAssistCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TeleOperateCommand;
@@ -89,7 +89,13 @@ public class RobotContainer {
   private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, highLimelightSubsystem,
     lowLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem, pixyVision);
 
+  private final UsbCamera camera;
+
   public RobotContainer() {
+    camera = CameraServer.getInstance().startAutomaticCapture();
+    camera.setFPS(15);
+    camera.setResolution(320, 240);
+
     // Configure the button bindings
     configureButtonBindings();
     configureSubsystemCommands();
@@ -132,12 +138,12 @@ public class RobotContainer {
         .whenHeld(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
         .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
 
-    var pixyHeldCommand = new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(new ParallelCommandGroup(
-            new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(.5),
-            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
-        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
-        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))));
+    var pixyHeldCommand = new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision)
+        .andThen(
+          new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
+        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))
+        .deadlineWith(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
+        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem));
     
     var pixyReleaseCommand = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
@@ -173,6 +179,15 @@ public class RobotContainer {
     
     new JoystickButton(operatorConsole, XboxController.Button.kBumperRight.value)
         .whenPressed(makeLimelightProfileCommand(Profile.FAR));
+    
+    new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
+        .toggleWhenPressed(new StartEndCommand(() -> {
+            highLimelightSubsystem.enable();
+            lowLimelightSubsystem.enable();
+          }, () -> {
+            highLimelightSubsystem.disable();
+            lowLimelightSubsystem.disable();
+          }));
   }
 
   private void configureSubsystemCommands() {
@@ -226,23 +241,33 @@ public class RobotContainer {
   }
 
   private void configureDriverDashboard() {
+    // Auto chooser
     autoGenerator.addDashboardWidgets(Dashboard.driverTab);
+
+    // Indexer
     var indexerLayout = Dashboard.driverTab.getLayout("Indexer", BuiltInLayouts.kGrid)
         .withSize(2, 1).withPosition(0, 1)
         .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
     indexerLayout.addBoolean("Full", indexerSubsystem::isFull);
     indexerLayout.addBoolean("Running", indexerSubsystem::isRunning);    
     indexerLayout.addNumber("Balls", indexerSubsystem::getBallCount).withWidget(BuiltInWidgets.kDial)
-        .withProperties(Map.of("min", 0, "max", 5));
+        .withSize(2, 1).withProperties(Map.of("min", 0, "max", 5));
 
-    var lowLimelight = CameraServer.getInstance().getServer(LimeLightConstants.LOW_NAME);
-    if (lowLimelight != null) {
-      Dashboard.driverTab.add(lowLimelight.getSource()).withSize(2, 2).withPosition(1, 0);
-    }
+    // Cameras
+    Dashboard.driverTab.addString("Pipeline", () -> highLimelightSubsystem.getProfile().toString()).withPosition(6, 0);
+    Dashboard.driverTab.add(camera).withSize(4, 3).withPosition(2, 0);
+    // new WaitUntilCommand(() -> CameraServer.getInstance().getServer(LimeLightConstants.LOW_NAME) != null)
+    //     .andThen(()->{
+    //         var lowLimelight = CameraServer.getInstance().getServer(LimeLightConstants.LOW_NAME);
+    //         if (lowLimelight != null) {
+    //           Dashboard.driverTab.add(lowLimelight.getSource()).withSize(2, 2).withPosition(6, 0);
+    //         }
+    //     }).schedule();
+    
 
     var highLimelight = CameraServer.getInstance().getServer(LimeLightConstants.HIGH_NAME);
     if (highLimelight != null) {
-      Dashboard.driverTab.add(highLimelight.getSource()).withSize(2, 2).withPosition(3, 0);
+      Dashboard.driverTab.add(highLimelight.getSource()).withSize(2, 2).withPosition(6, 2);
     }
   }
 

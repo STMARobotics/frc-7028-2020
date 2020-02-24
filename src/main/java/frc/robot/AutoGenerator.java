@@ -14,12 +14,13 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.commands.IndexCommand;
-import frc.robot.commands.InstantWhenDisabledCommand;
-import frc.robot.commands.PixyAssistCommand;
+import frc.robot.commands.JustShootCommand;
+import frc.robot.commands.PIDPixyAssistCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.commands.WaitForTargetCommand;
@@ -72,7 +73,7 @@ public class AutoGenerator {
   private void configureCenterTrenchAuto() {
     try {
       var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-95), Rotation2d.fromDegrees(0));
-      var endPose = new Pose2d(inchesToMeters(178), inchesToMeters(-36), Rotation2d.fromDegrees(0));
+      var endPose = new Pose2d(inchesToMeters(178), inchesToMeters(-42), Rotation2d.fromDegrees(0));
 
       var trajectory = TrajectoryGenerator.generateTrajectory(
           startPose,
@@ -81,27 +82,25 @@ public class AutoGenerator {
           new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
               .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
               .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
-              .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.6));
+              .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.2));
 
       var pickupAndSpinUp = makePixyAutoCommand()
           .andThen(makeWaitForBallCount(3).withTimeout(3))
-          .deadlineWith(new RunCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem));
+          .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
+          .deadlineWith(new StartEndCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem::stopShooter, shooterSubsystem));
 
       var trenchPickup = makePixyAutoCommand()
           .andThen(makePixyAutoCommand())
           .andThen(pickupAndSpinUp)
           .deadlineWith(
-              new RunCommand(intakeSubsystem::intake, intakeSubsystem),
+              new StartEndCommand(intakeSubsystem::intake, intakeSubsystem::stopIntake, intakeSubsystem),
               new IndexCommand(indexerSubsystem))
-          .andThen(intakeSubsystem::stopIntake)
           .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
 
       var autoCommandGroup =
           new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
               .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
-              .andThen(makeLimelightProfileCommand(Profile.NEAR))
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-              .andThen(makeShootCommand(3))
+              .andThen(new JustShootCommand(3, 125, shooterSubsystem, indexerSubsystem))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
               .andThen(makeLimelightProfileCommand(Profile.FAR))
               .andThen(trenchPickup)
@@ -116,7 +115,7 @@ public class AutoGenerator {
 
   private void configureRightTrenchAuto() {
     try {
-      var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-36), Rotation2d.fromDegrees(26));
+      var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(-36), Rotation2d.fromDegrees(20));
       var endPose = new Pose2d(inchesToMeters(178), inchesToMeters(-36), Rotation2d.fromDegrees(0));      
 
       var trajectory = TrajectoryGenerator.generateTrajectory(
@@ -126,47 +125,29 @@ public class AutoGenerator {
           new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
               .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
               .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
-              .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.6));
+              .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.2));
 
-      var startPoseTwo = new Pose2d(inchesToMeters(379), inchesToMeters(-26), Rotation2d.fromDegrees(0));
-      var endPoseTwo = new Pose2d(inchesToMeters(315), inchesToMeters(-36), Rotation2d.fromDegrees(20));    
-
-      var trajectoryTwo = TrajectoryGenerator.generateTrajectory(
-        startPoseTwo,
-        Collections.emptyList(),
-        endPoseTwo,
-        new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
-            .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
-            .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
-            .setEndVelocity(0));
-
+      var pickupAndSpinUp = makePixyAutoCommand()
+          .andThen(makeWaitForBallCount(3).withTimeout(3))
+          .deadlineWith(new StartEndCommand(() -> shooterSubsystem.prepareToShoot(180), shooterSubsystem::stopShooter, shooterSubsystem));
+    
       var trenchPickup = makePixyAutoCommand()
           .andThen(makePixyAutoCommand())
-          .andThen(makePixyAutoCommand())
-          .andThen(makePixyAutoCommand())
-          .andThen(makeWaitForBallCount(4).withTimeout(3))
+          .andThen(pickupAndSpinUp)
           .deadlineWith(
-              new RunCommand(intakeSubsystem::intake, intakeSubsystem),
+              new StartEndCommand(intakeSubsystem::intake, intakeSubsystem::stopIntake, intakeSubsystem),
               new IndexCommand(indexerSubsystem))
-          .andThen(intakeSubsystem::stopIntake);
-
-      var initialPose = new Pose2d(trajectory.getInitialPose().getTranslation(), Rotation2d.fromDegrees(0));
+          .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
 
       var autoCommandGroup =
           new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
-              .andThen(()-> driveTrainSubsystem.setCurrentPose(initialPose), driveTrainSubsystem)
-              .andThen(makeLimelightProfileCommand(Profile.NEAR))
-              .andThen(new TurnToAngleCommand(26, driveTrainSubsystem))
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-              .andThen(makeShootCommand(3))
+              .andThen(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem)
+              .andThen(new JustShootCommand(3, 140, shooterSubsystem, indexerSubsystem))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
               .andThen(makeLimelightProfileCommand(Profile.FAR))
               .andThen(trenchPickup)
-              .andThen(intakeSubsystem::stopIntake, intakeSubsystem)
-              .andThen(new TurnToAngleCommand(0, driveTrainSubsystem))
-              .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo)
-                  .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
-              .andThen(makeShootCommand(4));
+              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+              .andThen(makeShootCommand(3));
         
       autoChooser.addOption("Right Trench", autoCommandGroup);
     } catch (Exception e) {
@@ -295,7 +276,7 @@ public class AutoGenerator {
   private void configureMoveAuto() {
     try {
       var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(0), Rotation2d.fromDegrees(0));
-      var endPose = new Pose2d(inchesToMeters(96), inchesToMeters(0), Rotation2d.fromDegrees(0));
+      var endPose = new Pose2d(inchesToMeters(90), inchesToMeters(0), Rotation2d.fromDegrees(0));
 
       var trajectory = TrajectoryGenerator.generateTrajectory(
           startPose,
@@ -326,8 +307,8 @@ public class AutoGenerator {
     // Pixy until ball within target and then drive for 250ms
     // At the same time, run the intake and indexer
     // Finally, stop the intake
-    return new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.5))
+    return new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision)
+        .andThen(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25))
         .andThen(driveTrainSubsystem::stop);
   }
 
@@ -353,7 +334,7 @@ public class AutoGenerator {
    * @return command
    */
   private Command makeLimelightProfileCommand(Profile profile) {
-    return new InstantWhenDisabledCommand(() -> {
+    return new InstantCommand(() -> {
         highLimelightSubsystem.setProfile(profile);
         lowLimelightSubsystem.setProfile(profile);
     }, highLimelightSubsystem, lowLimelightSubsystem);
