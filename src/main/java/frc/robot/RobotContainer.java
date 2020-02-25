@@ -39,6 +39,8 @@ import frc.robot.commands.IndexCommand;
 import frc.robot.commands.InstantWhenDisabledCommand;
 import frc.robot.commands.PIDPixyAssistCommand;
 import frc.robot.commands.RotateWheelCommand;
+import frc.robot.commands.RumbleCommand;
+import frc.robot.commands.RunIntakeCommand;
 import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
@@ -144,8 +146,10 @@ public class RobotContainer {
         }, intakeSubsystem);
 
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
-        .whenHeld(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
-        .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
+        .whenHeld(new ConditionalCommand(
+            new RumbleCommand(driverController, RumbleType.kLeftRumble),
+            new RunIntakeCommand(intakeSubsystem),
+            indexerSubsystem::isFull));
 
     var pixyHeldCommand = new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision)
         .andThen(
@@ -158,8 +162,10 @@ public class RobotContainer {
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
 
     new JoystickButton(driverController, XboxController.Button.kX.value)
-        .whileHeld(new ConditionalCommand(new StartEndCommand(() -> driverController.setRumble(RumbleType.kLeftRumble, 1)
-        , () -> driverController.setRumble(RumbleType.kLeftRumble, 0)), pixyHeldCommand, indexerSubsystem::isFull))
+        .whileHeld(new ConditionalCommand(
+            new RumbleCommand(driverController, RumbleType.kLeftRumble),
+            pixyHeldCommand,
+            indexerSubsystem::isFull))
         .whenReleased(pixyReleaseCommand);
 
     new POVButton(driverController, 0)
