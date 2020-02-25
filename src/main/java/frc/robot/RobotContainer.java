@@ -190,41 +190,41 @@ public class RobotContainer {
           }));
 
     // Operator
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RightLeftButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightLeftButton.value) // 5
         .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RightRightButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightRightButton.value) // 6
         .whenPressed(makeLimelightProfileCommand(Profile.FAR));
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftRightButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftRightButton.value) // 2
         .whenHeld(new SetColorCommand(controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftLeftButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftLeftButton.value) // 1
         .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftTopButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftTopButton.value) // 3
         .whenPressed(new RunCommand(controlPanelSubsystem::raiseArmPeriodic, controlPanelSubsystem));
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value) // 4
         .whenPressed(new RunCommand(controlPanelSubsystem::lowerArmPeriodic, controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value) // 8
         .whenPressed(new RunCommand(() -> {
-          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)){
+          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)){ // 10
             climbSubsystem.driveClimb(.5);  
           }
         }, climbSubsystem))
         .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickDown.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickDown.value) // 9
         .whenPressed(new RunCommand(() -> {
-          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)){
+          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)){ // 10
             climbSubsystem.driveClimb(-.4);  
           }
         }, climbSubsystem))
         .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RightTopButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightTopButton.value) // 7
         .whenPressed(() -> indexerSubsystem.resetBallCount(0), indexerSubsystem);
   }
 
