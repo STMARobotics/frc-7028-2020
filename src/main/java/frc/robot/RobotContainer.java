@@ -17,6 +17,7 @@ import java.util.Map;
 
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -37,10 +38,13 @@ import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.InstantWhenDisabledCommand;
 import frc.robot.commands.PIDPixyAssistCommand;
+import frc.robot.commands.RotateWheelCommand;
+import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TeleOperateCommand;
 import frc.robot.commands.TurnToAngleCommand;
+import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -76,6 +80,7 @@ public class RobotContainer {
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(indexerSubsystem::isReadyForBall);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
   private final PixyVisionSubsystem pixyVision = new PixyVisionSubsystem();
+  private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
@@ -87,14 +92,18 @@ public class RobotContainer {
     highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem);
 
   private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, highLimelightSubsystem,
-    lowLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem, pixyVision);
+    lowLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem, pixyVision, controlPanelSubsystem);
 
   private final UsbCamera camera;
 
   public RobotContainer() {
     camera = CameraServer.getInstance().startAutomaticCapture();
-    camera.setFPS(15);
-    camera.setResolution(320, 240);
+    try {
+      camera.setFPS(15);
+      camera.setResolution(320, 240);
+    } catch (Exception e) {
+      DriverStation.reportError("Failed to configure driver camera", true);
+    }
 
     // Configure the button bindings
     configureButtonBindings();
@@ -165,29 +174,7 @@ public class RobotContainer {
     new POVButton(driverController, 270)
         .whenPressed(new TurnToAngleCommand(-90, driveTrainSubsystem));
 
-    // Operator
-    // new JoystickButton(operatorConsole, XboxController.Button.kA.value)
-    //     .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem))
-    //     .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
-
-    // new JoystickButton(operatorConsole, XboxController.Button.kB.value)
-    //     .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(-1.0), indexerSubsystem))
-    //     .whenReleased(() -> indexerSubsystem.runManually(0.0), indexerSubsystem);
-
-    // new JoystickButton(operatorConsole, XboxController.Button.kBumperLeft.value)
-    //     .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
-    
-    // new JoystickButton(operatorConsole, XboxController.Button.kBumperRight.value)
-    //     .whenPressed(makeLimelightProfileCommand(Profile.FAR));
-
-    new JoystickButton(operatorConsole, OperatorConsoleButton.IndexFingerButton.value)
-        .toggleWhenPressed(new StartEndCommand(() -> {
-          makeLimelightProfileCommand(Profile.NEAR);
-        }, () -> {
-          makeLimelightProfileCommand(Profile.FAR);
-        }));
-    
-    new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
+    new JoystickButton(driverController, XboxController.Button.kStart.value)
         .toggleWhenPressed(new StartEndCommand(() -> {
             highLimelightSubsystem.enable();
             lowLimelightSubsystem.enable();
@@ -195,6 +182,26 @@ public class RobotContainer {
             highLimelightSubsystem.disable();
             lowLimelightSubsystem.disable();
           }));
+
+    // Operator
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightThumbButton.value)
+        .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
+    
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftThumbButton.value)
+        .whenPressed(makeLimelightProfileCommand(Profile.FAR));
+
+    new JoystickButton(operatorConsole, OperatorConsoleButton.MiddleFingerButton.value)
+        .whenHeld(new SetColorCommand(controlPanelSubsystem));
+    
+    new JoystickButton(operatorConsole, OperatorConsoleButton.IndexFingerButton.value)
+        .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
+    
+    new JoystickButton(operatorConsole, OperatorConsoleButton.PinkyFingerButton.value)
+        .whenPressed(new RunCommand(controlPanelSubsystem::raiseArmPeriodic, controlPanelSubsystem));
+
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RingFingerButton.value)
+        .whenPressed(new RunCommand(controlPanelSubsystem::lowerArmPeriodic, controlPanelSubsystem));
+    
   }
 
   private void configureSubsystemCommands() {
@@ -263,19 +270,6 @@ public class RobotContainer {
     // Cameras
     Dashboard.driverTab.addString("Pipeline", () -> highLimelightSubsystem.getProfile().toString()).withPosition(6, 0);
     Dashboard.driverTab.add(camera).withSize(4, 3).withPosition(2, 0);
-    // new WaitUntilCommand(() -> CameraServer.getInstance().getServer(LimeLightConstants.LOW_NAME) != null)
-    //     .andThen(()->{
-    //         var lowLimelight = CameraServer.getInstance().getServer(LimeLightConstants.LOW_NAME);
-    //         if (lowLimelight != null) {
-    //           Dashboard.driverTab.add(lowLimelight.getSource()).withSize(2, 2).withPosition(6, 0);
-    //         }
-    //     }).schedule();
-    
-
-    var highLimelight = CameraServer.getInstance().getServer(LimeLightConstants.HIGH_NAME);
-    if (highLimelight != null) {
-      Dashboard.driverTab.add(highLimelight.getSource()).withSize(2, 2).withPosition(6, 2);
-    }
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {

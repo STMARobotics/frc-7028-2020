@@ -154,7 +154,8 @@ public final class Constants {
 
   public static final class ControlPanelConstants {
 
-    public static final int DEVICE_ID_CONTROL_PANEL = 7;
+    public static final int DEVICE_ID_CONTROL_PANEL = 10;
+    public static final int DEVICE_ID_CONTROL_PANEL_ARM = 11;
 
     public static final int SENSOR_UNITS_PER_ROTATION = 8192;
 
@@ -167,6 +168,17 @@ public final class Constants {
     public static final double kP_VELOCITY = 0.1;
     public static final double kP_POSITION = 1;
     public static final double kD_POSITION = 0;
+
+    public static final int ARM_SENSOR_UNITS_PER_ROTATION = 8192;
+    public static final double ARM_EDGES_PER_DEGREE = ARM_SENSOR_UNITS_PER_ROTATION / 360.0;
+
+    public static final double kP_ARM = 0.1;
+    public static final double ARM_GRAVITY_FEED_FORWARD = 0.2; // TODO: Measure power to hold arm horizontal
+
+    public static final int ARM_UP_POSITION = 0;
+    public static final int ARM_DOWN_POSITION = -2048; // TODO - assumed arm starts vertical and comes down 90-degrees
+    public static final int ARM_HORIZONTAL_POSITION = -2048; // TODO - assumes arm down starts vertical
+    public static final int ARM_S_CURVE_STRENGTH = 4;
 
     public static final double ROTATE_RPM = 200.0;
     public static final double SET_COLOR_RPM = 180.0;

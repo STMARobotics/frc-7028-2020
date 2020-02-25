@@ -1,6 +1,12 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.ControlPanelConstants.DEVICE_ID_CONTROL_PANEL;
+import static com.ctre.phoenix.motorcontrol.ControlMode.MotionMagic;
+import static com.ctre.phoenix.motorcontrol.DemandType.ArbitraryFeedForward;
+import static frc.robot.Constants.ControlPanelConstants.ARM_DOWN_POSITION;
+import static frc.robot.Constants.ControlPanelConstants.ARM_EDGES_PER_DEGREE;
+import static frc.robot.Constants.ControlPanelConstants.ARM_GRAVITY_FEED_FORWARD;
+import static frc.robot.Constants.ControlPanelConstants.ARM_HORIZONTAL_POSITION;
+import static frc.robot.Constants.ControlPanelConstants.ARM_UP_POSITION;
 
 import java.util.Map;
 
@@ -37,29 +43,41 @@ public class ControlPanelSubsystem extends SubsystemBase {
 
   private final ColorMatch m_colorMatcher = new ColorMatch();
 
-  private final WPI_TalonSRX motor = new WPI_TalonSRX(DEVICE_ID_CONTROL_PANEL);
-  
+  private final WPI_TalonSRX spinnerMotor = new WPI_TalonSRX(ControlPanelConstants.DEVICE_ID_CONTROL_PANEL);
+  private final WPI_TalonSRX armMotor = new WPI_TalonSRX(ControlPanelConstants.DEVICE_ID_CONTROL_PANEL_ARM);
+
   private SuppliedValueWidget<Boolean> colorWidget;
-    
+
   private String colorString;
 
   public ControlPanelSubsystem() {
 
-    TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
-    talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.QuadEncoder;
-    talonConfig.slot0.kP = ControlPanelConstants.kP_VELOCITY;
-    talonConfig.slot0.kI = 0.0;
-    talonConfig.slot0.kD = 0.0;
-    talonConfig.slot1.kP = ControlPanelConstants.kP_POSITION;
-    talonConfig.slot1.kI = 0.0;
-    talonConfig.slot1.kD = ControlPanelConstants.kD_POSITION;
-    motor.setNeutralMode(NeutralMode.Brake);
-    stopWheel();
+    TalonSRXConfiguration spinnerConfig = new TalonSRXConfiguration();
+    spinnerConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.QuadEncoder;
+    spinnerConfig.slot0.kP = ControlPanelConstants.kP_VELOCITY;
+    spinnerConfig.slot0.kI = 0.0;
+    spinnerConfig.slot0.kD = 0.0;
+    spinnerConfig.slot1.kP = ControlPanelConstants.kP_POSITION;
+    spinnerConfig.slot1.kI = 0.0;
+    spinnerConfig.slot1.kD = ControlPanelConstants.kD_POSITION;
 
-    motor.configAllSettings(talonConfig);
-    motor.overrideLimitSwitchesEnable(false);
-    motor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
-    motor.setSensorPhase(true);
+    spinnerMotor.configAllSettings(spinnerConfig);
+    spinnerMotor.setNeutralMode(NeutralMode.Brake);
+    spinnerMotor.overrideLimitSwitchesEnable(false);
+    spinnerMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
+    spinnerMotor.setSensorPhase(true);
+
+    TalonSRXConfiguration armConfig = new TalonSRXConfiguration();
+    armConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.QuadEncoder;
+    armConfig.slot0.kP = ControlPanelConstants.kP_ARM;
+    armConfig.slot0.kI = 0.0;
+    armConfig.slot0.kD = 0.0;
+    armConfig.clearPositionOnLimitR = true;
+
+    armMotor.configAllSettings(armConfig);
+    armMotor.setNeutralMode(NeutralMode.Brake);
+    armMotor.setSensorPhase(true);
+    armMotor.configMotionSCurveStrength(ControlPanelConstants.ARM_S_CURVE_STRENGTH);
 
     m_colorMatcher.addColorMatch(kBlueTarget);
     m_colorMatcher.addColorMatch(kGreenTarget);
@@ -69,7 +87,6 @@ public class ControlPanelSubsystem extends SubsystemBase {
   }
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
-    dashboard.add("Motor", motor);
     colorWidget = dashboard.addBoolean("Color", () -> true);
     var colorGrid = dashboard.getLayout("Color Info", BuiltInLayouts.kGrid)
         .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
@@ -80,8 +97,8 @@ public class ControlPanelSubsystem extends SubsystemBase {
 
     var speedGrid = dashboard.getLayout("Speed", BuiltInLayouts.kGrid)
         .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
-    speedGrid.addNumber("Raw Velocity", motor::getSelectedSensorVelocity);
-    speedGrid.addNumber("RPM", () -> stepsPerDecisecToRPS(motor.getSelectedSensorVelocity()) * 60);
+    speedGrid.addNumber("Raw Velocity", spinnerMotor::getSelectedSensorVelocity);
+    speedGrid.addNumber("RPM", () -> stepsPerDecisecToRPS(spinnerMotor.getSelectedSensorVelocity()) * 60);
   }
 
   @Override
@@ -121,23 +138,66 @@ public class ControlPanelSubsystem extends SubsystemBase {
   }
 
   public void spinSpeed(double rpm) {
-    var accel = (rpm - stepsPerDecisecToRPS(motor.getSelectedSensorVelocity())) / .20;
+    var accel = (rpm - stepsPerDecisecToRPS(spinnerMotor.getSelectedSensorVelocity())) / .20;
     var leftFeedForwardVolts = ControlPanelConstants.FEED_FORWARD.calculate(rpm, accel);
-    motor.selectProfileSlot(0, 0);
-    motor.set(
-        ControlMode.Velocity,
-        rpmToStepsPerDecisec(ControlPanelConstants.SET_COLOR_RPM),
-        DemandType.ArbitraryFeedForward,
-        leftFeedForwardVolts / 12);
+    spinnerMotor.selectProfileSlot(0, 0);
+    spinnerMotor.set(ControlMode.Velocity, rpmToStepsPerDecisec(ControlPanelConstants.SET_COLOR_RPM),
+        DemandType.ArbitraryFeedForward, leftFeedForwardVolts / 12);
   }
 
   public void stopWheel() {
-    motor.set(0);
+    spinnerMotor.set(0);
   }
 
   public void stopHere() {
-    motor.selectProfileSlot(1, 1);
-    motor.set(ControlMode.Position, motor.getSelectedSensorPosition());
+    spinnerMotor.selectProfileSlot(1, 1);
+    spinnerMotor.set(ControlMode.Position, spinnerMotor.getSelectedSensorPosition());
+  }
+
+  public boolean isArmUp() {
+    return armMotor.isRevLimitSwitchClosed() == 1;
+  }
+
+  public boolean isArmDown() {
+    return armMotor.isFwdLimitSwitchClosed() == 1;
+  }
+
+  /**
+   * Moves the arm to the up position when the position is unknown
+   */
+  public void calibrateArm() {
+    if (!isArmUp()) {
+      armMotor.set(ControlMode.Velocity, -200);
+    }
+  }
+
+  private double calculateArbFeedForward() {
+    // Arm feedforward to account for gravity.
+    // See
+    // https://phoenix-documentation.readthedocs.io/en/latest/ch16_ClosedLoop.html#gravity-offset-arm
+    int currentPos = armMotor.getSelectedSensorPosition();
+    double degrees = (currentPos - ARM_HORIZONTAL_POSITION) / ARM_EDGES_PER_DEGREE;
+    double cosineScalar = Math.cos(Math.toRadians(degrees));
+    return ARM_GRAVITY_FEED_FORWARD * cosineScalar;
+  }
+
+  /**
+   * Call periodically to raise the arm. Use {@link #isArmUp()} to tell when the
+   * arm is up.
+   */
+  public void raiseArmPeriodic() {
+    if (!isArmUp()) {
+      armMotor.set(MotionMagic, ARM_UP_POSITION, ArbitraryFeedForward, calculateArbFeedForward());
+    }
+  }
+
+  /**
+   * Call periodically to lower the arm. Use {@link #isArmUp()} to tell when the arm is up.
+   */
+  public void lowerArmPeriodic() {
+    if (!isArmDown()) {
+      armMotor.set(MotionMagic, ARM_DOWN_POSITION, ArbitraryFeedForward, calculateArbFeedForward());
+    }
   }
 
   public static double stepsToRotations(int steps) {

@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.TrajectoryConstants;
+import frc.robot.commands.CalibrateAndLowerArmCommand;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.JustShootCommand;
 import frc.robot.commands.PIDPixyAssistCommand;
@@ -25,6 +26,7 @@ import frc.robot.commands.ShootCommand;
 import frc.robot.commands.SpinUpShooterCommand;
 import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.commands.WaitForTargetCommand;
+import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -44,12 +46,13 @@ public class AutoGenerator {
   private final IntakeSubsystem intakeSubsystem;
   private final ShooterSubsystem shooterSubsystem;
   private final PixyVisionSubsystem pixyVision;
+  private final ControlPanelSubsystem controlPanelSubsystem;
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   public AutoGenerator(DriveTrainSubsystem driveTrainSubsystem, LimelightSubsystem highLimelightSubsystem,
       LimelightSubsystem lowLimelightSubsystem, IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem,
-      ShooterSubsystem shooterSubsystem, PixyVisionSubsystem pixyVision) {
+      ShooterSubsystem shooterSubsystem, PixyVisionSubsystem pixyVision, ControlPanelSubsystem controlPanelSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;
     this.highLimelightSubsystem = highLimelightSubsystem;
     this.lowLimelightSubsystem = lowLimelightSubsystem;
@@ -57,6 +60,7 @@ public class AutoGenerator {
     this.intakeSubsystem = intakeSubsystem;
     this.shooterSubsystem = shooterSubsystem;
     this.pixyVision = pixyVision;
+    this.controlPanelSubsystem = controlPanelSubsystem;
   }
 
   public void configureAutonomous() {
@@ -129,7 +133,8 @@ public class AutoGenerator {
             new IndexCommand(indexerSubsystem))
         .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
 
-    return new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+    return new CalibrateAndLowerArmCommand(controlPanelSubsystem)
+        .andThen(() -> indexerSubsystem.resetBallCount(3))
         .andThen(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem)
         .andThen(new JustShootCommand(3, distanceToTarget, shooterSubsystem, indexerSubsystem))
         .andThen(makeLimelightProfileCommand(Profile.FAR))
@@ -176,8 +181,8 @@ public class AutoGenerator {
             .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
             .setReversed(true));
 
-      var autoCommandGroup =
-          new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+      var autoCommandGroup = new CalibrateAndLowerArmCommand(controlPanelSubsystem)
+              .andThen(() -> indexerSubsystem.resetBallCount(3))
               .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
               .andThen(makeLimelightProfileCommand(Profile.FAR))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
@@ -235,7 +240,8 @@ public class AutoGenerator {
               .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
               .setReversed(true));
 
-      var autoCommandGroup = new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+      var autoCommandGroup = new CalibrateAndLowerArmCommand(controlPanelSubsystem)
+          .andThen(() -> indexerSubsystem.resetBallCount(3))
           .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
           .andThen(makeLimelightProfileCommand(Profile.FAR))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
@@ -270,7 +276,8 @@ public class AutoGenerator {
               .setReversed(true)
               .setEndVelocity(0));
 
-      var autoCommandGroup = new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
+      var autoCommandGroup = new CalibrateAndLowerArmCommand(controlPanelSubsystem)
+          .andThen(() -> indexerSubsystem.resetBallCount(3))
           .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
           .andThen(makeLimelightProfileCommand(Profile.NEAR))
           .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
