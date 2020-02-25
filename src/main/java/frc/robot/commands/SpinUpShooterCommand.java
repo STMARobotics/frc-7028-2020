@@ -14,6 +14,7 @@ public class SpinUpShooterCommand extends CommandBase {
   public SpinUpShooterCommand(int distanceToTarget, ShooterSubsystem shooterSubsystem) {
     this.distanceToTarget = distanceToTarget;
     this.shooterSubsystem = shooterSubsystem;
+    addRequirements(shooterSubsystem);
   }
 
   @Override

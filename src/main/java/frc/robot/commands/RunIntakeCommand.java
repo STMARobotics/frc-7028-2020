@@ -12,6 +12,7 @@ public class RunIntakeCommand extends CommandBase {
 
   public RunIntakeCommand(IntakeSubsystem intakeSubsystem) {
     this.intakeSubsystem = intakeSubsystem;
+    addRequirements(intakeSubsystem);
   }
 
   @Override
