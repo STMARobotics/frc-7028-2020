@@ -5,19 +5,16 @@ package frc.robot;
  */
 public enum OperatorConsoleButton {
 
-  LeftThumbButton(8),
-  RightThumbButton(6),
-  IndexFingerButton(12),
-  MiddleFingerButton(11),
-  RingFingerButton(13),
-  PinkyFingerButton(5),
-  LeftJoystickButton(2),
-  RightJoystickButton(3),
-  LeftJoystickUp(7),
-  LeftJoystickDown(9),
-  RightJoystickUp(1),
-  RightJoystickDown(4),
-  GuardedButton(10);
+  LeftLeftButton(0),
+  LeftRightButton(1),
+  LeftTopButton(2),
+  LeftBottomButton(3),
+  RightLeftButton(4),
+  RightRightButton(5),
+  RightTopButton(6),
+  JoystickUp(7),
+  JoystickDown(8),
+  GuardedSwitch(9);
 
   public final int value;
 
