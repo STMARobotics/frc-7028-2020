@@ -143,7 +143,7 @@ public class RobotContainer {
         .whenReleased(() -> {
           intakeSubsystem.stopIntake();
           indexerSubsystem.stopIndexer();
-        }, intakeSubsystem);
+        }, intakeSubsystem, indexerSubsystem);
 
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
         .whenHeld(new ConditionalCommand(
