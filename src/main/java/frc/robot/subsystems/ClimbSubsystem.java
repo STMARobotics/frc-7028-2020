@@ -21,4 +21,8 @@ public class ClimbSubsystem extends SubsystemBase {
     climb.set(speed);
   }
 
+  public void stopClimb() {
+    climb.set(0);
+  }
+
 }

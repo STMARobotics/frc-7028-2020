@@ -46,6 +46,7 @@ import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TeleOperateCommand;
 import frc.robot.commands.TurnToAngleCommand;
+import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -83,6 +84,7 @@ public class RobotContainer {
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
   private final PixyVisionSubsystem pixyVision = new PixyVisionSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
+  private final ClimbSubsystem climbSubsystem = new ClimbSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
@@ -190,24 +192,42 @@ public class RobotContainer {
           }));
 
     // Operator
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RightThumbButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightLeftButton.value)
         .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftThumbButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightRightButton.value)
         .whenPressed(makeLimelightProfileCommand(Profile.FAR));
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.MiddleFingerButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftRightButton.value)
         .whenHeld(new SetColorCommand(controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.IndexFingerButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftLeftButton.value)
         .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.PinkyFingerButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftTopButton.value)
         .whenPressed(new RunCommand(controlPanelSubsystem::raiseArmPeriodic, controlPanelSubsystem));
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RingFingerButton.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value)
         .whenPressed(new RunCommand(controlPanelSubsystem::lowerArmPeriodic, controlPanelSubsystem));
     
+    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value)
+        .whenPressed(new RunCommand(() -> {
+          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)){
+            climbSubsystem.driveClimb(.5);  
+          }
+        }, climbSubsystem))
+        .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
+
+    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickDown.value)
+        .whenPressed(new RunCommand(() -> {
+          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)){
+            climbSubsystem.driveClimb(-.4);  
+          }
+        }, climbSubsystem))
+        .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
+
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightTopButton.value)
+        .whenPressed(() -> indexerSubsystem.resetBallCount(0), indexerSubsystem);
   }
 
   private void configureSubsystemCommands() {
