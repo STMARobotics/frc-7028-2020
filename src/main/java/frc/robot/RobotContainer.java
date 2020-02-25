@@ -117,10 +117,10 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Driver
-    new JoystickButton(driverController, XboxController.Button.kY.value)
+    new JoystickButton(driverController, XboxController.Button.kB.value)
         .whenPressed(teleDriveCommand::toggleSlowMode);
 
-    new JoystickButton(driverController, XboxController.Button.kB.value)
+    new JoystickButton(driverController, XboxController.Button.kY.value)
         .whenPressed(teleDriveCommand::toggleReverseMode);
 
     new JoystickButton(driverController, XboxController.Button.kA.value)
@@ -168,19 +168,26 @@ public class RobotContainer {
         .whenPressed(new TurnToAngleCommand(-90, driveTrainSubsystem));
 
     // Operator
-    new JoystickButton(operatorConsole, XboxController.Button.kA.value)
-        .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem))
-        .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
+    // new JoystickButton(operatorConsole, XboxController.Button.kA.value)
+    //     .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem))
+    //     .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
 
-    new JoystickButton(operatorConsole, XboxController.Button.kB.value)
-        .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(-1.0), indexerSubsystem))
-        .whenReleased(() -> indexerSubsystem.runManually(0.0), indexerSubsystem);
+    // new JoystickButton(operatorConsole, XboxController.Button.kB.value)
+    //     .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(-1.0), indexerSubsystem))
+    //     .whenReleased(() -> indexerSubsystem.runManually(0.0), indexerSubsystem);
 
-    new JoystickButton(operatorConsole, XboxController.Button.kBumperLeft.value)
-        .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
+    // new JoystickButton(operatorConsole, XboxController.Button.kBumperLeft.value)
+    //     .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
     
-    new JoystickButton(operatorConsole, XboxController.Button.kBumperRight.value)
-        .whenPressed(makeLimelightProfileCommand(Profile.FAR));
+    // new JoystickButton(operatorConsole, XboxController.Button.kBumperRight.value)
+    //     .whenPressed(makeLimelightProfileCommand(Profile.FAR));
+
+    new JoystickButton(operatorConsole, OperatorConsoleButton.IndexFingerButton.value)
+        .toggleWhenPressed(new StartEndCommand(() -> {
+          makeLimelightProfileCommand(Profile.NEAR);
+        }, () -> {
+          makeLimelightProfileCommand(Profile.FAR);
+        }));
     
     new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
         .toggleWhenPressed(new StartEndCommand(() -> {
