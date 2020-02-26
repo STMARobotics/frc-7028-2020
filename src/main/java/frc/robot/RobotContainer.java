@@ -54,6 +54,7 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.PixyVisionSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.testMode.TestControlPanel;
 import frc.robot.testMode.TestEncoderCommand;
 import frc.robot.testMode.TestIndexerCommand;
 import frc.robot.testMode.TestIntakeCommand;
@@ -338,6 +339,7 @@ public class RobotContainer {
     commands.add(new TestLimelightCommand(lowLimelightSubsystem).withTimeout(10));
 
     commands.add(new TestIndexerCommand(indexerSubsystem).withTimeout(60));
+    commands.add(new TestControlPanel(controlPanelSubsystem).withTimeout(30));
 
     Command[] arr = new Command[commands.size()];
     return commands.toArray(arr);
