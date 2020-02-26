@@ -12,9 +12,6 @@ public class TestIntakeCommand extends TestCommand {
   private final IntakeSubsystem intakeSubsystem;
   private final NetworkTableEntry networkTableEntry;
 
-  private int encoderStart = 0;
-  private int lastPosition = 0;
-
   public TestIntakeCommand(boolean forward, IntakeSubsystem intakeSubsystem) {
     this.intakeSubsystem = intakeSubsystem;
     this.forward = forward;
@@ -26,40 +23,25 @@ public class TestIntakeCommand extends TestCommand {
   }
 
   @Override
-  public void initialize() {
-    super.initialize();
-
-    encoderStart = intakeSubsystem.getEncoderPosition();
-    lastPosition = encoderStart;
-  }
-
-  @Override
   public void execute() {
-    super.execute();
-    
-    var currentPosition = intakeSubsystem.getEncoderPosition();
-
+    super.execute();    
     if (forward) {
       intakeSubsystem.intake();
-      networkTableEntry.setBoolean(currentPosition > lastPosition);
     } else {
       intakeSubsystem.reverse();
-      networkTableEntry.setBoolean(currentPosition < lastPosition);
     }
 
-    lastPosition = currentPosition;
   }
 
   @Override
   public void end(boolean interrupted) {
     super.end(interrupted);
     if (forward) {
-      networkTableEntry.setBoolean(lastPosition - encoderStart > 1000);
+      networkTableEntry.setBoolean(true);
     } else {
-      networkTableEntry.setBoolean(encoderStart - lastPosition > 1000);
+      networkTableEntry.setBoolean(true);
     }
     intakeSubsystem.stopIntake();
   }
-
-  
+   
 }
