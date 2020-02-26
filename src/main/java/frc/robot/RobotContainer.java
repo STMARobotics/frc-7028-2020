@@ -36,7 +36,6 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.IndexCommand;
-import frc.robot.commands.InstantWhenDisabledCommand;
 import frc.robot.commands.PIDPixyAssistCommand;
 import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.RumbleCommand;
@@ -114,7 +113,6 @@ public class RobotContainer {
     autoGenerator.configureAutonomous();
 
     configureSubsystemDashboard();
-    // configureCommandDashboard();
     configureDriverDashboard();
   }
 
@@ -190,41 +188,41 @@ public class RobotContainer {
           }));
 
     // Operator
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RightLeftButton.value) // 5
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightLeftButton.value)
         .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RightRightButton.value) // 6
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightRightButton.value)
         .whenPressed(makeLimelightProfileCommand(Profile.FAR));
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftRightButton.value) // 2
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftRightButton.value)
         .whenHeld(new SetColorCommand(controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftLeftButton.value) // 1
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftLeftButton.value)
         .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftTopButton.value) // 3
-        .whenPressed(new RunCommand(controlPanelSubsystem::raiseArmPeriodic, controlPanelSubsystem));
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftTopButton.value)
+        .whenPressed(new RunCommand(controlPanelSubsystem::raiseArm, controlPanelSubsystem));
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value) // 4
-        .whenPressed(new RunCommand(controlPanelSubsystem::lowerArmPeriodic, controlPanelSubsystem));
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value)
+        .whenPressed(new RunCommand(controlPanelSubsystem::lowerArm, controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value) // 8
+    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value)
         .whenPressed(new RunCommand(() -> {
-          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)){ // 10
-            climbSubsystem.driveClimb(.5);  
+          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) { 
+            climbSubsystem.raiseClimb();  
           }
         }, climbSubsystem))
         .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickDown.value) // 9
+    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickDown.value)
         .whenPressed(new RunCommand(() -> {
-          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)){ // 10
-            climbSubsystem.driveClimb(-.4);  
+          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) {
+            climbSubsystem.lowerClimb(); 
           }
         }, climbSubsystem))
         .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RightTopButton.value) // 7
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightTopButton.value)
         .whenPressed(() -> indexerSubsystem.resetBallCount(0), indexerSubsystem);
   }
 
@@ -239,7 +237,7 @@ public class RobotContainer {
    * @return command
    */
   private Command makeLimelightProfileCommand(Profile profile) {
-    return new InstantWhenDisabledCommand(() -> {
+    return new InstantCommand(() -> {
         highLimelightSubsystem.setProfile(profile);
         lowLimelightSubsystem.setProfile(profile);
     }, highLimelightSubsystem, lowLimelightSubsystem);
@@ -261,6 +259,11 @@ public class RobotContainer {
     shooterSubsystem.addDashboardWidgets(shooterLayout);
     shooterLayout.add(shooterSubsystem);
 
+    // Only uncomment this for debugging - the color sensor causes loop overrun
+    // var controlPanelLaytout = Dashboard.subsystemsTab.getLayout("Control Panel", BuiltInLayouts.kList)
+    //     .withSize(2, 2).withPosition(6, 0);
+    // controlPanelSubsystem.addDashboardWidgets(controlPanelLaytout);
+
     var highLimelightLayout = Dashboard.limelightsTab.getLayout("High Limelight", BuiltInLayouts.kList)
         .withSize(2, 3).withPosition(0, 0);
     highLimelightSubsystem.addDashboardWidgets(highLimelightLayout);
@@ -270,12 +273,7 @@ public class RobotContainer {
         .withSize(2, 3).withPosition(2, 0);
     lowLimelightSubsystem.addDashboardWidgets(lowLimelightLayout);
     lowLimelightLayout.add(lowLimelightSubsystem);
-  }
 
-  private void configureCommandDashboard() {
-    Dashboard.commandsTab.add(indexCommand).withSize(2, 1).withPosition(0, 0);
-    Dashboard.commandsTab.add(shootCommand).withSize(2, 1).withPosition(0, 1);
-    Dashboard.commandsTab.add(teleDriveCommand).withSize(2, 1).withPosition(2, 0);
   }
 
   private void configureDriverDashboard() {

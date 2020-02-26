@@ -196,11 +196,6 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     return 0.0;
   }
 
-  private double getOffsetAngle() {
-    return 90.0 - 
-        Math.toDegrees(Math.acos(getLimelightDistanceToTarget() / limelightConfig.getMountDistanceFromCenter()));
-  }
-
   public double getDistanceToTarget() {
     return Math.sqrt(Math.pow(getLimelightDistanceToTarget(), 2)
         + Math.pow(limelightConfig.getMountDistanceFromCenter(), 2)) - limelightConfig.getMountDepth();

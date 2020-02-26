@@ -17,10 +17,11 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.TrajectoryConstants;
-import frc.robot.commands.CalibrateArmCommand;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.JustShootCommand;
+import frc.robot.commands.LowerArmCommand;
 import frc.robot.commands.PIDPixyAssistCommand;
+import frc.robot.commands.RaiseArmCommand;
 import frc.robot.commands.RunIntakeCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.SpinUpShooterCommand;
@@ -133,8 +134,8 @@ public class AutoGenerator {
             new IndexCommand(indexerSubsystem))
         .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
 
-    return new CalibrateArmCommand(controlPanelSubsystem)
-        .andThen(new RunCommand(controlPanelSubsystem::lowerArmPeriodic, controlPanelSubsystem))
+    return new RaiseArmCommand(controlPanelSubsystem)
+        .andThen(new LowerArmCommand(controlPanelSubsystem))
         .andThen(() -> indexerSubsystem.resetBallCount(3))
         .andThen(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem)
         .deadlineWith(new SpinUpShooterCommand(distanceToTarget, shooterSubsystem))
@@ -183,8 +184,8 @@ public class AutoGenerator {
             .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
             .setReversed(true));
 
-      var autoCommandGroup = new CalibrateArmCommand(controlPanelSubsystem)
-          .andThen(new RunCommand(controlPanelSubsystem::lowerArmPeriodic, controlPanelSubsystem))
+      var autoCommandGroup = new RaiseArmCommand(controlPanelSubsystem)
+          .andThen(new LowerArmCommand(controlPanelSubsystem))
           .alongWith(new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
               .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
               .andThen(makeLimelightProfileCommand(Profile.FAR))
@@ -243,8 +244,8 @@ public class AutoGenerator {
               .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
               .setReversed(true));
 
-      var autoCommandGroup = new CalibrateArmCommand(controlPanelSubsystem)
-          .andThen(new RunCommand(controlPanelSubsystem::lowerArmPeriodic, controlPanelSubsystem))
+      var autoCommandGroup = new RaiseArmCommand(controlPanelSubsystem)
+          .andThen(new LowerArmCommand(controlPanelSubsystem))
           .alongWith(new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
               .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
               .andThen(makeLimelightProfileCommand(Profile.FAR))
@@ -255,8 +256,8 @@ public class AutoGenerator {
               .andThen(makePixyWithIntakeCommand())
               .andThen(makeWaitForBallCount(5).withTimeout(3)))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5)))
-              .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem))
+              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+              .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem)))
           .andThen(makeShootCommand(5));
         
       autoChooser.addOption("Steal", autoCommandGroup);
@@ -268,7 +269,7 @@ public class AutoGenerator {
   private void configureMoveAuto() {
     try {
       var startPose = new Pose2d(inchesToMeters(120), inchesToMeters(0), Rotation2d.fromDegrees(0));
-      var endPose = new Pose2d(inchesToMeters(90), inchesToMeters(0), Rotation2d.fromDegrees(0));
+      var endPose = new Pose2d(inchesToMeters(180), inchesToMeters(0), Rotation2d.fromDegrees(0));
 
       var trajectory = TrajectoryGenerator.generateTrajectory(
           startPose,
@@ -277,16 +278,13 @@ public class AutoGenerator {
           new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO / 2)
               .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
               .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
-              .setReversed(true)
               .setEndVelocity(0));
 
-      var autoCommandGroup = new CalibrateArmCommand(controlPanelSubsystem)
-          .andThen(new RunCommand(controlPanelSubsystem::lowerArmPeriodic, controlPanelSubsystem))
+      var autoCommandGroup = new RaiseArmCommand(controlPanelSubsystem)
+          .andThen(new LowerArmCommand(controlPanelSubsystem))
           .alongWith(new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
-              .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
-              .andThen(makeLimelightProfileCommand(Profile.NEAR)))
-          .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
-          .andThen(makeShootCommand(3))
+              .andThen(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem))
+          .andThen(new JustShootCommand(3, 130, shooterSubsystem, indexerSubsystem))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
           .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
         

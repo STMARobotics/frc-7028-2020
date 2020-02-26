@@ -39,18 +39,18 @@ public final class Constants {
     public static final double WHEEL_DIAMETER_INCHES = 6d;
     public static final double WHEEL_CIRCUMFERENCE_METERS = Units.inchesToMeters(WHEEL_DIAMETER_INCHES) * Math.PI;
 
-    public static final double TRACK_WIDTH_METERS = 0.8860688499115555;
+    public static final double TRACK_WIDTH_METERS = 0.7101550117116572;
     public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(
         TRACK_WIDTH_METERS);
 
     /** Voltage needed to overcome the motor’s static friction. kS */
-    public static final double kS = 1.26;
+    public static final double kS = 1.01;
 
     /** Voltage needed to hold (or "cruise") at a given constant velocity. kV */
-    public static final double kV = 2.96;
+    public static final double kV = 2.93;
 
     /** Voltage needed to induce a given acceleration in the motor shaft. kA */
-    public static final double kA = 0.813;
+    public static final double kA = 0.761;
 
     public static final SimpleMotorFeedforward FEED_FORWARD = new SimpleMotorFeedforward(kS, kV, kA);
 
@@ -91,7 +91,7 @@ public final class Constants {
     public static final double SLOW_MODE_SPEED_MULTIPLIER = .6;
     public static final double SLOW_MODE_ROTATION_MULTIPLIER = .9;
 
-    public static final double DEADBAND_HIGH = 0.11;
+    public static final double DEADBAND_HIGH = 0.12;
     public static final double DEADBAND_LOW = -DEADBAND_HIGH;
   }
 
@@ -111,8 +111,8 @@ public final class Constants {
 
   public static final class AimConstants {
 
-    public static final double kP = 1.6;
-    public static final double kD = 0.6;
+    public static final double kP = 1.0;
+    public static final double kD = 0.2;
     public static final double AIM_TOLERANCE = 0.2;
 
     public static final double RANGE_HIGH = 1;
@@ -132,11 +132,11 @@ public final class Constants {
     public static final double TARGET_HEIGHT = Units.inchesToMeters(80.875);
 
     /** Height of the limelight on the bot in meters */
-    public static final double HIGH_MOUNT_HEIGHT = Units.inchesToMeters(23.375);
-    public static final double LOW_MOUNT_HEIGHT = Units.inchesToMeters(8.125);
+    public static final double HIGH_MOUNT_HEIGHT = Units.inchesToMeters(23);
+    public static final double LOW_MOUNT_HEIGHT = Units.inchesToMeters(8.25);
 
     /** Distance Limelight is mounted from the front frame of the bot */
-    public static final double HIGH_DISTANCE_FROM_FRONT = Units.inchesToMeters(17.125);
+    public static final double HIGH_DISTANCE_FROM_FRONT = Units.inchesToMeters(18);
     public static final double LOW_DISTANCE_FROM_FRONT = Units.inchesToMeters(2.0);
 
     /** Distance Limelight is mounted from the centerline of the bot */
@@ -144,8 +144,8 @@ public final class Constants {
     public static final double LOW_DISTANCE_FROM_CENTER = Units.inchesToMeters(7.125);
 
     /** Angle of the limelight in degrees */
-    public static final double HIGH_MOUNT_ANGLE = 23.0;
-    public static final double LOW_MOUNT_ANGLE = 26.0;
+    public static final double HIGH_MOUNT_ANGLE = 21.25;
+    public static final double LOW_MOUNT_ANGLE = 25.25;
 
     public static final String LOW_NAME = "limelight-low";
     public static final String HIGH_NAME = "limelight-high";
@@ -157,7 +157,7 @@ public final class Constants {
     public static final int DEVICE_ID_CONTROL_PANEL = 10;
     public static final int DEVICE_ID_CONTROL_PANEL_ARM = 11;
 
-    public static final int SENSOR_UNITS_PER_ROTATION = 8192;
+    public static final int EDGES_PER_ROTATION = 8192;
 
     public static final double kS = 2.09;
     public static final double kV = 0.109;
@@ -169,20 +169,11 @@ public final class Constants {
     public static final double kP_POSITION = 1;
     public static final double kD_POSITION = 0;
 
-    public static final int ARM_SENSOR_UNITS_PER_ROTATION = 8192;
-    public static final double ARM_EDGES_PER_DEGREE = ARM_SENSOR_UNITS_PER_ROTATION / 360.0;
-
-    public static final double kP_ARM = 0.1;
-    public static final double ARM_GRAVITY_FEED_FORWARD = 0.2; // TODO: Measure power to hold arm horizontal
-
-    public static final int ARM_UP_POSITION = 0;
-    public static final int ARM_DOWN_POSITION = -2048; // TODO - assumed arm starts vertical and comes down 90-degrees
-    public static final int ARM_HORIZONTAL_POSITION = -2048; // TODO - assumes arm down starts vertical
-    public static final int ARM_S_CURVE_STRENGTH = 4;
-
     public static final double ROTATE_RPM = 200.0;
     public static final double SET_COLOR_RPM = 180.0;
 
+    public static final int ARM_UP_POSITION = 0;
+    public static final int ARM_DOWN_POSITION = -1900;
   }
 
   public static final class ShooterConstants {
@@ -227,7 +218,7 @@ public final class Constants {
   
   public static final class ClimbConstants {
     
-    public static final int DEVICE_ID_CLIMB = 8;
+    public static final int DEVICE_ID_CLIMB = 3;
 
   }
 

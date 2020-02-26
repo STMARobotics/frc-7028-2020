@@ -4,24 +4,24 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.ControlPanelSubsystem;
 
 /**
- * Calibrates the control panel arm and then lowers it
+ * Lowers the control panel arm fully
  */
-public class CalibrateArmCommand extends CommandBase {
+public class LowerArmCommand extends CommandBase {
 
   private final ControlPanelSubsystem controlPanelSubsystem;
 
-  public CalibrateArmCommand(ControlPanelSubsystem controlPanelSubsystem) {
+  public LowerArmCommand(ControlPanelSubsystem controlPanelSubsystem) {
     this.controlPanelSubsystem = controlPanelSubsystem;
   }
 
   @Override
   public void execute() {
-    controlPanelSubsystem.calibrateArm();
+    controlPanelSubsystem.lowerArm();
   }
 
   @Override
   public boolean isFinished() {
-    return controlPanelSubsystem.isArmUp();
+    return controlPanelSubsystem.isArmDown();
   }
 
 }
