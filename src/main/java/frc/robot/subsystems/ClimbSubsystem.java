@@ -14,16 +14,24 @@ public class ClimbSubsystem extends SubsystemBase {
 
   private final CANSparkMax climb = new CANSparkMax(DEVICE_ID_CLIMB, MotorType.kBrushless);
 
+  public ClimbSubsystem() {
+    climb.setInverted(true);
+  }
+
   public void raiseClimb() {
-    climb.set(-1);
+    climb.set(1);
   }
 
   public void lowerClimb() {
-    climb.set(0.9);
+    climb.set(-0.9);
   }
 
   public void stopClimb() {
     climb.set(0);
+  }
+
+  public double getClimbPosition() {
+    return climb.getEncoder().getPosition();
   }
 
 }
