@@ -144,9 +144,9 @@ public class RobotContainer {
         }, intakeSubsystem, indexerSubsystem);
 
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
-        .whenHeld(new ConditionalCommand(
+        .whileHeld(new ConditionalCommand(
             new RumbleCommand(driverController, RumbleType.kLeftRumble),
-            new RunIntakeCommand(intakeSubsystem),
+            new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),
             indexerSubsystem::isFull));
 
     var pixyHeldCommand = new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision)

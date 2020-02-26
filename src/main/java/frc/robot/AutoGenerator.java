@@ -130,7 +130,7 @@ public class AutoGenerator {
         .andThen(makePixyAutoCommand())
         .andThen(pickupAndSpinUp)
         .deadlineWith(
-            new RunIntakeCommand(intakeSubsystem),
+            new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),
             new IndexCommand(indexerSubsystem))
         .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
 

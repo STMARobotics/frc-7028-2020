@@ -30,7 +30,7 @@ public class RunIntakeCommandTest {
   @Before
   public void setUp() {
     commandScheduler = CommandScheduler.getInstance();
-    intakeCommand = spy(new RunIntakeCommand(intake));
+    intakeCommand = spy(new RunIntakeCommand(intake, () -> Boolean.FALSE));
     when(intakeCommand.runsWhenDisabled()).thenReturn(true);
   }
 
