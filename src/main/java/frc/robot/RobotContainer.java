@@ -44,6 +44,7 @@ import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TurnToAngleCommand;
+import frc.robot.commands.WaitForPixyTargetCommand;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
@@ -149,7 +150,8 @@ public class RobotContainer {
             new RunIntakeCommand(intakeSubsystem),
             indexerSubsystem::isFull));
 
-    var pixyHeldCommand = new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision)
+    var pixyHeldCommand = new WaitForPixyTargetCommand(pixyVision).withTimeout(5)
+        .andThen(new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision))
         .andThen(
           new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))
