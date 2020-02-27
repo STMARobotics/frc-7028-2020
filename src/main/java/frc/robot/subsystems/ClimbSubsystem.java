@@ -2,23 +2,28 @@ package frc.robot.subsystems;
 
 import static frc.robot.Constants.ClimbConstants.DEVICE_ID_CLIMB;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
- * ClimbSubsystem
+ * Climb subsystem
  */
 public class ClimbSubsystem extends SubsystemBase {
 
-  private final WPI_TalonSRX climb = new WPI_TalonSRX(DEVICE_ID_CLIMB);
+  private final CANSparkMax climb = new CANSparkMax(DEVICE_ID_CLIMB, MotorType.kBrushless);
 
-  public ClimbSubsystem() {
-
+  public void raiseClimb() {
+    climb.set(-1);
   }
 
-  public void driveClimb(double speed) {
-    climb.set(speed);
+  public void lowerClimb() {
+    climb.set(0.9);
+  }
+
+  public void stopClimb() {
+    climb.set(0);
   }
 
 }

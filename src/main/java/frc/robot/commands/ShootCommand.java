@@ -3,6 +3,7 @@ package frc.robot.commands;
 import static frc.robot.Constants.AimConstants.kD;
 import static frc.robot.Constants.AimConstants.kP;
 
+import edu.wpi.first.wpilibj.MedianFilter;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.util.Units;
@@ -30,6 +31,9 @@ public class ShootCommand extends VisionCommandBase {
   private boolean noTarget = false;
   private boolean wasFull = false;
   private Timer endTimer = new Timer();
+
+  private MedianFilter yFilter = new MedianFilter(5);
+  private MedianFilter xFilter = new MedianFilter(5);
 
   public ShootCommand(int ballsToShoot, ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem,
       LimelightSubsystem highLimelightSubsystem, LimelightSubsystem lowLimelightSubsystem,
@@ -63,7 +67,8 @@ public class ShootCommand extends VisionCommandBase {
     super.execute();
     var limelightWithTarget = getTargetAcquired();
     if (limelightWithTarget != null) {
-      shooterSubsystem.prepareToShoot(Units.metersToInches(limelightWithTarget.getDistanceToTarget()));
+      var filteredDistance = yFilter.calculate(limelightWithTarget.getDistanceToTarget());
+      shooterSubsystem.prepareToShoot(Units.metersToInches(filteredDistance));
       aimShooter(limelightWithTarget);
       if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
         indexerSubsystem.shoot();
@@ -72,7 +77,7 @@ public class ShootCommand extends VisionCommandBase {
       }
     } else {
       noTarget = true;
-      driveTrainSubsystem.stop();;
+      driveTrainSubsystem.stop();
     }
     var isFull = indexerSubsystem.isFull();
     if ((wasFull && !isFull) && (++ballsShot >= ballsToShoot)) {
@@ -82,8 +87,8 @@ public class ShootCommand extends VisionCommandBase {
   }
 
   private void aimShooter(ILimelightSubsystem selectedLimelightSubsystem) {
-    double targetX = selectedLimelightSubsystem.getTargetX(); //getFilteredX()
-    double rotationSpeed = -pidController.calculate(targetX / 5);
+    double filteredTargetX = xFilter.calculate(selectedLimelightSubsystem.getTargetX());
+    double rotationSpeed = -pidController.calculate(filteredTargetX / 5);
     driveTrainSubsystem.arcadeDrive(0.0, rotationSpeed, false);
   }
 
@@ -98,5 +103,9 @@ public class ShootCommand extends VisionCommandBase {
     shooterSubsystem.stopShooter();
     indexerSubsystem.stopIndexer();
     driveTrainSubsystem.stop();
+  }
+
+  public int getBallsShot() {
+    return ballsShot;
   }
 }

@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.gt;
@@ -88,6 +89,52 @@ public class ShootCommandTest {
     inOrder.verify(shooter).stopShooter();
     inOrder.verify(indexer).stopIndexer();
     inOrder.verify(drivetrain).stop();
+  }
+
+  @Test
+  public void testShootThree() {
+    shootCommand = spy(new ShootCommand(3, shooter, indexer, highLimelight, lowLimelight, drivetrain));
+    when(shootCommand.runsWhenDisabled()).thenReturn(true);
+
+    var distanceToTarget = 1d;
+    when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(1.0));
+    when(highLimelight.getTargetX()).thenReturn(0d);
+    when(shooter.isReadyToShoot()).thenReturn(true, false, true, false, true);
+    when(highLimelight.getDistanceToTarget()).thenReturn(distanceToTarget);
+    when(indexer.isFull()).thenReturn(true, false, true, false, true, false);
+
+    shootCommand.schedule();
+    commandScheduler.run(); // Shoot
+    commandScheduler.run(); // Wait for spin up
+    commandScheduler.run(); // Shoot
+    commandScheduler.run(); // Wait for spin up
+    commandScheduler.run(); // Shoot
+    Timer timer = new Timer();
+    timer.start();
+    do {
+      Timer.delay(.02);
+      commandScheduler.run();
+    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    commandScheduler.run();
+
+    InOrder inOrder = inOrder(shooter, indexer, drivetrain);
+    inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
+    inOrder.verify(drivetrain).arcadeDrive(0.0, -0.0, false);
+    inOrder.verify(shooter).isReadyToShoot();
+    inOrder.verify(indexer).shoot();
+    inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
+    inOrder.verify(drivetrain).arcadeDrive(0.0, -0.0, false);
+    inOrder.verify(shooter).isReadyToShoot();
+    inOrder.verify(indexer).shoot();
+    inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
+    inOrder.verify(drivetrain).arcadeDrive(0.0, -0.0, false);
+    inOrder.verify(shooter).isReadyToShoot();
+    inOrder.verify(indexer).shoot();
+    inOrder.verify(shooter).stopShooter();
+    inOrder.verify(indexer).stopIndexer();
+    inOrder.verify(drivetrain).stop();
+
+    assertEquals(3, shootCommand.getBallsShot());
   }
 
   @Test

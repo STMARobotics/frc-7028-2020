@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.IndexerSubsystem;
 
 /**
- * IndexCommand
+ * Default command for Indexer subsystem
  */
 public class IndexCommand extends CommandBase {
 

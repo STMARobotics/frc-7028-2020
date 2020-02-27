@@ -62,7 +62,7 @@ public class ShooterSubsystem extends SubsystemBase {
    */
   public void prepareToShoot(double distanceToTarget) {
     if (distanceToTarget > 150) {
-      targetSpeed = 2.600 * distanceToTarget + 2154.761;
+      targetSpeed = 3.05 * distanceToTarget + 2160.761;
     } else if (distanceToTarget <= 150) {
       targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 75.833 * distanceToTarget + 8420;
     }

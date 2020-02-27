@@ -15,7 +15,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Map;
 
+import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -27,7 +29,6 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -35,12 +36,16 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.IndexCommand;
-import frc.robot.commands.InstantWhenDisabledCommand;
-import frc.robot.commands.PixyAssistCommand;
+import frc.robot.commands.PIDPixyAssistCommand;
+import frc.robot.commands.RotateWheelCommand;
+import frc.robot.commands.RumbleCommand;
+import frc.robot.commands.RunIntakeCommand;
+import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
-import frc.robot.commands.TeleOperateCommand;
 import frc.robot.commands.TurnToAngleCommand;
+import frc.robot.subsystems.ClimbSubsystem;
+import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -76,20 +81,31 @@ public class RobotContainer {
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(indexerSubsystem::isReadyForBall);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
   private final PixyVisionSubsystem pixyVision = new PixyVisionSubsystem();
+  private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
+  private final ClimbSubsystem climbSubsystem = new ClimbSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
   private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
 
   private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
-  private final TeleOperateCommand teleOperateCommand = new TeleOperateCommand(operatorConsole, indexerSubsystem);
   private final IndexCommand indexCommand = new IndexCommand(indexerSubsystem);
   private final ShootCommand shootCommand = new ShootCommand(Integer.MAX_VALUE, shooterSubsystem, indexerSubsystem, 
     highLimelightSubsystem, lowLimelightSubsystem, driveTrainSubsystem);
 
   private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, highLimelightSubsystem,
-    lowLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem, pixyVision);
+    lowLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem, pixyVision, controlPanelSubsystem);
+
+  private final UsbCamera camera;
 
   public RobotContainer() {
+    camera = CameraServer.getInstance().startAutomaticCapture();
+    try {
+      camera.setFPS(15);
+      camera.setResolution(320, 240);
+    } catch (Exception e) {
+      DriverStation.reportError("Failed to configure driver camera", true);
+    }
+
     // Configure the button bindings
     configureButtonBindings();
     configureSubsystemCommands();
@@ -97,7 +113,6 @@ public class RobotContainer {
     autoGenerator.configureAutonomous();
 
     configureSubsystemDashboard();
-    // configureCommandDashboard();
     configureDriverDashboard();
   }
 
@@ -109,10 +124,10 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Driver
-    new JoystickButton(driverController, XboxController.Button.kY.value)
+    new JoystickButton(driverController, XboxController.Button.kB.value)
         .whenPressed(teleDriveCommand::toggleSlowMode);
 
-    new JoystickButton(driverController, XboxController.Button.kB.value)
+    new JoystickButton(driverController, XboxController.Button.kY.value)
         .whenPressed(teleDriveCommand::toggleReverseMode);
 
     new JoystickButton(driverController, XboxController.Button.kA.value)
@@ -126,25 +141,29 @@ public class RobotContainer {
         .whenReleased(() -> {
           intakeSubsystem.stopIntake();
           indexerSubsystem.stopIndexer();
-        }, intakeSubsystem);
+        }, intakeSubsystem, indexerSubsystem);
 
     new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
-        .whenHeld(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
-        .whenReleased(intakeSubsystem::stopIntake, intakeSubsystem);
+        .whenHeld(new ConditionalCommand(
+            new RumbleCommand(driverController, RumbleType.kLeftRumble),
+            new RunIntakeCommand(intakeSubsystem),
+            indexerSubsystem::isFull));
 
-    var pixyHeldCommand = new PixyAssistCommand(driveTrainSubsystem, pixyVision)
-        .andThen(new ParallelCommandGroup(
-            new RunCommand(intakeSubsystem::intake, intakeSubsystem).withTimeout(.5),
-            new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
-        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
-        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))));
+    var pixyHeldCommand = new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision)
+        .andThen(
+          new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
+        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))
+        .deadlineWith(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
+        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem));
     
     var pixyReleaseCommand = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
 
     new JoystickButton(driverController, XboxController.Button.kX.value)
-        .whileHeld(new ConditionalCommand(new StartEndCommand(() -> driverController.setRumble(RumbleType.kLeftRumble, 1)
-        , () -> driverController.setRumble(RumbleType.kLeftRumble, 0)), pixyHeldCommand, indexerSubsystem::isFull))
+        .whileHeld(new ConditionalCommand(
+            new RumbleCommand(driverController, RumbleType.kLeftRumble),
+            pixyHeldCommand,
+            indexerSubsystem::isFull))
         .whenReleased(pixyReleaseCommand);
 
     new POVButton(driverController, 0)
@@ -159,20 +178,52 @@ public class RobotContainer {
     new POVButton(driverController, 270)
         .whenPressed(new TurnToAngleCommand(-90, driveTrainSubsystem));
 
+    new JoystickButton(driverController, XboxController.Button.kStart.value)
+        .toggleWhenPressed(new StartEndCommand(() -> {
+            highLimelightSubsystem.enable();
+            lowLimelightSubsystem.enable();
+          }, () -> {
+            highLimelightSubsystem.disable();
+            lowLimelightSubsystem.disable();
+          }));
+
     // Operator
-    new JoystickButton(operatorConsole, XboxController.Button.kA.value)
-        .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(1.0), indexerSubsystem))
-        .whenReleased(indexerSubsystem::stopIndexer, indexerSubsystem);
-
-    new JoystickButton(operatorConsole, XboxController.Button.kB.value)
-        .whenHeld(new RunCommand(() -> indexerSubsystem.runManually(-1.0), indexerSubsystem))
-        .whenReleased(() -> indexerSubsystem.runManually(0.0), indexerSubsystem);
-
-    new JoystickButton(operatorConsole, XboxController.Button.kBumperLeft.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightLeftButton.value)
         .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
     
-    new JoystickButton(operatorConsole, XboxController.Button.kBumperRight.value)
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightRightButton.value)
         .whenPressed(makeLimelightProfileCommand(Profile.FAR));
+
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftRightButton.value)
+        .whenHeld(new SetColorCommand(controlPanelSubsystem));
+    
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftLeftButton.value)
+        .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
+    
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftTopButton.value)
+        .whenPressed(new RunCommand(controlPanelSubsystem::raiseArm, controlPanelSubsystem));
+
+    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value)
+        .whenPressed(new RunCommand(controlPanelSubsystem::lowerArm, controlPanelSubsystem));
+    
+    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value)
+        .whenPressed(new RunCommand(() -> {
+          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) { 
+            climbSubsystem.raiseClimb();  
+          }
+        }, climbSubsystem))
+        .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
+
+    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickDown.value)
+        .whenPressed(new RunCommand(() -> {
+          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) {
+            climbSubsystem.lowerClimb(); 
+          }
+        }, climbSubsystem))
+        .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
+
+    new JoystickButton(operatorConsole, OperatorConsoleButton.RightTopButton.value)
+        .whenPressed(() -> indexerSubsystem.resetBallCount(0), indexerSubsystem);
   }
 
   private void configureSubsystemCommands() {
@@ -186,7 +237,7 @@ public class RobotContainer {
    * @return command
    */
   private Command makeLimelightProfileCommand(Profile profile) {
-    return new InstantWhenDisabledCommand(() -> {
+    return new InstantCommand(() -> {
         highLimelightSubsystem.setProfile(profile);
         lowLimelightSubsystem.setProfile(profile);
     }, highLimelightSubsystem, lowLimelightSubsystem);
@@ -208,6 +259,11 @@ public class RobotContainer {
     shooterSubsystem.addDashboardWidgets(shooterLayout);
     shooterLayout.add(shooterSubsystem);
 
+    // Only uncomment this for debugging - the color sensor causes loop overrun
+    // var controlPanelLaytout = Dashboard.subsystemsTab.getLayout("Control Panel", BuiltInLayouts.kList)
+    //     .withSize(2, 2).withPosition(6, 0);
+    // controlPanelSubsystem.addDashboardWidgets(controlPanelLaytout);
+
     var highLimelightLayout = Dashboard.limelightsTab.getLayout("High Limelight", BuiltInLayouts.kList)
         .withSize(2, 3).withPosition(0, 0);
     highLimelightSubsystem.addDashboardWidgets(highLimelightLayout);
@@ -217,31 +273,25 @@ public class RobotContainer {
         .withSize(2, 3).withPosition(2, 0);
     lowLimelightSubsystem.addDashboardWidgets(lowLimelightLayout);
     lowLimelightLayout.add(lowLimelightSubsystem);
-  }
 
-  private void configureCommandDashboard() {
-    Dashboard.commandsTab.add(indexCommand).withSize(2, 1).withPosition(0, 0);
-    Dashboard.commandsTab.add(shootCommand).withSize(2, 1).withPosition(0, 1);
-    Dashboard.commandsTab.add(teleDriveCommand).withSize(2, 1).withPosition(2, 0);
   }
 
   private void configureDriverDashboard() {
+    // Auto chooser
     autoGenerator.addDashboardWidgets(Dashboard.driverTab);
+
+    // Indexer
     var indexerLayout = Dashboard.driverTab.getLayout("Indexer", BuiltInLayouts.kGrid)
         .withSize(2, 1).withPosition(0, 1)
         .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 1));
     indexerLayout.addBoolean("Full", indexerSubsystem::isFull);
-    indexerLayout.addBoolean("Running", indexerSubsystem::isRunning);
+    indexerLayout.addBoolean("Running", indexerSubsystem::isRunning);    
+    indexerLayout.addNumber("Balls", indexerSubsystem::getBallCount).withWidget(BuiltInWidgets.kDial)
+        .withSize(2, 1).withProperties(Map.of("min", 0, "max", 5));
 
-    var lowLimelight = CameraServer.getInstance().getServer(LimeLightConstants.LOW_NAME);
-    if (lowLimelight != null) {
-      Dashboard.driverTab.add(lowLimelight.getSource()).withSize(2, 2).withPosition(1, 0);
-    }
-
-    var highLimelight = CameraServer.getInstance().getServer(LimeLightConstants.HIGH_NAME);
-    if (highLimelight != null) {
-      Dashboard.driverTab.add(highLimelight.getSource()).withSize(2, 2).withPosition(3, 0);
-    }
+    // Cameras
+    Dashboard.driverTab.addString("Pipeline", () -> highLimelightSubsystem.getProfile().toString()).withPosition(6, 0);
+    Dashboard.driverTab.add(camera).withSize(4, 3).withPosition(2, 0);
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {
