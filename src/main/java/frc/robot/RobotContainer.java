@@ -266,6 +266,10 @@ public class RobotContainer {
     //     .withSize(2, 2).withPosition(6, 0);
     // controlPanelSubsystem.addDashboardWidgets(controlPanelLaytout);
 
+    // var climbLayout = Dashboard.subsystemsTab.getLayout("Climb", BuiltInLayouts.kList)
+    //     .withSize(2, 2).withPosition(8, 0);
+    // climbSubsystem.addDashboardWidget(climbLayout);
+
     var highLimelightLayout = Dashboard.limelightsTab.getLayout("High Limelight", BuiltInLayouts.kList)
         .withSize(2, 3).withPosition(0, 0);
     highLimelightSubsystem.addDashboardWidgets(highLimelightLayout);
