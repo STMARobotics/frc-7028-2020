@@ -104,7 +104,7 @@ public class RobotContainer {
     camera = CameraServer.getInstance().startAutomaticCapture();
     try {
       camera.setFPS(15);
-      camera.setResolution(320, 240);
+      camera.setResolution(160, 120);
     } catch (Exception e) {
       DriverStation.reportError("Failed to configure driver camera", true);
     }
