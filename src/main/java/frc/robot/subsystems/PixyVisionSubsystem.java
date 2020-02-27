@@ -3,7 +3,10 @@ package frc.robot.subsystems;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.MedianFilter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.MathUtil;
@@ -12,6 +15,8 @@ public class PixyVisionSubsystem extends SubsystemBase {
   private final int arduinoAddress = 0x14;
   private final I2C port;
   private final int minimumPollingWait = 5, maximumPollingWait = 20;
+  private final NetworkTable pixyDebugNetworkTable;
+  private final MedianFilter pixyUpdateDurationFilter = new MedianFilter(20);
 
   //if no coordinates are recieved, this will substitute to minimize errors
   private final PixyVisionVariables revertTo = new PixyVisionVariables(127, 80, 0, 0, 0, false);
@@ -27,6 +32,8 @@ public class PixyVisionSubsystem extends SubsystemBase {
 
     coordinates = revertTo; //default to the error case until the polling kicks in
 
+    pixyDebugNetworkTable = NetworkTableInstance.getDefault().getTable("PixyVisionDebug");
+
     //create a polling thread that handles direct interaction with the Pixy
     var executor = Executors.newCachedThreadPool();
     executor.submit(() -> this.run());
@@ -34,12 +41,20 @@ public class PixyVisionSubsystem extends SubsystemBase {
 
   private void run() {
 
+    double medianDuration = 0;
     if (polling) {
       //copy the current values to a previous variable for comparison
       var prevCoordinates = coordinates;
 
+      var startTimeMs = System.currentTimeMillis();
       //grab the current values from the pixy
       coordinates = getCoordinatesPrivate();
+
+      var duration = System.currentTimeMillis() - startTimeMs;
+
+      //set the duration of the update to the network tables so we have an idea how long it is taking to get a result
+      medianDuration = pixyUpdateDurationFilter.calculate(duration);
+      pixyDebugNetworkTable.getEntry("PixyI2CGetDurationMs").setNumber(medianDuration);
 
       //not sure how often the pixy will have updates, this should tune down/up our 
       //wait time to check as often as we're seeing updates come through
@@ -55,13 +70,16 @@ public class PixyVisionSubsystem extends SubsystemBase {
       pollingMs = MathUtil.clamp(pollingMs, minimumPollingWait, maximumPollingWait);
     }
 
-    //try to sleep set amount of wait time before polling again
-    try {
-
-      TimeUnit.MILLISECONDS.sleep(pollingMs);
-    } catch (InterruptedException e) {
-      
-      e.printStackTrace();
+    //if our median duration is under 15 ms let's implement a snooze, 
+    //if duration is taking longer let's immediately queue up another query
+    if (!polling || medianDuration < 15) {
+      //try to sleep set amount of wait time before polling again
+      try {
+        TimeUnit.MILLISECONDS.sleep(pollingMs);
+      } catch (InterruptedException e) {
+        
+        e.printStackTrace();
+      }
     }
   }
 
