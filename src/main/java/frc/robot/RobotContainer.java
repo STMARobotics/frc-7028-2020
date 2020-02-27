@@ -298,7 +298,7 @@ public class RobotContainer {
 
     // Cameras
     Dashboard.driverTab.addString("Pipeline", () -> highLimelightSubsystem.getProfile().toString()).withPosition(6, 0);
-    Dashboard.driverTab.add(camera).withSize(4, 3).withPosition(2, 0);
+    Dashboard.driverTab.add(camera).withSize(4, 3).withPosition(0, 3);
   }
 
   protected static Trajectory loadTrajectory(String trajectoryName) throws IOException {
