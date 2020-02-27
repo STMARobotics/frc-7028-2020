@@ -17,6 +17,7 @@ import java.util.Map;
 
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -318,13 +319,19 @@ public class RobotContainer {
     new InstantCommand(driveTrainSubsystem::resetOdometry, driveTrainSubsystem).schedule();
   }
 
+  //test mode instances
+  private NetworkTableEntry testDrivetrainNetworkTableEntry;
+
   public Command[] getTestModeCommands() {
     var commands = new ArrayList<Command>();
 
-    var testDrivetrainEntry = Dashboard.testModeTab.addPersistent("Test Drivetrain", false)
+    //add this if we don't have it already
+    if(testDrivetrainNetworkTableEntry == null) {
+      testDrivetrainNetworkTableEntry = Dashboard.testModeTab.addPersistent("Test Drivetrain", false)
         .withWidget(BuiltInWidgets.kToggleSwitch).getEntry();
-    
-    var testDrivetrain = testDrivetrainEntry.getBoolean(false);
+    }
+
+    var testDrivetrain = testDrivetrainNetworkTableEntry.getBoolean(false);
 
     if (testDrivetrain) {
       //add encoder commands, chain forward/reverse with a 1 second wait in between to allow the drivetrain to stop
