@@ -20,6 +20,11 @@ public class LowerArmCommand extends CommandBase {
   }
 
   @Override
+  public void end(boolean interrupted) {
+    System.out.println("Lowered arm");
+  }
+
+  @Override
   public boolean isFinished() {
     return controlPanelSubsystem.isArmDown();
   }

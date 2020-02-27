@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.DriveTrainConstants;
@@ -122,8 +123,11 @@ public class AutoGenerator {
 
     var pickupAndSpinUp = makePixyAutoCommand()
         .andThen(makeWaitForBallCount(3).withTimeout(3))
+        .andThen(new PrintCommand("Done with ball pick up"))
         .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
+        .andThen(new PrintCommand("Done turning to angle"))
         .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+        .andThen(new PrintCommand("Found target"))
         .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem));
 
     var trenchPickup = makePixyAutoCommand()
@@ -139,11 +143,16 @@ public class AutoGenerator {
         .andThen(() -> indexerSubsystem.resetBallCount(3))
         .andThen(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem)
         .deadlineWith(new SpinUpShooterCommand(distanceToTarget, shooterSubsystem))
+        .andThen(new PrintCommand("About to shoot 3"))
         .andThen(new JustShootCommand(3, distanceToTarget, shooterSubsystem, indexerSubsystem))
+        .andThen(new PrintCommand("Shot 3"))
         .andThen(makeLimelightProfileCommand(Profile.FAR))
         .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
+        .andThen(new PrintCommand("Drove to trench"))
         .andThen(trenchPickup)
-        .andThen(makeShootCommand(3));
+        .andThen(new PrintCommand("Done with trench pickup, ready to shoot"))
+        .andThen(makeShootCommand(3))
+        .andThen(new PrintCommand("Done shooting, all done"));
   }
 
   private void configureShieldGeneratorAuto() {
@@ -284,8 +293,11 @@ public class AutoGenerator {
           .andThen(new LowerArmCommand(controlPanelSubsystem))
           .alongWith(new InstantCommand(() -> indexerSubsystem.resetBallCount(3))
               .andThen(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem))
+          .andThen(new PrintCommand("About to shoot 3"))
           .andThen(new JustShootCommand(3, 130, shooterSubsystem, indexerSubsystem))
+          .andThen(new PrintCommand("Shot 3"))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
+          .andThen(new PrintCommand("Drove out of the way"))
           .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
         
       autoChooser.addOption("Move", autoCommandGroup);
@@ -299,7 +311,9 @@ public class AutoGenerator {
     // At the same time, run the intake and indexer
     // Finally, stop the intake
     return new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision)
+    .andThen(new PrintCommand("Found ball with Pixy"))
         .andThen(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25))
+        .andThen(new PrintCommand("Pixy thinks it captured a ball"))
         .andThen(driveTrainSubsystem::stop);
   }
 

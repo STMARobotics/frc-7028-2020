@@ -20,6 +20,11 @@ public class RaiseArmCommand extends CommandBase {
   }
 
   @Override
+  public void end(boolean interrupted) {
+    System.out.println("Raised arm");
+  }
+
+  @Override
   public boolean isFinished() {
     return controlPanelSubsystem.isArmUp();
   }
