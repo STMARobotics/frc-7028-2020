@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
@@ -101,6 +102,7 @@ public class RobotContainer {
   private final UsbCamera camera;
 
   public RobotContainer() {
+    LiveWindow.disableAllTelemetry();
     camera = CameraServer.getInstance().startAutomaticCapture();
     try {
       camera.setFPS(15);
