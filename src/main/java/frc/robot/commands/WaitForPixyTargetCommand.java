@@ -19,6 +19,6 @@ public class WaitForPixyTargetCommand extends CommandBase {
 
   @Override
   public boolean isFinished() {
-    return pixy.getCoordinates().success == true;
+    return pixy.getCoordinates().success;
   }
 }
