@@ -28,10 +28,10 @@ public class ControlPanelSubsystem extends SubsystemBase {
 
   private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
 
-  private final Color kBlueTarget = ColorMatch.makeColor(0.146, 0.446, 0.406);
-  private final Color kGreenTarget = ColorMatch.makeColor(0.189, 0.562, 0.249);
-  private final Color kRedTarget = ColorMatch.makeColor(0.452, 0.385, 0.163);
-  private final Color kYellowTarget = ColorMatch.makeColor(0.309, 0.555, 0.135);
+  private final Color kBlueTarget = ColorMatch.makeColor(0.155, 0.459, 0.385);
+  private final Color kGreenTarget = ColorMatch.makeColor(0.197, 0.561, 0.233);
+  private final Color kRedTarget = ColorMatch.makeColor(0.426, 0.411, 0.161);
+  private final Color kYellowTarget = ColorMatch.makeColor(0.321, 0.548, 0.130);
   private final Color kWhiteTarget = ColorMatch.makeColor(0.259, 0.488, 0.252);
 
   private final ColorMatch m_colorMatcher = new ColorMatch();
