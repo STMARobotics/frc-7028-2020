@@ -67,10 +67,12 @@ public class ShooterSubsystem extends SubsystemBase {
     var nearGainEntry = dashboard.addPersistent("Near Gain", 0).withWidget(BuiltInWidgets.kNumberSlider)
         .withProperties(Map.of("Max", 100, "Min", -100)).getEntry();
     nearGainEntry.addListener(this::updateNearGain, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    nearGain = nearGainEntry.getDouble(0);
     
     var farGainEntry = dashboard.addPersistent("Far Gain", 0).withWidget(BuiltInWidgets.kNumberSlider)
         .withProperties(Map.of("Max", 100, "Min", -100)).getEntry();
     farGainEntry.addListener(this::updateFarGain, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+    farGain = farGainEntry.getDouble(0);
   }
 
   private void updateNearGain(EntryNotification notification) {

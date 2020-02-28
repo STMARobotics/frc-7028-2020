@@ -36,18 +36,16 @@ public class ShootCommand extends VisionCommandBase {
   private MedianFilter xFilter = new MedianFilter(5);
 
   public ShootCommand(int ballsToShoot, ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem,
-      LimelightSubsystem highLimelightSubsystem, LimelightSubsystem lowLimelightSubsystem,
-      DriveTrainSubsystem driveTrainSubsystem) {
+      LimelightSubsystem highLimelightSubsystem, DriveTrainSubsystem driveTrainSubsystem) {
 
-    super(100, highLimelightSubsystem, lowLimelightSubsystem);
+    super(100, highLimelightSubsystem);
 
     this.ballsToShoot = ballsToShoot;
     this.shooterSubsystem = shooterSubsystem;
     this.indexerSubsystem = indexerSubsystem;
     this.driveTrainSubsystem = driveTrainSubsystem;
 
-    addRequirements(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, lowLimelightSubsystem,
-        driveTrainSubsystem);
+    addRequirements(shooterSubsystem, indexerSubsystem, highLimelightSubsystem, driveTrainSubsystem);
 
     pidController.setTolerance(AimConstants.AIM_TOLERANCE);
   }
