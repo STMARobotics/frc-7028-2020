@@ -42,6 +42,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class AutoGenerator {
   private final DriveTrainSubsystem driveTrainSubsystem;
   private final LimelightSubsystem highLimelightSubsystem;
+  private final LimelightSubsystem ballLimelightSubsystem;
   private final IndexerSubsystem indexerSubsystem;
   private final IntakeSubsystem intakeSubsystem;
   private final ShooterSubsystem shooterSubsystem;
@@ -50,10 +51,11 @@ public class AutoGenerator {
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   public AutoGenerator(DriveTrainSubsystem driveTrainSubsystem, LimelightSubsystem highLimelightSubsystem,
-      IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem, ShooterSubsystem shooterSubsystem,
-      ControlPanelSubsystem controlPanelSubsystem) {
+      LimelightSubsystem ballLimelight, IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem,
+      ShooterSubsystem shooterSubsystem, ControlPanelSubsystem controlPanelSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;
     this.highLimelightSubsystem = highLimelightSubsystem;
+    this.ballLimelightSubsystem = ballLimelight;
     this.indexerSubsystem = indexerSubsystem;
     this.intakeSubsystem = intakeSubsystem;
     this.shooterSubsystem = shooterSubsystem;
@@ -305,7 +307,7 @@ public class AutoGenerator {
     // Pixy until ball within target and then drive for 250ms
     // At the same time, run the intake and indexer
     // Finally, stop the intake
-    return new LimelightBallCommand(driveTrainSubsystem, highLimelightSubsystem)
+    return new LimelightBallCommand(driveTrainSubsystem, ballLimelightSubsystem)
     .andThen(new PrintCommand("Found ball with Limelight"))
         .andThen(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25))
         .andThen(new PrintCommand("Limelight thinks it captured a ball"))

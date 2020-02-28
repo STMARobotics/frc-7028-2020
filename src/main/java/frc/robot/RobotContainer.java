@@ -76,6 +76,10 @@ public class RobotContainer {
       .withNetworkTableName(LimeLightConstants.HIGH_NAME).withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
       .withMountDistanceFromCenter(LimeLightConstants.HIGH_DISTANCE_FROM_CENTER).build());
+  private final LimelightSubsystem ballLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
+      .withNetworkTableName(LimeLightConstants.LOW_NAME).withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
+      .withMountingHeight(LimeLightConstants.LOW_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.LOW_MOUNT_ANGLE)
+      .withMountDistanceFromCenter(LimeLightConstants.LOW_DISTANCE_FROM_CENTER).build());
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(indexerSubsystem::isReadyForBall);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
@@ -91,7 +95,7 @@ public class RobotContainer {
     highLimelightSubsystem, driveTrainSubsystem);
 
   private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, highLimelightSubsystem,
-    indexerSubsystem, intakeSubsystem, shooterSubsystem, controlPanelSubsystem);
+    ballLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem, controlPanelSubsystem);
 
   private final UsbCamera camera;
 
@@ -148,7 +152,7 @@ public class RobotContainer {
             new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),
             indexerSubsystem::isFull));
 
-    var pixyHeldCommand = new LimelightBallCommand(driveTrainSubsystem, highLimelightSubsystem)
+    var pixyHeldCommand = new LimelightBallCommand(driveTrainSubsystem, ballLimelightSubsystem)
         .andThen(
           new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))
@@ -180,8 +184,10 @@ public class RobotContainer {
     new JoystickButton(driverController, XboxController.Button.kStart.value)
         .toggleWhenPressed(new StartEndCommand(() -> {
             highLimelightSubsystem.enable();
+            ballLimelightSubsystem.enable();
           }, () -> {
             highLimelightSubsystem.disable();
+            ballLimelightSubsystem.disable();
           }));
 
     // Operator
@@ -270,6 +276,11 @@ public class RobotContainer {
         .withSize(2, 3).withPosition(0, 0);
     highLimelightSubsystem.addDashboardWidgets(highLimelightLayout);
     highLimelightLayout.add(highLimelightSubsystem);
+
+    var ballLimelightLayout = Dashboard.limelightsTab.getLayout("Ball Limelight", BuiltInLayouts.kList)
+        .withSize(2, 3).withPosition(2, 0);
+    ballLimelightSubsystem.addDashboardWidgets(ballLimelightLayout);
+    ballLimelightLayout.add(ballLimelightSubsystem);
 
   }
 
