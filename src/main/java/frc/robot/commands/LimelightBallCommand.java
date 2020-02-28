@@ -12,7 +12,7 @@ public class LimelightBallCommand extends VisionCommandBase {
   private final PIDController xPidController = new PIDController(.005, 0, 0);
   private final PIDController yPidController = new PIDController(.004, 0, 0);
 
-  private boolean noTarget;
+  private int noTargetCount;
 
   public LimelightBallCommand(DriveTrainSubsystem driveTrainSubsystem, LimelightSubsystem limelightSubsystem) {
     super(limelightSubsystem);
@@ -29,31 +29,35 @@ public class LimelightBallCommand extends VisionCommandBase {
 
   @Override
   public void initialize() {
+    super.initialize();
     xPidController.reset();
     yPidController.reset();
-    noTarget = false;
+    noTargetCount = 0;
   }
 
   @Override
   public void execute() {
+    super.execute();
     if (null == getTargetAcquired()) {
-      noTarget = true;
+      noTargetCount++;
       driveTrainSubsystem.stop();
     } else {
+      System.out.println("Y " + limelight.getTargetY());
       var speed = yPidController.calculate(limelight.getTargetY());
       var rotation = -xPidController.calculate(limelight.getTargetX());
       driveTrainSubsystem.arcadeDrive(speed, rotation, false);
-      noTarget = false;
+      noTargetCount = 0;
     }
   }
 
   @Override
   public boolean isFinished() {
-    return noTarget || (xPidController.atSetpoint() && yPidController.atSetpoint());
+    return noTargetCount > 20 || (xPidController.atSetpoint() && yPidController.atSetpoint());
   }
 
   @Override
   public void end(boolean interrupted) {
+    super.end(interrupted);
     driveTrainSubsystem.stop();
   }
 

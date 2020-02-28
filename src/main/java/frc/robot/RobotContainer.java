@@ -152,22 +152,22 @@ public class RobotContainer {
             new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),
             indexerSubsystem::isFull));
 
-    var pixyHeldCommand = new LimelightBallCommand(driveTrainSubsystem, ballLimelightSubsystem)
-        .andThen(
-          new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
-        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))
+    var limelightBallCommand = new LimelightBallCommand(driveTrainSubsystem, ballLimelightSubsystem)
+        // .andThen(
+        //   new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
+        // .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))
         .deadlineWith(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
         .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem));
     
-    var pixyReleaseCommand = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
+    var limeLightBallReleased = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
 
     new JoystickButton(driverController, XboxController.Button.kX.value)
         .whileHeld(new ConditionalCommand(
             new RumbleCommand(driverController, RumbleType.kLeftRumble),
-            pixyHeldCommand,
+            limelightBallCommand,
             indexerSubsystem::isFull))
-        .whenReleased(pixyReleaseCommand);
+        .whenReleased(limeLightBallReleased);
 
     new POVButton(driverController, 0)
         .whenPressed(new TurnToAngleCommand(0, driveTrainSubsystem));
