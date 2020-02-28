@@ -61,6 +61,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
     dashboard.addNumber("Velocity", shooterEncoder::getVelocity);
+    dashboard.addNumber("Target Velocity", this::getTargetSpeed);
   }
 
   public void addDriverDashboardWidget(ShuffleboardLayout dashboard) {
