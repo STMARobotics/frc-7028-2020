@@ -17,8 +17,8 @@ public class JustShootCommand extends CommandBase {
 
   private final int ballsToShoot;
   private final int distance;
+  private final boolean rapidFire;
   private int ballsShot = 0;
-  private boolean noTarget = false;
   private boolean wasFull = false;
   private Timer endTimer = new Timer();
 
@@ -31,18 +31,23 @@ public class JustShootCommand extends CommandBase {
    */
   public JustShootCommand(
         int ballsToShoot, int distance, ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem) {
+    this(ballsToShoot, distance, false, shooterSubsystem, indexerSubsystem);
+  }
 
+  public JustShootCommand(int ballsToShoot, int distance, boolean rapidFire, ShooterSubsystem shooterSubsystem,
+      IndexerSubsystem indexerSubsystem) {
+    
     this.ballsToShoot = ballsToShoot;
     this.distance = distance;
     this.shooterSubsystem = shooterSubsystem;
     this.indexerSubsystem = indexerSubsystem;
+    this.rapidFire = rapidFire;
 
     addRequirements(shooterSubsystem, indexerSubsystem);
   }
 
   @Override
   public void initialize() {
-    noTarget = false;
     ballsShot = 0;
     wasFull = indexerSubsystem.isFull();
     endTimer.reset();
@@ -51,7 +56,7 @@ public class JustShootCommand extends CommandBase {
   @Override
   public void execute() {
     shooterSubsystem.prepareToShoot(distance);
-    if (shooterSubsystem.isReadyToShoot()) {
+    if (shooterSubsystem.isReadyToShoot() || (rapidFire && ballsShot > 0)) {
       indexerSubsystem.shoot();
     } else {
       indexerSubsystem.prepareToShoot();
@@ -65,7 +70,7 @@ public class JustShootCommand extends CommandBase {
 
   @Override
   public boolean isFinished() {
-    return noTarget || (ballsShot >= ballsToShoot && endTimer.hasElapsed(ShooterConstants.SHOOT_TIME));
+    return ballsShot >= ballsToShoot && endTimer.hasElapsed(ShooterConstants.SHOOT_TIME);
   }
 
   @Override
