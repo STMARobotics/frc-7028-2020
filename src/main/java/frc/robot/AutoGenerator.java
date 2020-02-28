@@ -151,7 +151,9 @@ public class AutoGenerator {
         .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
         .andThen(new PrintCommand("Drove to trench"))
         .andThen(trenchPickup)
-        .andThen(new PrintCommand("Done with trench pickup, ready to shoot"))
+        .andThen(new PrintCommand("Done with trench pickup"))
+        .andThen(new WaitForTargetCommand(highLimelightSubsystem).withTimeout(3))
+        .andThen(new PrintCommand("Found a target, ready to shoot"))
         .andThen(makeShootCommand(3))
         .andThen(new PrintCommand("Done shooting, all done"));
   }

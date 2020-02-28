@@ -159,7 +159,8 @@ public class RobotContainer {
         .andThen(ballLimelightSubsystem::disable, ballLimelightSubsystem);
     
     var limelightBallReleased = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
-        .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
+        .andThen(ballLimelightSubsystem::disable, ballLimelightSubsystem)
+        .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
 
     new JoystickButton(driverController, XboxController.Button.kX.value)
         .whileHeld(new ConditionalCommand(
