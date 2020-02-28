@@ -13,7 +13,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
@@ -40,9 +39,6 @@ public class ShootCommandTest {
 
   @Mock
   private LimelightSubsystem highLimelight;
-
-  @Mock
-  private LimelightSubsystem lowLimelight;
 
   @Mock
   private DriveTrainSubsystem drivetrain;
@@ -136,38 +132,6 @@ public class ShootCommandTest {
     inOrder.verify(drivetrain).stop();
 
     assertEquals(3, shootCommand.getBallsShot());
-  }
-
-  @Ignore
-  @Test
-  public void testLowLimelightImmediateShoot() {
-
-    var distanceToTarget = 1d;
-    when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(0.0));
-    when(lowLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(1.0));
-    when(lowLimelight.getTargetX()).thenReturn(0d);
-    when(shooter.isReadyToShoot()).thenReturn(true);
-    when(lowLimelight.getDistanceToTarget()).thenReturn(distanceToTarget);
-    when(indexer.isFull()).thenReturn(true, false);
-
-    shootCommand.schedule();
-    commandScheduler.run();
-    Timer timer = new Timer();
-    timer.start();
-    do {
-      Timer.delay(.02);
-      commandScheduler.run();
-    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
-    commandScheduler.run();
-
-    InOrder inOrder = inOrder(shooter, indexer, drivetrain);
-    inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
-    inOrder.verify(drivetrain).arcadeDrive(0.0, -0.0, false);
-    inOrder.verify(shooter).isReadyToShoot();
-    inOrder.verify(indexer).shoot();
-    inOrder.verify(shooter).stopShooter();
-    inOrder.verify(indexer).stopIndexer();
-    inOrder.verify(drivetrain).stop();
   }
 
   @Test
@@ -279,7 +243,6 @@ public class ShootCommandTest {
   public void testNoTarget() {
 
     when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(0.0));
-    when(lowLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(0.0));
     
     shootCommand.schedule();
     commandScheduler.run();
