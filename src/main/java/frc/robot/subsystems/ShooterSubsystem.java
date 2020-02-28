@@ -101,6 +101,11 @@ public class ShooterSubsystem extends SubsystemBase {
     } else if (distanceToTarget <= 150) {
       targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 75.833 * distanceToTarget + (8420 + nearGain);
     }
+    
+    setRawVelocity(targetSpeed);
+  }
+
+  public void setRawVelocity(double targetSpeed) {
     shooterPIDController.setReference(
         targetSpeed,
         ControlType.kVelocity,
@@ -129,5 +134,4 @@ public class ShooterSubsystem extends SubsystemBase {
   public double getTargetSpeed() {
     return targetSpeed;
   }
-
 }

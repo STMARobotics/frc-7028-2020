@@ -62,6 +62,7 @@ import frc.robot.testMode.TestEncoderCommand;
 import frc.robot.testMode.TestIndexerCommand;
 import frc.robot.testMode.TestIntakeCommand;
 import frc.robot.testMode.TestLimelightCommand;
+import frc.robot.testMode.TestShooterCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -352,6 +353,16 @@ public class RobotContainer {
     commands.add(new TestControlPanel(controlPanelSubsystem).withTimeout(30));
     commands.add(new TestClimb(climbSubsystem).withTimeout(10));
 
+    //add shooter tests
+    commands.add(new TestShooterCommand(shooterSubsystem, 500).withTimeout(2)
+      .andThen(new TestShooterCommand(shooterSubsystem, 1000).withTimeout(2))
+      .andThen(new TestShooterCommand(shooterSubsystem, 2500).withTimeout(2))
+      .andThen(new TestShooterCommand(shooterSubsystem, 2750).withTimeout(2))
+      .andThen(new TestShooterCommand(shooterSubsystem, 3000).withTimeout(2))
+      .andThen(new TestShooterCommand(shooterSubsystem, 3500).withTimeout(2))
+      .andThen(new TestShooterCommand(shooterSubsystem, 4000).withTimeout(2))
+    );
+    
     Command[] arr = new Command[commands.size()];
     return commands.toArray(arr);
   }
