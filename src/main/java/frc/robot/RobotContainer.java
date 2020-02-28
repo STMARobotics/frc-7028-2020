@@ -38,7 +38,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.IndexCommand;
-import frc.robot.commands.PIDPixyAssistCommand;
+import frc.robot.commands.LimelightBallCommand;
 import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.RumbleCommand;
 import frc.robot.commands.RunIntakeCommand;
@@ -53,7 +53,6 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightConfig;
 import frc.robot.subsystems.LimelightSubsystem;
-import frc.robot.subsystems.PixyVisionSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.testMode.TestClimb;
@@ -80,7 +79,6 @@ public class RobotContainer {
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(indexerSubsystem::isReadyForBall);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
-  private final PixyVisionSubsystem pixyVision = new PixyVisionSubsystem();
   private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
   private final ClimbSubsystem climbSubsystem = new ClimbSubsystem();
 
@@ -93,7 +91,7 @@ public class RobotContainer {
     highLimelightSubsystem, driveTrainSubsystem);
 
   private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, highLimelightSubsystem,
-    indexerSubsystem, intakeSubsystem, shooterSubsystem, pixyVision, controlPanelSubsystem);
+    indexerSubsystem, intakeSubsystem, shooterSubsystem, controlPanelSubsystem);
 
   private final UsbCamera camera;
 
@@ -150,7 +148,7 @@ public class RobotContainer {
             new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),
             indexerSubsystem::isFull));
 
-    var pixyHeldCommand = new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision)
+    var pixyHeldCommand = new LimelightBallCommand(driveTrainSubsystem, highLimelightSubsystem)
         .andThen(
           new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))

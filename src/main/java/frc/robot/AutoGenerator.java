@@ -20,8 +20,8 @@ import frc.robot.Constants.DriveTrainConstants;
 import frc.robot.Constants.TrajectoryConstants;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.JustShootCommand;
+import frc.robot.commands.LimelightBallCommand;
 import frc.robot.commands.LowerArmCommand;
-import frc.robot.commands.PIDPixyAssistCommand;
 import frc.robot.commands.RaiseArmCommand;
 import frc.robot.commands.RunIntakeCommand;
 import frc.robot.commands.ShootCommand;
@@ -33,7 +33,6 @@ import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
-import frc.robot.subsystems.PixyVisionSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
 
@@ -46,20 +45,18 @@ public class AutoGenerator {
   private final IndexerSubsystem indexerSubsystem;
   private final IntakeSubsystem intakeSubsystem;
   private final ShooterSubsystem shooterSubsystem;
-  private final PixyVisionSubsystem pixyVision;
   private final ControlPanelSubsystem controlPanelSubsystem;
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   public AutoGenerator(DriveTrainSubsystem driveTrainSubsystem, LimelightSubsystem highLimelightSubsystem,
       IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem, ShooterSubsystem shooterSubsystem,
-      PixyVisionSubsystem pixyVision, ControlPanelSubsystem controlPanelSubsystem) {
+      ControlPanelSubsystem controlPanelSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;
     this.highLimelightSubsystem = highLimelightSubsystem;
     this.indexerSubsystem = indexerSubsystem;
     this.intakeSubsystem = intakeSubsystem;
     this.shooterSubsystem = shooterSubsystem;
-    this.pixyVision = pixyVision;
     this.controlPanelSubsystem = controlPanelSubsystem;
   }
 
@@ -119,7 +116,7 @@ public class AutoGenerator {
             .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
             .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.2));
 
-    var pickupAndSpinUp = makePixyAutoCommand()
+    var pickupAndSpinUp = makeLimelightAutoCommand()
         .andThen(makeWaitForBallCount(3).withTimeout(3))
         .andThen(new PrintCommand("Done with ball pick up"))
         .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
@@ -128,8 +125,8 @@ public class AutoGenerator {
         .andThen(new PrintCommand("Found target"))
         .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem));
 
-    var trenchPickup = makePixyAutoCommand()
-        .andThen(makePixyAutoCommand())
+    var trenchPickup = makeLimelightAutoCommand()
+        .andThen(makeLimelightAutoCommand())
         .andThen(pickupAndSpinUp)
         .deadlineWith(
             new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),
@@ -197,10 +194,10 @@ public class AutoGenerator {
               .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
               .andThen(makeLimelightProfileCommand(Profile.FAR))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
-              .andThen(makePixyWithIntakeCommand())
+              .andThen(makeLimelightWithIntakeCommand())
               .andThen(makeWaitForBallCount(4).withTimeout(3))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo))
-              .andThen(makePixyWithIntakeCommand())
+              .andThen(makeLimelightWithIntakeCommand())
               .andThen(makeWaitForBallCount(5).withTimeout(3)))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
               .andThen(new WaitForTargetCommand(highLimelightSubsystem).withTimeout(5))
@@ -257,10 +254,10 @@ public class AutoGenerator {
               .andThen(()-> driveTrainSubsystem.setCurrentPose(trajectory.getInitialPose()), driveTrainSubsystem)
               .andThen(makeLimelightProfileCommand(Profile.FAR))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectory))
-              .andThen(makePixyWithIntakeCommand())
+              .andThen(makeLimelightWithIntakeCommand())
               .andThen(makeWaitForBallCount(4).withTimeout(3))
               .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryTwo))
-              .andThen(makePixyWithIntakeCommand())
+              .andThen(makeLimelightWithIntakeCommand())
               .andThen(makeWaitForBallCount(5).withTimeout(3)))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
               .andThen(new WaitForTargetCommand(highLimelightSubsystem).withTimeout(5))
@@ -304,19 +301,19 @@ public class AutoGenerator {
     }
   }
 
-  private Command makePixyAutoCommand() {
+  private Command makeLimelightAutoCommand() {
     // Pixy until ball within target and then drive for 250ms
     // At the same time, run the intake and indexer
     // Finally, stop the intake
-    return new PIDPixyAssistCommand(driveTrainSubsystem, pixyVision)
-    .andThen(new PrintCommand("Found ball with Pixy"))
+    return new LimelightBallCommand(driveTrainSubsystem, highLimelightSubsystem)
+    .andThen(new PrintCommand("Found ball with Limelight"))
         .andThen(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25))
-        .andThen(new PrintCommand("Pixy thinks it captured a ball"))
+        .andThen(new PrintCommand("Limelight thinks it captured a ball"))
         .andThen(driveTrainSubsystem::stop);
   }
 
-  private Command makePixyWithIntakeCommand() {
-    return makePixyAutoCommand().deadlineWith(
+  private Command makeLimelightWithIntakeCommand() {
+    return makeLimelightAutoCommand().deadlineWith(
         new RunCommand(intakeSubsystem::intake, intakeSubsystem),
         new IndexCommand(indexerSubsystem)).andThen(intakeSubsystem::stopIntake, intakeSubsystem);
   }
