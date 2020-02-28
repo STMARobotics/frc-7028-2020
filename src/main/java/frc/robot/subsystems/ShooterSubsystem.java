@@ -110,4 +110,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
   }
 
+  public double getVelocity() {
+    return shooterEncoder.getVelocity();
+  }
+
+  public double getTargetSpeed() {
+    return targetSpeed;
+  }
+
 }

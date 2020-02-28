@@ -22,6 +22,8 @@ public class JustShootCommand extends CommandBase {
   private boolean wasFull = false;
   private Timer endTimer = new Timer();
 
+  private long preparingToShootCounter = 0;
+
   /**
    * 
    * @param ballsToShoot
@@ -55,6 +57,11 @@ public class JustShootCommand extends CommandBase {
       indexerSubsystem.shoot();
     } else {
       indexerSubsystem.prepareToShoot();
+
+      //every 50th preparing(), output the current numbers - 50 iterations is 1 second or so
+      if(preparingToShootCounter++ % 50 == 0) {
+        System.out.print("Preparing to shoot " + shooterSubsystem.getVelocity() + " velocity, " + shooterSubsystem.getTargetSpeed() + " target speed.");
+      }
     }
     var isFull = indexerSubsystem.isFull();
     if ((wasFull && !isFull) && (++ballsShot >= ballsToShoot)) {
