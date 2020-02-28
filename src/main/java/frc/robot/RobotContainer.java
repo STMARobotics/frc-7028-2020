@@ -77,7 +77,7 @@ public class RobotContainer {
       .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
       .withMountDistanceFromCenter(LimeLightConstants.HIGH_DISTANCE_FROM_CENTER).build());
   private final LimelightSubsystem ballLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
-      .withNetworkTableName(LimeLightConstants.LOW_NAME).withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
+      .withNetworkTableName(LimeLightConstants.LOW_NAME).withMountDepth(LimeLightConstants.LOW_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.LOW_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.LOW_MOUNT_ANGLE)
       .withMountDistanceFromCenter(LimeLightConstants.LOW_DISTANCE_FROM_CENTER).build());
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
@@ -152,22 +152,21 @@ public class RobotContainer {
             new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),
             indexerSubsystem::isFull));
 
-    var limelightBallCommand = new LimelightBallCommand(driveTrainSubsystem, ballLimelightSubsystem)
-        // .andThen(
-        //   new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.2, 0, false), driveTrainSubsystem).withTimeout(0.25))
-        // .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem))
+    var limelightBallHeld = new InstantCommand(ballLimelightSubsystem::enable, ballLimelightSubsystem)
+        .andThen(new LimelightBallCommand(driveTrainSubsystem, ballLimelightSubsystem).perpetually())
         .deadlineWith(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
-        .andThen(new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem));
+        .andThen(intakeSubsystem::stopIntake, intakeSubsystem)
+        .andThen(ballLimelightSubsystem::disable, ballLimelightSubsystem);
     
-    var limeLightBallReleased = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
+    var limelightBallReleased = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
         .andThen(new InstantCommand(driveTrainSubsystem::stop, driveTrainSubsystem));
 
     new JoystickButton(driverController, XboxController.Button.kX.value)
         .whileHeld(new ConditionalCommand(
             new RumbleCommand(driverController, RumbleType.kLeftRumble),
-            limelightBallCommand,
+            limelightBallHeld,
             indexerSubsystem::isFull))
-        .whenReleased(limeLightBallReleased);
+        .whenReleased(limelightBallReleased);
 
     new POVButton(driverController, 0)
         .whenPressed(new TurnToAngleCommand(0, driveTrainSubsystem));

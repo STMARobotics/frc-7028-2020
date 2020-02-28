@@ -1,21 +1,21 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 
-public class LimelightBallCommand extends VisionCommandBase {
+public class LimelightBallCommand extends CommandBase {
 
   private final LimelightSubsystem limelight;
   private final DriveTrainSubsystem driveTrainSubsystem;
 
-  private final PIDController xPidController = new PIDController(.005, 0, 0);
-  private final PIDController yPidController = new PIDController(.004, 0, 0);
+  private final PIDController xPidController = new PIDController(.025, 0, 0);
+  private final PIDController yPidController = new PIDController(.025, 0, 0);
 
-  private int noTargetCount;
+  private boolean noTarget;
 
   public LimelightBallCommand(DriveTrainSubsystem driveTrainSubsystem, LimelightSubsystem limelightSubsystem) {
-    super(limelightSubsystem);
     this.driveTrainSubsystem = driveTrainSubsystem;
     this.limelight = limelightSubsystem;
     addRequirements(driveTrainSubsystem, limelightSubsystem);
@@ -24,35 +24,33 @@ public class LimelightBallCommand extends VisionCommandBase {
     xPidController.setTolerance(3);
 
     yPidController.setSetpoint(0);
-    yPidController.setTolerance(3);
+    yPidController.setTolerance(1);
   }
 
   @Override
   public void initialize() {
-    super.initialize();
+    limelight.enable();
     xPidController.reset();
     yPidController.reset();
-    noTargetCount = 0;
+    noTarget = false;
   }
 
   @Override
   public void execute() {
-    super.execute();
-    if (null == getTargetAcquired()) {
-      noTargetCount++;
-      driveTrainSubsystem.stop();
-    } else {
-      System.out.println("Y " + limelight.getTargetY());
-      var speed = yPidController.calculate(limelight.getTargetY());
+    if (limelight.getTargetAcquired()) {
+      var speed = -yPidController.calculate(limelight.getTargetY());
       var rotation = -xPidController.calculate(limelight.getTargetX());
       driveTrainSubsystem.arcadeDrive(speed, rotation, false);
-      noTargetCount = 0;
+      noTarget = false;
+    } else {
+      noTarget = true;
+      driveTrainSubsystem.stop();
     }
   }
 
   @Override
   public boolean isFinished() {
-    return noTargetCount > 20 || (xPidController.atSetpoint() && yPidController.atSetpoint());
+    return noTarget || (xPidController.atSetpoint() && yPidController.atSetpoint());
   }
 
   @Override

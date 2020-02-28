@@ -127,15 +127,19 @@ public class AutoGenerator {
         .andThen(new PrintCommand("Found target"))
         .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem));
 
-    var trenchPickup = makeLimelightAutoCommand()
-        .andThen(makeLimelightAutoCommand())
+    var trenchPickup = makeLimelightAutoCommand().andThen(makeWaitForBallCount(1).withTimeout(1))
+        .andThen(new PrintCommand("Picked one ball"))
+        .andThen(makeLimelightAutoCommand()).andThen(makeWaitForBallCount(2).withTimeout(3))
+        .andThen(new PrintCommand("Picked two balls"))
         .andThen(pickupAndSpinUp)
         .deadlineWith(
             new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),
             new IndexCommand(indexerSubsystem))
+        .andThen(ballLimelightSubsystem::disable)
         .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
 
     return new RaiseArmCommand(controlPanelSubsystem)
+        .andThen(ballLimelightSubsystem::enable)
         .andThen(new LowerArmCommand(controlPanelSubsystem))
         .andThen(() -> indexerSubsystem.resetBallCount(3))
         .andThen(()-> driveTrainSubsystem.setCurrentPose(startPose), driveTrainSubsystem)
@@ -308,10 +312,7 @@ public class AutoGenerator {
     // At the same time, run the intake and indexer
     // Finally, stop the intake
     return new LimelightBallCommand(driveTrainSubsystem, ballLimelightSubsystem)
-    .andThen(new PrintCommand("Found ball with Limelight"))
-        .andThen(new RunCommand(() -> driveTrainSubsystem.arcadeDrive(.3, 0, false), driveTrainSubsystem).withTimeout(0.25))
-        .andThen(new PrintCommand("Limelight thinks it captured a ball"))
-        .andThen(driveTrainSubsystem::stop);
+    .andThen(new PrintCommand("Found ball with Limelight")).andThen(driveTrainSubsystem::stop);
   }
 
   private Command makeLimelightWithIntakeCommand() {
