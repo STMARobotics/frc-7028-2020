@@ -44,6 +44,7 @@ import frc.robot.commands.RumbleCommand;
 import frc.robot.commands.RunIntakeCommand;
 import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
+import frc.robot.commands.SpinUpShooterCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.subsystems.ClimbSubsystem;
@@ -228,7 +229,10 @@ public class RobotContainer {
         .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
 
     new JoystickButton(operatorConsole, OperatorConsoleButton.RightTopButton.value)
-        .whenPressed(() -> indexerSubsystem.resetBallCount(0), indexerSubsystem);
+        .whenHeld(new SpinUpShooterCommand(140, shooterSubsystem).alongWith(new InstantCommand(() -> {
+          highLimelightSubsystem.enable();
+          lowLimelightSubsystem.enable();
+        })));
   }
 
   private void configureSubsystemCommands() {
@@ -301,6 +305,10 @@ public class RobotContainer {
     // Cameras
     Dashboard.driverTab.addString("Pipeline", () -> highLimelightSubsystem.getProfile().toString()).withPosition(6, 0);
     Dashboard.driverTab.add(camera).withSize(4, 3).withPosition(0, 3);
+    Dashboard.driverTab.addBoolean("High Target", highLimelightSubsystem::getTargetAcquired)
+        .withSize(1, 1).withPosition(0, 4);
+    Dashboard.driverTab.addBoolean("Low Target", lowLimelightSubsystem::getTargetAcquired)
+        .withSize(1, 1).withPosition(1, 4);
 
     // Shooter gain
     var gainsLayout = Dashboard.driverTab.getLayout("Gains", BuiltInLayouts.kList)
