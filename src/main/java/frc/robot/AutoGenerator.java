@@ -43,7 +43,6 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class AutoGenerator {
   private final DriveTrainSubsystem driveTrainSubsystem;
   private final LimelightSubsystem highLimelightSubsystem;
-  private final LimelightSubsystem lowLimelightSubsystem;
   private final IndexerSubsystem indexerSubsystem;
   private final IntakeSubsystem intakeSubsystem;
   private final ShooterSubsystem shooterSubsystem;
@@ -53,11 +52,10 @@ public class AutoGenerator {
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   public AutoGenerator(DriveTrainSubsystem driveTrainSubsystem, LimelightSubsystem highLimelightSubsystem,
-      LimelightSubsystem lowLimelightSubsystem, IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem,
-      ShooterSubsystem shooterSubsystem, PixyVisionSubsystem pixyVision, ControlPanelSubsystem controlPanelSubsystem) {
+      IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem, ShooterSubsystem shooterSubsystem,
+      PixyVisionSubsystem pixyVision, ControlPanelSubsystem controlPanelSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;
     this.highLimelightSubsystem = highLimelightSubsystem;
-    this.lowLimelightSubsystem = lowLimelightSubsystem;
     this.indexerSubsystem = indexerSubsystem;
     this.intakeSubsystem = intakeSubsystem;
     this.shooterSubsystem = shooterSubsystem;
@@ -126,7 +124,7 @@ public class AutoGenerator {
         .andThen(new PrintCommand("Done with ball pick up"))
         .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
         .andThen(new PrintCommand("Done turning to angle"))
-        .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+        .andThen(new WaitForTargetCommand(highLimelightSubsystem).withTimeout(5))
         .andThen(new PrintCommand("Found target"))
         .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem));
 
@@ -205,7 +203,7 @@ public class AutoGenerator {
               .andThen(makePixyWithIntakeCommand())
               .andThen(makeWaitForBallCount(5).withTimeout(3)))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+              .andThen(new WaitForTargetCommand(highLimelightSubsystem).withTimeout(5))
               .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem)))
           .andThen(makeShootCommand(5));
         
@@ -265,7 +263,7 @@ public class AutoGenerator {
               .andThen(makePixyWithIntakeCommand())
               .andThen(makeWaitForBallCount(5).withTimeout(3)))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem, lowLimelightSubsystem).withTimeout(5))
+              .andThen(new WaitForTargetCommand(highLimelightSubsystem).withTimeout(5))
               .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem)))
           .andThen(makeShootCommand(5));
         
@@ -330,7 +328,7 @@ public class AutoGenerator {
    */
   private Command makeShootCommand(int ballsToShoot) {
     return new ShootCommand(ballsToShoot, shooterSubsystem, indexerSubsystem, highLimelightSubsystem, 
-        lowLimelightSubsystem, driveTrainSubsystem);
+        driveTrainSubsystem);
   }
 
   /**
@@ -341,8 +339,7 @@ public class AutoGenerator {
   private Command makeLimelightProfileCommand(Profile profile) {
     return new InstantCommand(() -> {
         highLimelightSubsystem.setProfile(profile);
-        lowLimelightSubsystem.setProfile(profile);
-    }, highLimelightSubsystem, lowLimelightSubsystem);
+    }, highLimelightSubsystem);
   }
 
   /**

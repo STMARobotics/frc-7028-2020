@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
@@ -57,7 +58,7 @@ public class ShootCommandTest {
   @Before
   public void setUp() {
     commandScheduler = CommandScheduler.getInstance();
-    shootCommand = spy(new ShootCommand(1, shooter, indexer, highLimelight, lowLimelight, drivetrain));
+    shootCommand = spy(new ShootCommand(1, shooter, indexer, highLimelight, drivetrain));
     when(shootCommand.runsWhenDisabled()).thenReturn(true);
   }
 
@@ -93,7 +94,7 @@ public class ShootCommandTest {
 
   @Test
   public void testShootThree() {
-    shootCommand = spy(new ShootCommand(3, shooter, indexer, highLimelight, lowLimelight, drivetrain));
+    shootCommand = spy(new ShootCommand(3, shooter, indexer, highLimelight, drivetrain));
     when(shootCommand.runsWhenDisabled()).thenReturn(true);
 
     var distanceToTarget = 1d;
@@ -137,6 +138,7 @@ public class ShootCommandTest {
     assertEquals(3, shootCommand.getBallsShot());
   }
 
+  @Ignore
   @Test
   public void testLowLimelightImmediateShoot() {
 
