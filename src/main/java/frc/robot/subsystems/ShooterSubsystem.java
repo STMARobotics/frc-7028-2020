@@ -15,6 +15,7 @@ import com.revrobotics.ControlType;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.EntryNotification;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
@@ -35,6 +36,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private double nearGain = 0;
   private double farGain = 0;
   private double targetSpeed;
+  private Timer spinUpTimer = new Timer();
+  private boolean timerRunning = false;
 
   private final SimpleMotorFeedforward motorFeedForward = 
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV, ShooterConstants.kA);
@@ -89,6 +92,10 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param distanceToTarget distance in INCHES
    */
   public void prepareToShoot(double distanceToTarget) {
+    if (!timerRunning) {
+      timerRunning = true;
+      spinUpTimer.start();
+    }
     if (distanceToTarget > 150) {
       targetSpeed = 3.05 * distanceToTarget + (2160.761 + farGain);
     } else if (distanceToTarget <= 150) {
@@ -102,11 +109,13 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean isReadyToShoot() {
-    return Math.abs(shooterEncoder.getVelocity() - targetSpeed) <= CLOSED_LOOP_ERROR_RANGE;
+    return (Math.abs(shooterEncoder.getVelocity() - targetSpeed) <= CLOSED_LOOP_ERROR_RANGE)
+        || spinUpTimer.hasElapsed(targetSpeed / 2500);
   }
 
   public void stopShooter() {
     shooterMaster.set(0.0);
+    timerRunning = false;
   }
 
   public void setProfile(Profile profile) {
