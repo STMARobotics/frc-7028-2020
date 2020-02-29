@@ -1,14 +1,15 @@
 package frc.robot.commands;
 
-import frc.robot.subsystems.ILimelightSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
 
 /**
  * This command won't finish until getTargetAcquired returns true, it should be used with a timeout
  */
 public class WaitForTargetCommand extends VisionCommandBase {
 
-  public WaitForTargetCommand(ILimelightSubsystem... limelights) {
+  public WaitForTargetCommand(LimelightSubsystem... limelights) {
     super(limelights);
+    addRequirements(limelights);
   }
 
   @Override

@@ -79,6 +79,7 @@ public class ShootCommand extends VisionCommandBase {
     }
     var isFull = indexerSubsystem.isFull();
     if ((wasFull && !isFull) && (++ballsShot >= ballsToShoot)) {
+      System.out.println("Shot all balls, waiting for time");
       endTimer.start();
     }
     wasFull = isFull;
@@ -92,7 +93,7 @@ public class ShootCommand extends VisionCommandBase {
 
   @Override
   public boolean isFinished() {
-    return noTarget || (ballsShot >= ballsToShoot && endTimer.hasElapsed(ShooterConstants.SHOOT_TIME));
+    return (ballsShot >= ballsToShoot && endTimer.hasElapsed(ShooterConstants.SHOOT_TIME));
   }
 
   @Override

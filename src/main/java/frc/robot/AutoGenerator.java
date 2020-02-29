@@ -115,8 +115,8 @@ public class AutoGenerator {
 
     var pickupAndSpinUp = makeLimelightAutoCommand()
         .andThen(makeWaitForBallCount(3).withTimeout(3))
-        .andThen(ballLimelightSubsystem::disable)
-        .andThen(highLimelightSubsystem::enable)
+        .andThen(ballLimelightSubsystem::disable, ballLimelightSubsystem)
+        .andThen(highLimelightSubsystem::enable, highLimelightSubsystem)
         .andThen(new PrintCommand("Done with ball pick up"))
         .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
         .andThen(new PrintCommand("Done turning to angle"))
