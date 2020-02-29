@@ -39,15 +39,12 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.IndexCommand;
 import frc.robot.commands.LimelightBallCommand;
-import frc.robot.commands.RotateWheelCommand;
 import frc.robot.commands.RumbleCommand;
 import frc.robot.commands.RunIntakeCommand;
-import frc.robot.commands.SetColorCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
 import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.subsystems.ClimbSubsystem;
-import frc.robot.subsystems.ControlPanelSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -56,7 +53,6 @@ import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.Profile;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.testMode.TestClimb;
-import frc.robot.testMode.TestControlPanel;
 import frc.robot.testMode.TestEncoderCommand;
 import frc.robot.testMode.TestIndexerCommand;
 import frc.robot.testMode.TestIntakeCommand;
@@ -83,7 +79,7 @@ public class RobotContainer {
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(indexerSubsystem::isReadyForBall);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
-  private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
+  // private final ControlPanelSubsystem controlPanelSubsystem = new ControlPanelSubsystem();
   private final ClimbSubsystem climbSubsystem = new ClimbSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
@@ -95,7 +91,7 @@ public class RobotContainer {
     highLimelightSubsystem, driveTrainSubsystem);
 
   private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, highLimelightSubsystem,
-    ballLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem, controlPanelSubsystem);
+    ballLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem);
 
   private final UsbCamera camera;
 
@@ -197,17 +193,17 @@ public class RobotContainer {
     new JoystickButton(operatorConsole, OperatorConsoleButton.RightRightButton.value)
         .whenPressed(makeLimelightProfileCommand(Profile.FAR));
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftRightButton.value)
-        .whenHeld(new SetColorCommand(controlPanelSubsystem));
+    // new JoystickButton(operatorConsole, OperatorConsoleButton.LeftRightButton.value)
+    //     .whenHeld(new SetColorCommand(controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftLeftButton.value)
-        .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
+    // new JoystickButton(operatorConsole, OperatorConsoleButton.LeftLeftButton.value)
+    //     .whenHeld(new RotateWheelCommand(controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftTopButton.value)
-        .whenPressed(new RunCommand(controlPanelSubsystem::raiseArm, controlPanelSubsystem));
+    // new JoystickButton(operatorConsole, OperatorConsoleButton.LeftTopButton.value)
+    //     .whenPressed(new RunCommand(controlPanelSubsystem::raiseArm, controlPanelSubsystem));
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value)
-        .whenPressed(new RunCommand(controlPanelSubsystem::lowerArm, controlPanelSubsystem));
+    // new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value)
+    //     .whenPressed(new RunCommand(controlPanelSubsystem::lowerArm, controlPanelSubsystem));
     
     new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value)
         .whenPressed(new RunCommand(() -> {
@@ -242,9 +238,7 @@ public class RobotContainer {
    * @return command
    */
   private Command makeLimelightProfileCommand(Profile profile) {
-    return new InstantCommand(() -> {
-        highLimelightSubsystem.setProfile(profile);
-    }, highLimelightSubsystem);
+    return new InstantCommand(() -> highLimelightSubsystem.setProfile(profile));
   }
 
   private void configureSubsystemDashboard() {
@@ -358,7 +352,7 @@ public class RobotContainer {
     commands.add(new TestLimelightCommand(highLimelightSubsystem).withTimeout(10));
 
     commands.add(new TestIndexerCommand(indexerSubsystem).withTimeout(60));
-    commands.add(new TestControlPanel(controlPanelSubsystem).withTimeout(30));
+    // commands.add(new TestControlPanel(controlPanelSubsystem).withTimeout(30));
     commands.add(new TestClimb(climbSubsystem).withTimeout(10));
 
     Command[] arr = new Command[commands.size()];

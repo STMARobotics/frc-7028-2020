@@ -12,11 +12,6 @@ public class WaitForTargetCommand extends VisionCommandBase {
   }
 
   @Override
-  public void execute() {
-    super.execute();
-  }
-
-  @Override
   public boolean isFinished() {
     return getTargetAcquired() != null;
   }
