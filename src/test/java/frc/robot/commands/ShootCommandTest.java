@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.gt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
@@ -247,13 +246,11 @@ public class ShootCommandTest {
     shootCommand.schedule();
     commandScheduler.run();
 
-    verify(shooter).stopShooter();
-    verify(indexer).stopIndexer();
-    verify(drivetrain, times(2)).stop();
+    verify(drivetrain).stop();
     verify(indexer, times(2)).isFull();
     verifyNoMoreInteractions(shooter, drivetrain, indexer);
 
-    assertTrue(shootCommand.isFinished());
+    assertFalse(shootCommand.isFinished());
   }
 
 
