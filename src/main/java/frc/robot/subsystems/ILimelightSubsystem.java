@@ -1,15 +1,11 @@
 package frc.robot.subsystems;
 
-import frc.robot.networktables.DoubleEntryValue;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 
-public interface ILimelightSubsystem {
-  DoubleEntryValue getRawTargetValid();
-
+public interface ILimelightSubsystem extends Subsystem {
   double getTargetX();
-  double getFilteredX();
 
   double getTargetY();
-  double getFilteredY();
 
   double getDistanceToTarget();
 

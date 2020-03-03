@@ -25,7 +25,6 @@ import frc.robot.commands.RunIntakeCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.SpinUpShooterCommand;
 import frc.robot.commands.TurnToAngleCommand;
-import frc.robot.commands.WaitForTargetCommand;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -120,8 +119,6 @@ public class AutoGenerator {
         .andThen(new PrintCommand("Done with ball pick up"))
         .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
         .andThen(new PrintCommand("Done turning to angle"))
-        .andThen(new WaitForTargetCommand(highLimelightSubsystem).withTimeout(5))
-        .andThen(new PrintCommand("Found target"))
         .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem));
 
     var trenchPickup = makeLimelightAutoCommand().andThen(makeWaitForBallCount(1).withTimeout(1))
@@ -198,7 +195,6 @@ public class AutoGenerator {
           .andThen(makeLimelightWithIntakeCommand())
           .andThen(makeWaitForBallCount(5).withTimeout(3))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem).withTimeout(5))
               .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem)))
           .andThen(makeShootCommand(5));
         
@@ -256,7 +252,6 @@ public class AutoGenerator {
           .andThen(makeLimelightWithIntakeCommand())
           .andThen(makeWaitForBallCount(5).withTimeout(3))
           .andThen(driveTrainSubsystem.createCommandForTrajectory(trajectoryThree)
-              .andThen(new WaitForTargetCommand(highLimelightSubsystem).withTimeout(5))
               .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem)))
           .andThen(makeShootCommand(5));
         

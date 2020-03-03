@@ -42,7 +42,6 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   private DoubleEntryValue targetX = new DoubleEntryValue(0);
   private DoubleEntryValue targetY = new DoubleEntryValue(0);
 
-  private MedianFilter xFilter, yFilter;
   private final HashMap<String, MedianFilter> updateFilterMap = new HashMap<>();
   
   private boolean enabled;
@@ -60,9 +59,6 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     addLimelightUpdateListeners(limelightNetworkTable, ntPipelineLatency, ntTargetValid, ntTargetX, ntTargetY);
 
     new Trigger(RobotState::isEnabled).whenInactive(new InstantWhenDisabledCommand(this::disable));
-
-    xFilter = new MedianFilter(5);
-    yFilter = new MedianFilter(5);
   }
 
   private void addLimelightUpdateListeners(NetworkTable limelightTable, String... keys) {
@@ -90,13 +86,13 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
 
       case ntTargetX:
         var previousX = targetX;
-        targetX = new DoubleEntryValue(value.getDouble(), xFilter.calculate(value.getDouble()));
+        targetX = new DoubleEntryValue(value.getDouble());
 
         updateMs = targetX.updateTime - previousX.updateTime;
       break;
       case ntTargetY:
         var previousY = targetY;
-        targetY = new DoubleEntryValue(value.getDouble(), yFilter.calculate(value.getDouble()));
+        targetY = new DoubleEntryValue(value.getDouble());
 
         updateMs = targetY.updateTime - previousY.updateTime;
       break;
@@ -140,10 +136,6 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     }
   }
 
-  public DoubleEntryValue getRawTargetValid() {
-    return targetValid;
-  }
-
   public boolean getTargetAcquired() {
     return targetValid.value == TARGET_ACQUIRED;
   }
@@ -157,16 +149,8 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     return targetX.value;
   }
 
-  public double getFilteredX() {
-    return targetX.filteredValue;
-  }
-
   public double getTargetY() {
     return targetY.value;
-  }
-
-  public double getFilteredY() {
-    return targetY.filteredValue;
   }
 
   public double getMaxX() {

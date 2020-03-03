@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.networktables.DoubleEntryValue;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -37,7 +36,7 @@ public class ShootCommandTest {
   private ShootCommand shootCommand;
 
   @Mock
-  private LimelightSubsystem highLimelight;
+  private LimelightSubsystem limelight;
 
   @Mock
   private DriveTrainSubsystem drivetrain;
@@ -53,7 +52,7 @@ public class ShootCommandTest {
   @Before
   public void setUp() {
     commandScheduler = CommandScheduler.getInstance();
-    shootCommand = spy(new ShootCommand(1, shooter, indexer, highLimelight, drivetrain));
+    shootCommand = spy(new ShootCommand(1, shooter, indexer, limelight, drivetrain));
     when(shootCommand.runsWhenDisabled()).thenReturn(true);
   }
 
@@ -61,10 +60,10 @@ public class ShootCommandTest {
   public void testImmediateShoot() {
 
     var distanceToTarget = 1d;
-    when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(1.0));
-    when(highLimelight.getTargetX()).thenReturn(0d);
+    when(limelight.getTargetAcquired()).thenReturn(true);
+    when(limelight.getTargetX()).thenReturn(0d);
     when(shooter.isReadyToShoot()).thenReturn(true);
-    when(highLimelight.getDistanceToTarget()).thenReturn(distanceToTarget);
+    when(limelight.getDistanceToTarget()).thenReturn(distanceToTarget);
     when(indexer.isFull()).thenReturn(true, false);
 
     shootCommand.schedule();
@@ -89,14 +88,14 @@ public class ShootCommandTest {
 
   @Test
   public void testShootThree() {
-    shootCommand = spy(new ShootCommand(3, shooter, indexer, highLimelight, drivetrain));
+    shootCommand = spy(new ShootCommand(3, shooter, indexer, limelight, drivetrain));
     when(shootCommand.runsWhenDisabled()).thenReturn(true);
 
     var distanceToTarget = 1d;
-    when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(1.0));
-    when(highLimelight.getTargetX()).thenReturn(0d);
+    when(limelight.getTargetAcquired()).thenReturn(true);
+    when(limelight.getTargetX()).thenReturn(0d);
     when(shooter.isReadyToShoot()).thenReturn(true, false, true, false, true);
-    when(highLimelight.getDistanceToTarget()).thenReturn(distanceToTarget);
+    when(limelight.getDistanceToTarget()).thenReturn(distanceToTarget);
     when(indexer.isFull()).thenReturn(true, false, true, false, true, false);
 
     shootCommand.schedule();
@@ -137,10 +136,10 @@ public class ShootCommandTest {
   public void testSpinUp() {
 
     var distanceToTarget = 1d;
-    when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(1.0));
-    when(highLimelight.getTargetX()).thenReturn(0d);
+    when(limelight.getTargetAcquired()).thenReturn(true);
+    when(limelight.getTargetX()).thenReturn(0d);
     when(shooter.isReadyToShoot()).thenReturn(false, true); // Not at target until second call
-    when(highLimelight.getDistanceToTarget()).thenReturn(distanceToTarget);
+    when(limelight.getDistanceToTarget()).thenReturn(distanceToTarget);
     when(indexer.isFull()).thenReturn(true, false, true);
 
     shootCommand.schedule();
@@ -170,10 +169,10 @@ public class ShootCommandTest {
   public void testTargeting() {
 
     var distanceToTarget = 1d;
-    when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(1.0));
-    when(highLimelight.getTargetX()).thenReturn(5d, 0d); // Not at target until second call
+    when(limelight.getTargetAcquired()).thenReturn(true);
+    when(limelight.getTargetX()).thenReturn(5d, 0d); // Not at target until second call
     when(shooter.isReadyToShoot()).thenReturn(true);
-    when(highLimelight.getDistanceToTarget()).thenReturn(distanceToTarget);
+    when(limelight.getDistanceToTarget()).thenReturn(distanceToTarget);
     when(indexer.isFull()).thenReturn(true, false);
 
     shootCommand.schedule();
@@ -207,10 +206,10 @@ public class ShootCommandTest {
   public void testSpinUpAndTargeting() {
 
     var distanceToTarget = 1d;
-    when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(1.0));
-    when(highLimelight.getTargetX()).thenReturn(5d, 0d); // Not at target until second call
+    when(limelight.getTargetAcquired()).thenReturn(true);
+    when(limelight.getTargetX()).thenReturn(5d, 0d); // Not at target until second call
     when(shooter.isReadyToShoot()).thenReturn(false, true); // Not ready until second call
-    when(highLimelight.getDistanceToTarget()).thenReturn(distanceToTarget);
+    when(limelight.getDistanceToTarget()).thenReturn(distanceToTarget);
     when(indexer.isFull()).thenReturn(true, false, true);
 
     shootCommand.schedule();
@@ -241,7 +240,7 @@ public class ShootCommandTest {
   @Test
   public void testNoTarget() {
 
-    when(highLimelight.getRawTargetValid()).thenReturn(new DoubleEntryValue(0.0));
+    when(limelight.getTargetAcquired()).thenReturn(false);
     
     shootCommand.schedule();
     commandScheduler.run();

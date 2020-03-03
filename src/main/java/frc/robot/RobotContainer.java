@@ -68,7 +68,7 @@ import frc.robot.testMode.TestLimelightCommand;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
-  private final LimelightSubsystem highLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
+  private final LimelightSubsystem LimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
       .withNetworkTableName(LimeLightConstants.HIGH_NAME).withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
       .withMountDistanceFromCenter(LimeLightConstants.HIGH_DISTANCE_FROM_CENTER).build());
@@ -88,9 +88,9 @@ public class RobotContainer {
   private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
   private final IndexCommand indexCommand = new IndexCommand(indexerSubsystem);
   private final ShootCommand shootCommand = new ShootCommand(Integer.MAX_VALUE, shooterSubsystem, indexerSubsystem, 
-    highLimelightSubsystem, driveTrainSubsystem);
+    LimelightSubsystem, driveTrainSubsystem);
 
-  private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, highLimelightSubsystem,
+  private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, LimelightSubsystem,
     ballLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem);
 
   private final UsbCamera camera;
@@ -179,10 +179,10 @@ public class RobotContainer {
 
     new JoystickButton(driverController, XboxController.Button.kStart.value)
         .toggleWhenPressed(new StartEndCommand(() -> {
-            highLimelightSubsystem.enable();
+            LimelightSubsystem.enable();
             ballLimelightSubsystem.enable();
           }, () -> {
-            highLimelightSubsystem.disable();
+            LimelightSubsystem.disable();
             ballLimelightSubsystem.disable();
           }));
 
@@ -238,7 +238,7 @@ public class RobotContainer {
    * @return command
    */
   private Command makeLimelightProfileCommand(Profile profile) {
-    return new InstantCommand(() -> highLimelightSubsystem.setProfile(profile));
+    return new InstantCommand(() -> LimelightSubsystem.setProfile(profile));
   }
 
   private void configureSubsystemDashboard() {
@@ -268,8 +268,8 @@ public class RobotContainer {
 
     var highLimelightLayout = Dashboard.limelightsTab.getLayout("High Limelight", BuiltInLayouts.kList)
         .withSize(2, 3).withPosition(0, 0);
-    highLimelightSubsystem.addDashboardWidgets(highLimelightLayout);
-    highLimelightLayout.add(highLimelightSubsystem);
+    LimelightSubsystem.addDashboardWidgets(highLimelightLayout);
+    highLimelightLayout.add(LimelightSubsystem);
 
     var ballLimelightLayout = Dashboard.limelightsTab.getLayout("Ball Limelight", BuiltInLayouts.kList)
         .withSize(2, 3).withPosition(2, 0);
@@ -292,9 +292,9 @@ public class RobotContainer {
         .withSize(2, 1).withProperties(Map.of("min", 0, "max", 5));
 
     // Cameras
-    Dashboard.driverTab.addString("Pipeline", () -> highLimelightSubsystem.getProfile().toString()).withPosition(6, 0);
+    Dashboard.driverTab.addString("Pipeline", () -> LimelightSubsystem.getProfile().toString()).withPosition(6, 0);
     Dashboard.driverTab.add(camera).withSize(4, 3).withPosition(3, 0);
-    Dashboard.driverTab.addBoolean("High Target", highLimelightSubsystem::getTargetAcquired)
+    Dashboard.driverTab.addBoolean("High Target", LimelightSubsystem::getTargetAcquired)
         .withSize(1, 1).withPosition(0, 4);
 
     // Shooter gain
@@ -349,7 +349,8 @@ public class RobotContainer {
       .andThen(new TestIntakeCommand(false, intakeSubsystem)).withTimeout(5));
 
     //add commands for each limelight system
-    commands.add(new TestLimelightCommand(highLimelightSubsystem).withTimeout(10));
+    commands.add(new TestLimelightCommand(LimelightSubsystem).withTimeout(10));
+    commands.add(new TestLimelightCommand(ballLimelightSubsystem).withTimeout(10));
 
     commands.add(new TestIndexerCommand(indexerSubsystem).withTimeout(60));
     // commands.add(new TestControlPanel(controlPanelSubsystem).withTimeout(30));
