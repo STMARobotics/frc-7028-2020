@@ -12,7 +12,7 @@ import frc.robot.Constants.AimConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
-import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.ShooterLimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
 /**
@@ -27,7 +27,7 @@ public class ShootCommand extends CommandBase {
   private final PIDController pidController = new PIDController(kP, 0, kD);
   
   private final int ballsToShoot;
-  private final LimelightSubsystem limelightSubsystem;
+  private final ShooterLimelightSubsystem limelightSubsystem;
   private int ballsShot = 0;
   private boolean wasFull = false;
   private Timer endTimer = new Timer();
@@ -36,7 +36,7 @@ public class ShootCommand extends CommandBase {
   private MedianFilter xFilter = new MedianFilter(5);
 
   public ShootCommand(int ballsToShoot, ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem,
-      LimelightSubsystem limelightSubsystem, DriveTrainSubsystem driveTrainSubsystem) {
+      ShooterLimelightSubsystem limelightSubsystem, DriveTrainSubsystem driveTrainSubsystem) {
 
     this.ballsToShoot = ballsToShoot;
     this.limelightSubsystem = limelightSubsystem;

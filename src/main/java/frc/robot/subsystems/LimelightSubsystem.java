@@ -15,10 +15,8 @@ import edu.wpi.first.wpilibj.MedianFilter;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
-import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.LimeLightConstants;
 import frc.robot.commands.InstantWhenDisabledCommand;
 import frc.robot.networktables.DoubleEntryValue;
 
@@ -33,7 +31,7 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   private final static String ntTargetY = "ty";
 
   private final NetworkTable limelightNetworkTable;
-  public final LimelightConfig limelightConfig;
+  private final String networkTableName;
 
   private long lastLatencyUpdate = System.currentTimeMillis();
 
@@ -47,14 +45,11 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
   private boolean enabled;
   private Profile activeProfile = Profile.NEAR;
 
-  public LimelightSubsystem(LimelightConfig limelightConfig) {
-    this.limelightConfig = limelightConfig;
+  public LimelightSubsystem(String networkTableName) {
     
-    limelightNetworkTable = NetworkTableInstance.getDefault().getTable(limelightConfig.getNetworkTableName());
+    limelightNetworkTable = NetworkTableInstance.getDefault().getTable(networkTableName);
+    this.networkTableName = networkTableName;
 
-    //this adds listeners on all values [I think]
-    //limelightNetworkTable.addEntryListener(this::update, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-    
     //this adds listeners on an explicit list
     addLimelightUpdateListeners(limelightNetworkTable, ntPipelineLatency, ntTargetValid, ntTargetX, ntTargetY);
 
@@ -68,13 +63,13 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     }
   }
 
-  public void addDashboardWidgets(ShuffleboardLayout dashboard) {
+  public ShuffleboardLayout addDashboardWidgets(ShuffleboardLayout dashboard) {
     var detailDashboard = dashboard.getLayout("Target", BuiltInLayouts.kGrid)
         .withProperties(Map.of("numberOfColumns", 2, "numberOfRows", 2));
     detailDashboard.addBoolean("Acquired", this::getTargetAcquired);
-    detailDashboard.addNumber("Distance", () -> Units.metersToInches(getDistanceToTarget()));
     detailDashboard.addNumber("X", this::getTargetX);
     detailDashboard.addNumber("Y", this::getTargetY);
+    return detailDashboard;
   }
 
   private void update(final NetworkTable table, final String key, final NetworkTableEntry entry,
@@ -127,7 +122,7 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     //write out debug information so we can get an idea how often these updates are coming through from the limelight
     if (updateMs > 0 && updateFilterMap.containsKey(key)) {
 
-      NetworkTableInstance.getDefault().getTable("LimelightDebug").getSubTable(limelightConfig.getNetworkTableName())
+      NetworkTableInstance.getDefault().getTable("LimelightDebug").getSubTable(networkTableName)
         .getEntry(key + "_updateFrequencyMs").setNumber(updateFilterMap.get(key).calculate(updateMs));
     }
 
@@ -172,25 +167,16 @@ public class LimelightSubsystem extends SubsystemBase implements ILimelightSubsy
     enabled = true;
   }
 
-  private double getLimelightDistanceToTarget() {
-    if (getTargetAcquired()) {
-      return (LimeLightConstants.TARGET_HEIGHT - limelightConfig.getMountHeight())
-          / Math.tan(Units.degreesToRadians(limelightConfig.getMountAngle() + getTargetY()));
-    }
-    return 0.0;
-  }
-
-  public double getDistanceToTarget() {
-    return Math.sqrt(Math.pow(getLimelightDistanceToTarget(), 2)
-        + Math.pow(limelightConfig.getMountDistanceFromCenter(), 2)) - limelightConfig.getMountDepth();
-  }
-
   public void setProfile(final Profile profile) {
     activeProfile = profile;
   }
 
   public Profile getProfile() {
     return activeProfile;
+  }
+
+  public String getNetworkTableName() {
+    return networkTableName;
   }
 
 }

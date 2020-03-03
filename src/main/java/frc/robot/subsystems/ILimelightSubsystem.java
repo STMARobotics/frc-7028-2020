@@ -7,8 +7,6 @@ public interface ILimelightSubsystem extends Subsystem {
 
   double getTargetY();
 
-  double getDistanceToTarget();
-
   long getTargetLastSeen();
 
   void enable();

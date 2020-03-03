@@ -30,6 +30,7 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.Profile;
+import frc.robot.subsystems.ShooterLimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
 /**
@@ -37,7 +38,7 @@ import frc.robot.subsystems.ShooterSubsystem;
  */
 public class AutoGenerator {
   private final DriveTrainSubsystem driveTrainSubsystem;
-  private final LimelightSubsystem highLimelightSubsystem;
+  private final ShooterLimelightSubsystem shooterLimelightSubsystem;
   private final LimelightSubsystem ballLimelightSubsystem;
   private final IndexerSubsystem indexerSubsystem;
   private final IntakeSubsystem intakeSubsystem;
@@ -45,11 +46,11 @@ public class AutoGenerator {
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
-  public AutoGenerator(DriveTrainSubsystem driveTrainSubsystem, LimelightSubsystem highLimelightSubsystem,
+  public AutoGenerator(DriveTrainSubsystem driveTrainSubsystem, ShooterLimelightSubsystem shooterLimelightSubsystem,
       LimelightSubsystem ballLimelight, IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem,
       ShooterSubsystem shooterSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;
-    this.highLimelightSubsystem = highLimelightSubsystem;
+    this.shooterLimelightSubsystem = shooterLimelightSubsystem;
     this.ballLimelightSubsystem = ballLimelight;
     this.indexerSubsystem = indexerSubsystem;
     this.intakeSubsystem = intakeSubsystem;
@@ -115,7 +116,7 @@ public class AutoGenerator {
     var pickupAndSpinUp = makeLimelightAutoCommand()
         .andThen(makeWaitForBallCount(3).withTimeout(3))
         .andThen(ballLimelightSubsystem::disable, ballLimelightSubsystem)
-        .andThen(highLimelightSubsystem::enable, highLimelightSubsystem)
+        .andThen(shooterLimelightSubsystem::enable, shooterLimelightSubsystem)
         .andThen(new PrintCommand("Done with ball pick up"))
         .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
         .andThen(new PrintCommand("Done turning to angle"))
@@ -310,7 +311,7 @@ public class AutoGenerator {
    * @return command
    */
   private Command makeShootCommand(int ballsToShoot) {
-    return new ShootCommand(ballsToShoot, shooterSubsystem, indexerSubsystem, highLimelightSubsystem, 
+    return new ShootCommand(ballsToShoot, shooterSubsystem, indexerSubsystem, shooterLimelightSubsystem, 
         driveTrainSubsystem);
   }
 
@@ -320,7 +321,7 @@ public class AutoGenerator {
    * @return command
    */
   private Command makeLimelightProfileCommand(Profile profile) {
-    return new InstantCommand(() -> highLimelightSubsystem.setProfile(profile), highLimelightSubsystem);
+    return new InstantCommand(() -> shooterLimelightSubsystem.setProfile(profile), shooterLimelightSubsystem);
   }
 
   /**

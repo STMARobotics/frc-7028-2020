@@ -51,6 +51,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightConfig;
 import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.Profile;
+import frc.robot.subsystems.ShooterLimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.testMode.TestClimb;
 import frc.robot.testMode.TestEncoderCommand;
@@ -68,14 +69,12 @@ import frc.robot.testMode.TestLimelightCommand;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveTrainSubsystem driveTrainSubsystem = new DriveTrainSubsystem();
-  private final LimelightSubsystem LimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
-      .withNetworkTableName(LimeLightConstants.HIGH_NAME).withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
+  private final ShooterLimelightSubsystem shooterLimelightSubsystem = new ShooterLimelightSubsystem(
+      LimelightConfig.Builder.create().withNetworkTableName(LimeLightConstants.HIGH_NAME)
+      .withMountDepth(LimeLightConstants.HIGH_DISTANCE_FROM_FRONT)
       .withMountingHeight(LimeLightConstants.HIGH_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.HIGH_MOUNT_ANGLE)
       .withMountDistanceFromCenter(LimeLightConstants.HIGH_DISTANCE_FROM_CENTER).build());
-  private final LimelightSubsystem ballLimelightSubsystem = new LimelightSubsystem(LimelightConfig.Builder.create()
-      .withNetworkTableName(LimeLightConstants.LOW_NAME).withMountDepth(LimeLightConstants.LOW_DISTANCE_FROM_FRONT)
-      .withMountingHeight(LimeLightConstants.LOW_MOUNT_HEIGHT).withMountingAngle(LimeLightConstants.LOW_MOUNT_ANGLE)
-      .withMountDistanceFromCenter(LimeLightConstants.LOW_DISTANCE_FROM_CENTER).build());
+  private final LimelightSubsystem intakeLimelightSubsystem = new LimelightSubsystem(LimeLightConstants.LOW_NAME);
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem(indexerSubsystem::isReadyForBall);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
@@ -88,10 +87,10 @@ public class RobotContainer {
   private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
   private final IndexCommand indexCommand = new IndexCommand(indexerSubsystem);
   private final ShootCommand shootCommand = new ShootCommand(Integer.MAX_VALUE, shooterSubsystem, indexerSubsystem, 
-    LimelightSubsystem, driveTrainSubsystem);
+    shooterLimelightSubsystem, driveTrainSubsystem);
 
-  private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, LimelightSubsystem,
-    ballLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem);
+  private final AutoGenerator autoGenerator = new AutoGenerator(driveTrainSubsystem, shooterLimelightSubsystem,
+    intakeLimelightSubsystem, indexerSubsystem, intakeSubsystem, shooterSubsystem);
 
   private final UsbCamera camera;
 
@@ -148,22 +147,18 @@ public class RobotContainer {
             new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),
             indexerSubsystem::isFull));
 
-    var limelightBallHeld = new InstantCommand(ballLimelightSubsystem::enable, ballLimelightSubsystem)
-        .andThen(new LimelightBallCommand(driveTrainSubsystem, ballLimelightSubsystem).perpetually())
-        .deadlineWith(new RunCommand(intakeSubsystem::intake, intakeSubsystem))
-        .andThen(intakeSubsystem::stopIntake, intakeSubsystem)
-        .andThen(ballLimelightSubsystem::disable, ballLimelightSubsystem);
+    var limelightIntakeHeld = new LimelightBallCommand(driveTrainSubsystem, intakeLimelightSubsystem).perpetually()
+        .alongWith(new RunCommand(intakeSubsystem::intake, intakeSubsystem));
     
-    var limelightBallReleased = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
-        .andThen(ballLimelightSubsystem::disable, ballLimelightSubsystem)
-        .andThen(driveTrainSubsystem::stop, driveTrainSubsystem);
+    var limelightIntakeReleased = new InstantCommand(intakeSubsystem::stopIntake, intakeSubsystem)
+        .andThen(intakeLimelightSubsystem::disable, intakeLimelightSubsystem);
 
     new JoystickButton(driverController, XboxController.Button.kX.value)
         .whileHeld(new ConditionalCommand(
             new RumbleCommand(driverController, RumbleType.kLeftRumble),
-            limelightBallHeld,
+            limelightIntakeHeld,
             indexerSubsystem::isFull))
-        .whenReleased(limelightBallReleased);
+        .whenReleased(limelightIntakeReleased);
 
     new POVButton(driverController, 0)
         .whenPressed(new TurnToAngleCommand(0, driveTrainSubsystem));
@@ -179,11 +174,11 @@ public class RobotContainer {
 
     new JoystickButton(driverController, XboxController.Button.kStart.value)
         .toggleWhenPressed(new StartEndCommand(() -> {
-            LimelightSubsystem.enable();
-            ballLimelightSubsystem.enable();
+            shooterLimelightSubsystem.enable();
+            intakeLimelightSubsystem.enable();
           }, () -> {
-            LimelightSubsystem.disable();
-            ballLimelightSubsystem.disable();
+            shooterLimelightSubsystem.disable();
+            intakeLimelightSubsystem.disable();
           }));
 
     // Operator
@@ -238,7 +233,7 @@ public class RobotContainer {
    * @return command
    */
   private Command makeLimelightProfileCommand(Profile profile) {
-    return new InstantCommand(() -> LimelightSubsystem.setProfile(profile));
+    return new InstantCommand(() -> shooterLimelightSubsystem.setProfile(profile));
   }
 
   private void configureSubsystemDashboard() {
@@ -268,13 +263,13 @@ public class RobotContainer {
 
     var highLimelightLayout = Dashboard.limelightsTab.getLayout("High Limelight", BuiltInLayouts.kList)
         .withSize(2, 3).withPosition(0, 0);
-    LimelightSubsystem.addDashboardWidgets(highLimelightLayout);
-    highLimelightLayout.add(LimelightSubsystem);
+    shooterLimelightSubsystem.addDashboardWidgets(highLimelightLayout);
+    highLimelightLayout.add(shooterLimelightSubsystem);
 
     var ballLimelightLayout = Dashboard.limelightsTab.getLayout("Ball Limelight", BuiltInLayouts.kList)
         .withSize(2, 3).withPosition(2, 0);
-    ballLimelightSubsystem.addDashboardWidgets(ballLimelightLayout);
-    ballLimelightLayout.add(ballLimelightSubsystem);
+    intakeLimelightSubsystem.addDashboardWidgets(ballLimelightLayout);
+    ballLimelightLayout.add(intakeLimelightSubsystem);
 
   }
 
@@ -292,9 +287,9 @@ public class RobotContainer {
         .withSize(2, 1).withProperties(Map.of("min", 0, "max", 5));
 
     // Cameras
-    Dashboard.driverTab.addString("Pipeline", () -> LimelightSubsystem.getProfile().toString()).withPosition(6, 0);
+    Dashboard.driverTab.addString("Pipeline", () -> shooterLimelightSubsystem.getProfile().toString()).withPosition(6, 0);
     Dashboard.driverTab.add(camera).withSize(4, 3).withPosition(3, 0);
-    Dashboard.driverTab.addBoolean("High Target", LimelightSubsystem::getTargetAcquired)
+    Dashboard.driverTab.addBoolean("High Target", shooterLimelightSubsystem::getTargetAcquired)
         .withSize(1, 1).withPosition(0, 4);
 
     // Shooter gain
@@ -349,8 +344,8 @@ public class RobotContainer {
       .andThen(new TestIntakeCommand(false, intakeSubsystem)).withTimeout(5));
 
     //add commands for each limelight system
-    commands.add(new TestLimelightCommand(LimelightSubsystem).withTimeout(10));
-    commands.add(new TestLimelightCommand(ballLimelightSubsystem).withTimeout(10));
+    commands.add(new TestLimelightCommand(shooterLimelightSubsystem).withTimeout(10));
+    commands.add(new TestLimelightCommand(intakeLimelightSubsystem).withTimeout(10));
 
     commands.add(new TestIndexerCommand(indexerSubsystem).withTimeout(60));
     // commands.add(new TestControlPanel(controlPanelSubsystem).withTimeout(30));

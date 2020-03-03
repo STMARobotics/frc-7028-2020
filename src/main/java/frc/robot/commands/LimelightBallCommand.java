@@ -13,8 +13,6 @@ public class LimelightBallCommand extends CommandBase {
   private final PIDController xPidController = new PIDController(.025, 0, 0);
   private final PIDController yPidController = new PIDController(.025, 0, 0);
 
-  private boolean noTarget;
-
   public LimelightBallCommand(DriveTrainSubsystem driveTrainSubsystem, LimelightSubsystem limelightSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;
     this.limelight = limelightSubsystem;
@@ -32,7 +30,6 @@ public class LimelightBallCommand extends CommandBase {
     limelight.enable();
     xPidController.reset();
     yPidController.reset();
-    noTarget = false;
   }
 
   @Override
@@ -41,16 +38,14 @@ public class LimelightBallCommand extends CommandBase {
       var speed = -yPidController.calculate(limelight.getTargetY());
       var rotation = -xPidController.calculate(limelight.getTargetX());
       driveTrainSubsystem.arcadeDrive(speed, rotation, false);
-      noTarget = false;
     } else {
-      noTarget = true;
       driveTrainSubsystem.stop();
     }
   }
 
   @Override
   public boolean isFinished() {
-    return noTarget || (xPidController.atSetpoint() && yPidController.atSetpoint());
+    return (xPidController.atSetpoint() && yPidController.atSetpoint());
   }
 
   @Override

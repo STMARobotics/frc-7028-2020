@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
-import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.ShooterLimelightSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
 /**
@@ -36,7 +36,7 @@ public class ShootCommandTest {
   private ShootCommand shootCommand;
 
   @Mock
-  private LimelightSubsystem limelight;
+  private ShooterLimelightSubsystem limelight;
 
   @Mock
   private DriveTrainSubsystem drivetrain;

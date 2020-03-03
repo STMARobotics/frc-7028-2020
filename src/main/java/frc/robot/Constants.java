@@ -133,23 +133,19 @@ public final class Constants {
 
     /** Height of the limelight on the bot in meters */
     public static final double HIGH_MOUNT_HEIGHT = Units.inchesToMeters(23);
-    public static final double LOW_MOUNT_HEIGHT = Units.inchesToMeters(8.25);
 
     /** Distance Limelight is mounted from the front frame of the bot */
     public static final double HIGH_DISTANCE_FROM_FRONT = Units.inchesToMeters(18);
-    public static final double LOW_DISTANCE_FROM_FRONT = Units.inchesToMeters(2.0);
 
     /** Distance Limelight is mounted from the centerline of the bot */
     public static final double HIGH_DISTANCE_FROM_CENTER = Units.inchesToMeters(0);
-    public static final double LOW_DISTANCE_FROM_CENTER = Units.inchesToMeters(7.125);
 
     /** Angle of the limelight in degrees */
     public static final double HIGH_MOUNT_ANGLE = 21.25;
-    public static final double LOW_MOUNT_ANGLE = 25.25;
 
-    public static final String LOW_NAME = "limelight-low";
     public static final String HIGH_NAME = "limelight-high";
-
+    
+    public static final String LOW_NAME = "limelight-low";
   }
 
   public static final class ControlPanelConstants {

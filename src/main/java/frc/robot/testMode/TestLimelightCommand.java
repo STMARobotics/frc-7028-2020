@@ -16,7 +16,7 @@ public class TestLimelightCommand extends TestCommand {
 
     addRequirements(limelight);
     
-    networkTableEntry = getTestModeEntry(limelight.limelightConfig.getNetworkTableName() + "_TargetAcquired");
+    networkTableEntry = getTestModeEntry(limelight.getNetworkTableName() + "_TargetAcquired");
   }
 
   @Override
