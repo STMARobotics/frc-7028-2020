@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.IndexerConstants.BELT_RUN_SPEED;
 import static frc.robot.Constants.IndexerConstants.DEVICE_ID_BELT;
 import static frc.robot.Constants.IndexerConstants.PORT_ID_FULL_SENSOR;
 import static frc.robot.Constants.IndexerConstants.PORT_ID_INTAKE_SENSOR;
@@ -8,6 +7,9 @@ import static frc.robot.Constants.IndexerConstants.PORT_ID_SPACER_SENSOR;
 
 import java.util.Map;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpiutil.math.MathUtil;
+import frc.robot.Constants.IndexerConstants;
 
 /**
  * IndexerSubsystem
@@ -33,8 +36,15 @@ public class IndexerSubsystem extends SubsystemBase {
   private int ballCount = 0;
 
   public IndexerSubsystem() {
+    TalonSRXConfiguration talonConfig = new TalonSRXConfiguration();
+    talonConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.QuadEncoder;
+    talonConfig.slot0.kP = IndexerConstants.BELT_kP;
+    talonConfig.slot0.kF = IndexerConstants.BELT_kF;
+
     belt.configFactoryDefault();
+    belt.configAllSettings(talonConfig);
     belt.setInverted(true);
+    belt.setSensorPhase(true);
     
     //add triggers for ball count management
     new Trigger(() -> fullSensor.get()).whenActive(this::fullSensorCleared).whenInactive(this::fullSensorTripped);
@@ -93,12 +103,12 @@ public class IndexerSubsystem extends SubsystemBase {
   }
 
   private void run() {
-    belt.set(BELT_RUN_SPEED);
+    belt.set(ControlMode.Velocity, IndexerConstants.BELT_RUN_SPEED);
     shooting = false;
   }
   
   private void stop() {
-    belt.set(0.0);
+    belt.set(ControlMode.Velocity, 0);
     shooting = false;
   }
 
@@ -120,14 +130,14 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public void prepareToShoot() {
     if (fullSensor.get()) {
-      belt.set(BELT_RUN_SPEED);
+      run();
     } else {
-      belt.set(0.0);
+      stop();
     }
   }
 
   public void shoot() {
-    belt.set(1.0);
+    run();
     shooting = true;
   }
 
@@ -145,7 +155,7 @@ public class IndexerSubsystem extends SubsystemBase {
   }
 
   public boolean isRunning() {
-    return belt.get() != 0;
+    return belt.getMotorOutputPercent() != 0;
   }
 
   public int getBallCount() {
@@ -154,6 +164,10 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public void resetBallCount(int ballCount) {
     this.ballCount = ballCount;
+  }
+
+  public int getPosition() {
+    return belt.getSelectedSensorPosition();
   }
   
 }

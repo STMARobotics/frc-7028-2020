@@ -7,10 +7,12 @@ public class TestIndexerCommand extends TestCommand {
 
   private IndexerSubsystem indexer;
   private boolean reverse = false;
+  private int encoderStartPosition;
 
   private NetworkTableEntry ballCountIntake;
   private NetworkTableEntry ballCountReverse;
   private NetworkTableEntry fullSensorEntry;
+  private NetworkTableEntry encoderEntry;
 
   public TestIndexerCommand(IndexerSubsystem indexer) {
     super();
@@ -26,6 +28,16 @@ public class TestIndexerCommand extends TestCommand {
     
     ballCountReverse = getTestModeEntry("BallCountReverseTest");
     ballCountReverse.setBoolean(false);
+
+    encoderEntry = getTestModeEntry("IndexerEncoder");
+    encoderEntry.setBoolean(false);
+  }
+
+  @Override
+  public void initialize() {
+    super.initialize();
+    
+    encoderStartPosition = indexer.getPosition();
   }
 
   @Override
@@ -50,6 +62,7 @@ public class TestIndexerCommand extends TestCommand {
       //indexer is full let's reverse
       reverse = true;
       fullSensorEntry.setBoolean(true);
+      encoderEntry.setBoolean(indexer.getPosition() - encoderStartPosition > 1000);
     }
 
     //if we're reversing and ballcount greater than zero run the belt backward
