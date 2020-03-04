@@ -86,7 +86,7 @@ public final class Constants {
 
   public static final class DriverConstants {
     
-    public static final double ROTATION_MULTIPLIER = .78;
+    public static final double ROTATION_MULTIPLIER = 1;
 
     public static final double SLOW_MODE_SPEED_MULTIPLIER = .6;
     public static final double SLOW_MODE_ROTATION_MULTIPLIER = .9;
@@ -97,13 +97,13 @@ public final class Constants {
 
   public static final class ArcadeConstants {
     // Max speed to drive in teleop in meters per second
-    public static final double MAX_SPEED_ARCADE = 3.0;
+    public static final double MAX_SPEED_ARCADE = 3.7;
 
     // Max angular velocity in teleop in radians per second
     public static final double MAX_ANGULAR_VEL_ARCADE = Units.degreesToRadians(360);
 
     // Max rate of change for speed per second
-    public static final double SPEED_RATE_LIMIT_ARCADE = 2.5;
+    public static final double SPEED_RATE_LIMIT_ARCADE = 2.8;
 
     // Max rate of change for rotation per second
     public static final double ROTATE_RATE_LIMIT_ARCADE = 3.0;

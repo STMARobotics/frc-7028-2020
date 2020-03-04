@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
@@ -112,9 +113,18 @@ public class DriveTrainSubsystem extends SubsystemBase {
 
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
     dashboard.addString("Pose", () -> differentialDriveOdometry.getPoseMeters().toString());
+    dashboard.addNumber("Speed", () ->
+        DRIVE_KINEMATICS.toChassisSpeeds(new DifferentialDriveWheelSpeeds(
+          edgesPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity()),
+          edgesPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity()))).vxMetersPerSecond);
+    dashboard.addNumber("Rotation", () ->
+        DRIVE_KINEMATICS.toChassisSpeeds(new DifferentialDriveWheelSpeeds(
+          edgesPerDecisecToMetersPerSec(leftMaster.getSelectedSensorVelocity()),
+          edgesPerDecisecToMetersPerSec(rightMaster.getSelectedSensorVelocity()))).omegaRadiansPerSecond);
 
     var useEncodersEntry = dashboard.addPersistent("Use encoders", useEncoders)
         .withWidget(BuiltInWidgets.kToggleSwitch).getEntry();
+    useEncoders = useEncodersEntry.getBoolean(useEncoders);
     useEncodersEntry.addListener(this::handleEncoderEntry, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
   }
 
