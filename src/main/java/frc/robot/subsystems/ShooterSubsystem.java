@@ -51,6 +51,7 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterPIDController.setOutputRange(-1.0, 1.0);
 
     shooterMaster.setIdleMode(IdleMode.kCoast);
+    shooterMaster.setInverted(true);
 
     shooterSlave.setIdleMode(IdleMode.kCoast);
     shooterSlave.follow(shooterMaster, true);
@@ -65,6 +66,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void addDashboardWidgets(ShuffleboardLayout dashboard) {
     dashboard.addNumber("Velocity", shooterEncoder::getVelocity);
     dashboard.addNumber("Target Velocity", this::getTargetSpeed);
+    dashboard.addNumber("Error", () -> getTargetSpeed() - shooterEncoder.getVelocity());
   }
 
   public void addDriverDashboardWidget(ShuffleboardLayout dashboard) {
@@ -109,8 +111,8 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean isReadyToShoot() {
-    return (Math.abs(shooterEncoder.getVelocity() - targetSpeed) <= CLOSED_LOOP_ERROR_RANGE)
-        || spinUpTimer.hasElapsed(targetSpeed / 2500);
+    return (Math.abs(shooterEncoder.getVelocity() - targetSpeed) <= CLOSED_LOOP_ERROR_RANGE);
+       // || spinUpTimer.hasElapsed(targetSpeed / 2500);
   }
 
   public void stopShooter() {

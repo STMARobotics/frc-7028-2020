@@ -103,7 +103,7 @@ public final class Constants {
     public static final double MAX_ANGULAR_VEL_ARCADE = Units.degreesToRadians(360);
 
     // Max rate of change for speed per second
-    public static final double SPEED_RATE_LIMIT_ARCADE = 2.8;
+    public static final double SPEED_RATE_LIMIT_ARCADE = 2.5;
 
     // Max rate of change for rotation per second
     public static final double ROTATE_RATE_LIMIT_ARCADE = 3.0;
@@ -111,7 +111,7 @@ public final class Constants {
 
   public static final class AimConstants {
 
-    public static final double kP = 1.0;
+    public static final double kP = 0.5;
     public static final double kD = 0.2;
     public static final double AIM_TOLERANCE = 0.2;
 
@@ -180,10 +180,10 @@ public final class Constants {
     public static final int CLOSED_LOOP_ERROR_RANGE = 12;
 
     public static final double kS = 0.0763;
-    public static final double kV = 0.155;
+    public static final double kV = 0.135;
     public static final double kA = 0.0614;
 
-    public static final double kP = 0.0005;
+    public static final double kP = 0.0009;
     public static final double RAMP_RATE = 0.2;
 
     public static final double SHOOT_TIME = 0.25;
