@@ -52,6 +52,7 @@ public class ShootCommand extends CommandBase {
   @Override
   public void initialize() {
     super.initialize();
+    limelightSubsystem.enable();
     ballsShot = 0;
     wasFull = indexerSubsystem.isFull();
     endTimer.reset();
@@ -95,6 +96,7 @@ public class ShootCommand extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     super.end(interrupted);
+    limelightSubsystem.disable();
     shooterSubsystem.stopShooter();
     indexerSubsystem.stopIndexer();
     driveTrainSubsystem.stop();

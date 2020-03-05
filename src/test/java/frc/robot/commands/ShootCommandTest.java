@@ -76,11 +76,13 @@ public class ShootCommandTest {
     } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
-    InOrder inOrder = inOrder(shooter, indexer, drivetrain);
+    InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);
+    inOrder.verify(limelight).enable();
     inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
     inOrder.verify(drivetrain).arcadeDrive(0.0, -0.0, false);
     inOrder.verify(shooter).isReadyToShoot();
     inOrder.verify(indexer).shoot();
+    inOrder.verify(limelight).disable();
     inOrder.verify(shooter).stopShooter();
     inOrder.verify(indexer).stopIndexer();
     inOrder.verify(drivetrain).stop();
@@ -112,7 +114,8 @@ public class ShootCommandTest {
     } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
-    InOrder inOrder = inOrder(shooter, indexer, drivetrain);
+    InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);
+    inOrder.verify(limelight).enable();
     inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
     inOrder.verify(drivetrain).arcadeDrive(0.0, -0.0, false);
     inOrder.verify(shooter).isReadyToShoot();
@@ -125,6 +128,7 @@ public class ShootCommandTest {
     inOrder.verify(drivetrain).arcadeDrive(0.0, -0.0, false);
     inOrder.verify(shooter).isReadyToShoot();
     inOrder.verify(indexer).shoot();
+    inOrder.verify(limelight).disable();
     inOrder.verify(shooter).stopShooter();
     inOrder.verify(indexer).stopIndexer();
     inOrder.verify(drivetrain).stop();
@@ -154,12 +158,14 @@ public class ShootCommandTest {
     } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
-    InOrder inOrder = inOrder(shooter, indexer, drivetrain);
+    InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);
+    inOrder.verify(limelight).enable();
     inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
     inOrder.verify(shooter).isReadyToShoot();
     inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
     inOrder.verify(shooter).isReadyToShoot();
     inOrder.verify(indexer).shoot();
+    inOrder.verify(limelight).disable();
     inOrder.verify(shooter).stopShooter();
     inOrder.verify(indexer).stopIndexer();
     inOrder.verify(drivetrain).stop();
@@ -188,7 +194,8 @@ public class ShootCommandTest {
     } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
-    InOrder inOrder = inOrder(shooter, indexer, drivetrain);
+    InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);
+    inOrder.verify(limelight).enable();
     inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
     inOrder.verify(drivetrain).arcadeDrive(eq(0.0), gt(0.0), eq(false));
     inOrder.verify(shooter).isReadyToShoot();
@@ -196,6 +203,7 @@ public class ShootCommandTest {
     inOrder.verify(drivetrain).arcadeDrive(0.0, -0.0, false);
     inOrder.verify(shooter).isReadyToShoot();
     inOrder.verify(indexer).shoot();
+    inOrder.verify(limelight).disable();
     inOrder.verify(shooter).stopShooter();
     inOrder.verify(indexer).stopIndexer();
     inOrder.verify(drivetrain).stop();
@@ -224,7 +232,8 @@ public class ShootCommandTest {
     } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
-    InOrder inOrder = inOrder(shooter, indexer, drivetrain);
+    InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);
+    inOrder.verify(limelight).enable();
     inOrder.verify(shooter).prepareToShoot(Units.metersToInches(distanceToTarget));
     inOrder.verify(drivetrain).arcadeDrive(eq(0.0), gt(0.0), eq(false));
     inOrder.verify(shooter).isReadyToShoot();
@@ -232,6 +241,7 @@ public class ShootCommandTest {
     inOrder.verify(drivetrain).arcadeDrive(0.0, -0.0, false);
     inOrder.verify(shooter).isReadyToShoot();
     inOrder.verify(indexer).shoot();
+    inOrder.verify(limelight).disable();
     inOrder.verify(shooter).stopShooter();
     inOrder.verify(indexer).stopIndexer();
     inOrder.verify(drivetrain).stop();
