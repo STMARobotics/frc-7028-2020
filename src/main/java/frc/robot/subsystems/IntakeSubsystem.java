@@ -28,7 +28,7 @@ public class IntakeSubsystem extends SubsystemBase {
     if (isIndexerReady.get()) {
       intakeMotor.set(IntakeConstants.INTAKE_SPEED);
     } else {
-      stopIntake();
+      intakeMotor.set(IntakeConstants.INTAKE_SPEED * .5);
     }
   }
 

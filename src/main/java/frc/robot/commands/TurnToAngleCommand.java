@@ -11,11 +11,11 @@ import frc.robot.subsystems.DriveTrainSubsystem;
 public class TurnToAngleCommand extends CommandBase {
 
   private final DriveTrainSubsystem driveTrainSubsystem;
-  private final PIDController pidController = new PIDController(.75, 0.0, .035);
+  private final PIDController pidController = new PIDController(.1, 0.0, .025);
 
   public TurnToAngleCommand(double angle, DriveTrainSubsystem driveTrainSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;
-    this.pidController.setTolerance(3);
+    this.pidController.setTolerance(5);
     pidController.setSetpoint(angle);
     pidController.enableContinuousInput(-180, 180);
 

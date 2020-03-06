@@ -44,7 +44,7 @@ public final class Constants {
         TRACK_WIDTH_METERS);
 
     /** Voltage needed to overcome the motor’s static friction. kS */
-    public static final double kS = 1.01;
+    public static final double kS = 1.2; //1.01
 
     /** Voltage needed to hold (or "cruise") at a given constant velocity. kV */
     public static final double kV = 2.93;
@@ -110,13 +110,13 @@ public final class Constants {
   }
 
   public static final class AimConstants {
-    public static final double kPslope = 0.00137;
-    public static final double kPintercept = 0.14244;
+    public static final double kPslope = 0.00127; //.00127
+    public static final double kPintercept =  0.14; //0.14244;
     
     public static final double kDslope = 0.0000731707;
     public static final double kDintercept = 0.0097560976;
 
-    public static final double AIM_TOLERANCE = 0.2;
+    public static final double AIM_TOLERANCE = 0.25;
 
     public static final double RANGE_HIGH = 1;
     public static final double RANGE_LOW = -1;
