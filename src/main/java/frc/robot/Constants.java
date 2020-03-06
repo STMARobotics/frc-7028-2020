@@ -110,12 +110,12 @@ public final class Constants {
   }
 
   public static final class AimConstants {
+    public static final double kPslope = 0.00137;
+    public static final double kPintercept = 0.14244;
+    
+    public static final double kDslope = 0.0000731707;
+    public static final double kDintercept = 0.0097560976;
 
-    public static final double kPshort = 0.32;
-    public static final double kDshort = 0.02;
-
-    public static final double kPlong = 0.58;
-    public static final double kDlong = 0.035;
     public static final double AIM_TOLERANCE = 0.2;
 
     public static final double RANGE_HIGH = 1;

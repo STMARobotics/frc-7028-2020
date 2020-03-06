@@ -38,7 +38,6 @@ public class ShooterSubsystem extends SubsystemBase {
   private double targetSpeed;
   private Timer spinUpTimer = new Timer();
   private boolean timerRunning = false;
-  private boolean isShort = true;
 
   private final SimpleMotorFeedforward motorFeedForward = 
       new SimpleMotorFeedforward(ShooterConstants.kS, ShooterConstants.kV, ShooterConstants.kA);
@@ -132,17 +131,10 @@ public class ShooterSubsystem extends SubsystemBase {
   public void setRange(double distanceToTarget){
 
     if (distanceToTarget > 150) {
-      isShort = false;
        targetSpeed = 3.05 * distanceToTarget + (2160.761 + farGain);
     } else if (distanceToTarget <= 150) {
-      isShort = true;
       targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 74.833 * distanceToTarget + (8420 + nearGain);
     }
-  }
-
-  public boolean shortDistance(){
-
-    return isShort;
   }
 
 }

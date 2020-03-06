@@ -1,9 +1,10 @@
 package frc.robot.commands;
 
-import static frc.robot.Constants.AimConstants.kDlong;
-import static frc.robot.Constants.AimConstants.kDshort;
-import static frc.robot.Constants.AimConstants.kPlong;
-import static frc.robot.Constants.AimConstants.kPshort;
+
+import static frc.robot.Constants.AimConstants.kDintercept;
+import static frc.robot.Constants.AimConstants.kDslope;
+import static frc.robot.Constants.AimConstants.kPintercept;
+import static frc.robot.Constants.AimConstants.kPslope;
 
 import edu.wpi.first.wpilibj.MedianFilter;
 import edu.wpi.first.wpilibj.Timer;
@@ -26,7 +27,7 @@ public class ShootCommand extends CommandBase {
   private final IndexerSubsystem indexerSubsystem;
   private final DriveTrainSubsystem driveTrainSubsystem;
 
-  private final PIDController pidController = new PIDController(kPshort, 0, kDshort);
+  private final PIDController pidController = new PIDController(0, 0, 0);
   
   private final int ballsToShoot;
   private final ShooterLimelightSubsystem limelightSubsystem;
@@ -68,7 +69,11 @@ public class ShootCommand extends CommandBase {
       var filteredDistance = yFilter.calculate(limelightSubsystem.getDistanceToTarget());
       shooterSubsystem.prepareToShoot(Units.metersToInches(filteredDistance));
       aimShooter();
-      setPID();
+
+      //scale PID values with distance to target
+      pidController.setP((kPslope * Units.metersToInches(filteredDistance)) + kPintercept);
+      pidController.setD((kDslope * Units.metersToInches(filteredDistance)) + kDintercept);
+
       if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
         indexerSubsystem.shoot();
       } else {
@@ -109,14 +114,4 @@ public class ShootCommand extends CommandBase {
     return ballsShot;
   }
 
-  public void setPID(){
-    if (shooterSubsystem.shortDistance()){
-      pidController.setP(kPshort);
-      pidController.setD(kDshort);
-    }
-    else {
-      pidController.setP(kPlong);
-      pidController.setD(kDlong);
-    }
-  }
 }
