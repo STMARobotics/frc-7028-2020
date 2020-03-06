@@ -64,8 +64,8 @@ public class ShootCommand extends CommandBase {
   @Override
   public void execute() {
     super.execute();
-    setPID();
     if (limelightSubsystem.getTargetAcquired()) {
+      setPID();
       var filteredDistance = yFilter.calculate(limelightSubsystem.getDistanceToTarget());
       shooterSubsystem.prepareToShoot(Units.metersToInches(filteredDistance));
       aimShooter();
