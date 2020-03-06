@@ -1,7 +1,9 @@
 package frc.robot.commands;
 
-import static frc.robot.Constants.AimConstants.kD;
-import static frc.robot.Constants.AimConstants.kP;
+import static frc.robot.Constants.AimConstants.kDlong;
+import static frc.robot.Constants.AimConstants.kDshort;
+import static frc.robot.Constants.AimConstants.kPlong;
+import static frc.robot.Constants.AimConstants.kPshort;
 
 import edu.wpi.first.wpilibj.MedianFilter;
 import edu.wpi.first.wpilibj.Timer;
@@ -24,7 +26,7 @@ public class ShootCommand extends CommandBase {
   private final IndexerSubsystem indexerSubsystem;
   private final DriveTrainSubsystem driveTrainSubsystem;
 
-  private final PIDController pidController = new PIDController(kP, 0, kD);
+  private final PIDController pidController = new PIDController(kPshort, 0, kDshort);
   
   private final int ballsToShoot;
   private final ShooterLimelightSubsystem limelightSubsystem;
@@ -62,6 +64,7 @@ public class ShootCommand extends CommandBase {
   @Override
   public void execute() {
     super.execute();
+    setPID();
     if (limelightSubsystem.getTargetAcquired()) {
       var filteredDistance = yFilter.calculate(limelightSubsystem.getDistanceToTarget());
       shooterSubsystem.prepareToShoot(Units.metersToInches(filteredDistance));
@@ -104,5 +107,16 @@ public class ShootCommand extends CommandBase {
 
   public int getBallsShot() {
     return ballsShot;
+  }
+
+  public void setPID(){
+    if (shooterSubsystem.targetIsShort()){
+      pidController.setP(kPshort);
+      pidController.setD(kDshort);
+    }
+    else {
+      pidController.setP(kPlong);
+      pidController.setD(kDlong);
+    }
   }
 }

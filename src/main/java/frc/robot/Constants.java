@@ -54,7 +54,7 @@ public final class Constants {
 
     public static final SimpleMotorFeedforward FEED_FORWARD = new SimpleMotorFeedforward(kS, kV, kA);
 
-    public static final double kP = 0.154;
+    public static final double kP = 0.1;
 
     public static final double CLOSED_LOOP_RAMP = .2;
     public static final double OPEN_LOOP_RAMP = .25;
@@ -111,8 +111,11 @@ public final class Constants {
 
   public static final class AimConstants {
 
-    public static final double kP = 0.5;
-    public static final double kD = 0.2;
+    public static final double kPshort = 0.32;
+    public static final double kDshort = 0.02;
+
+    public static final double kPlong = 0.58;
+    public static final double kDlong = 0.035;
     public static final double AIM_TOLERANCE = 0.2;
 
     public static final double RANGE_HIGH = 1;
@@ -180,10 +183,10 @@ public final class Constants {
     public static final int CLOSED_LOOP_ERROR_RANGE = 12;
 
     public static final double kS = 0.0763;
-    public static final double kV = 0.135;
+    public static final double kV = 0.132;
     public static final double kA = 0.0614;
 
-    public static final double kP = 0.0009;
+    public static final double kP = 0.0005;
     public static final double RAMP_RATE = 0.2;
 
     public static final double SHOOT_TIME = 0.25;
@@ -207,6 +210,7 @@ public final class Constants {
   public static final class IntakeConstants {
 
     public static final int DEVICE_ID_INTAKE = 7;
+    public static final double INTAKE_SPEED = .6;
 
   }
 
