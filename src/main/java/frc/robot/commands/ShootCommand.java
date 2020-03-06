@@ -65,10 +65,10 @@ public class ShootCommand extends CommandBase {
   public void execute() {
     super.execute();
     if (limelightSubsystem.getTargetAcquired()) {
-      setPID();
       var filteredDistance = yFilter.calculate(limelightSubsystem.getDistanceToTarget());
       shooterSubsystem.prepareToShoot(Units.metersToInches(filteredDistance));
       aimShooter();
+      setPID();
       if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
         indexerSubsystem.shoot();
       } else {
@@ -110,7 +110,7 @@ public class ShootCommand extends CommandBase {
   }
 
   public void setPID(){
-    if (shooterSubsystem.targetIsShort()){
+    if (shooterSubsystem.shortDistance()){
       pidController.setP(kPshort);
       pidController.setD(kDshort);
     }
