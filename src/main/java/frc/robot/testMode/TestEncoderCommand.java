@@ -8,7 +8,7 @@ public class TestEncoderCommand extends TestCommand {
   private final double power;
   private final DriveTrainSubsystem driveTrain;
 
-  private int leftEncoder = 0, rightEncoder = 0, leftEncoderStart, rightEncoderStart;
+  private double leftEncoder = 0, rightEncoder = 0, leftEncoderStart, rightEncoderStart;
 
   NetworkTableEntry leftSideEntry, rightSideEntry;
   
@@ -58,7 +58,7 @@ public class TestEncoderCommand extends TestCommand {
     assertEncoderPosition(rightSideEntry, previousRight, rightEncoder);
   }
 
-  private void assertEncoderPosition(NetworkTableEntry tableEntry, int previous, int current){
+  private void assertEncoderPosition(NetworkTableEntry tableEntry, double previous, double current){
     
     //moving forward
     if (this.power > 0) {

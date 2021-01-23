@@ -23,7 +23,7 @@ public class TestControlPanel extends TestCommand {
   private final NetworkTableEntry spunEntry = getTestModeEntry("ArmTest_Spun");
 
   private int testState;
-  private int spinnerStartPosition;
+  private double spinnerStartPosition;
   private Timer spinTimer = new Timer();
 
   public TestControlPanel(ControlPanelSubsystem controlPanelSubsystem) {
