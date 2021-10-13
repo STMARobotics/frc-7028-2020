@@ -113,7 +113,7 @@ public final class Constants {
 
     public static final double kP = 0.5;
     public static final double kD = 0.2;
-    public static final double AIM_TOLERANCE = 0.2;
+    public static final double AIM_TOLERANCE = 0.5;
 
     public static final double RANGE_HIGH = 1;
     public static final double RANGE_LOW = -1;
@@ -177,13 +177,13 @@ public final class Constants {
     public static final int DEVICE_ID_SHOOTER_MASTER = 2;
     public static final int DEVICE_ID_SHOOTER_SLAVE = 1;
 
-    public static final int CLOSED_LOOP_ERROR_RANGE = 12;
+    public static final int CLOSED_LOOP_ERROR_RANGE = 20;
 
-    public static final double kS = 0.0763;
-    public static final double kV = 0.135;
-    public static final double kA = 0.0614;
+    public static final double kS = 0.184;
+    public static final double kV = 0.125;
+    public static final double kA = 0.05;
 
-    public static final double kP = 0.0009;
+    public static final double kP = 0.0006;
     public static final double RAMP_RATE = 0.2;
 
     public static final double SHOOT_TIME = 0.25;
