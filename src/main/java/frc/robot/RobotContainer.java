@@ -200,21 +200,21 @@ public class RobotContainer {
     // new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value)
     //     .whenPressed(new RunCommand(controlPanelSubsystem::lowerArm, controlPanelSubsystem));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value)
-        .whenPressed(new RunCommand(() -> {
-          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) { 
-            climbSubsystem.raiseClimb();  
-          }
-        }, climbSubsystem))
-        .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
+    // new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value)
+    //     .whenPressed(new RunCommand(() -> {
+    //       if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) { 
+    //         climbSubsystem.raiseClimb();  
+    //       }
+    //     }, climbSubsystem))
+    //     .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
 
-    new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickDown.value)
-        .whenPressed(new RunCommand(() -> {
-          if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) {
-            climbSubsystem.lowerClimb(); 
-          }
-        }, climbSubsystem))
-        .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
+    // new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickDown.value)
+    //     .whenPressed(new RunCommand(() -> {
+    //       if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) {
+    //         climbSubsystem.lowerClimb(); 
+    //       }
+    //     }, climbSubsystem))
+    //     .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
 
     // new JoystickButton(operatorConsole, OperatorConsoleButton.RightTopButton.value)
     //     .whenHeld(new SpinUpShooterCommand(140, shooterSubsystem).alongWith(new InstantCommand(() -> {
