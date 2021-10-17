@@ -68,11 +68,10 @@ public class ShootCommand extends CommandBase {
     if (limelightSubsystem.getTargetAcquired()) {
       var filteredDistance = yFilter.calculate(limelightSubsystem.getDistanceToTarget());
       shooterSubsystem.prepareToShoot(Units.metersToInches(filteredDistance));
-      aimShooter();
-
       //scale PID values with distance to target
       pidController.setP((kPslope * Units.metersToInches(filteredDistance)) + kPintercept);
       pidController.setD((kDslope * Units.metersToInches(filteredDistance)) + kDintercept);
+      aimShooter();
 
       if (shooterSubsystem.isReadyToShoot() && pidController.atSetpoint()) {
         indexerSubsystem.shoot();
