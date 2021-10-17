@@ -1,5 +1,6 @@
 {
   "java.configuration.updateBuildConfiguration": "automatic",
+  "java.server.launchMode": "Standard",
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -10,7 +11,8 @@
     "**/.classpath": true,
     "**/.project": true,
     "**/.settings": true,
-    "**/.factorypath": true
+    "**/.factorypath": true,
+    "**/*~": true
   },
   "editor.rulers": [
     120
@@ -20,19 +22,5 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": true
   },
-  "editor.detectIndentation": false,
-  "java.test.config": [
-    {
-      "name": "WPIlibUnitTests",
-      "workingDirectory": "${workspaceFolder}/build/tmp/jniExtractDir",
-      "vmargs": [
-        "-Djava.library.path=${workspaceFolder}/build/tmp/jniExtractDir"
-      ],
-      "env": {
-        "LD_LIBRARY_PATH": "${workspaceFolder}/build/tmp/jniExtractDir",
-        "DYLD_LIBRARY_PATH": "${workspaceFolder}/build/tmp/jniExtractDir"
-      }
-    },
-  ],
-  "java.test.defaultConfig": "WPIlibUnitTests"
+  "editor.detectIndentation": false
 }

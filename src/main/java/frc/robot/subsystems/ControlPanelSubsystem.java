@@ -141,7 +141,7 @@ public class ControlPanelSubsystem extends SubsystemBase {
     spinnerMotor.set(0);
   }
 
-  public int getSpinnerPosition() {
+  public double getSpinnerPosition() {
     return spinnerMotor.getSelectedSensorPosition();
   }
 
@@ -170,15 +170,15 @@ public class ControlPanelSubsystem extends SubsystemBase {
     armMotor.set(0);
   }
 
-  public int getArmPosition() {
+  public double getArmPosition() {
     return armMotor.getSelectedSensorPosition();
   }
 
-  public static double edgesToRotations(int steps) {
+  public static double edgesToRotations(double steps) {
     return steps / (double) ControlPanelConstants.EDGES_PER_ROTATION;
   }
 
-  public static double edgesPerDecisecToRPS(int stepsPerDecisec) {
+  public static double edgesPerDecisecToRPS(double stepsPerDecisec) {
     return edgesToRotations(stepsPerDecisec) * 10;
   }
 

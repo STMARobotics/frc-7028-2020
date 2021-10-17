@@ -166,7 +166,7 @@ public class IndexerSubsystem extends SubsystemBase {
     this.ballCount = ballCount;
   }
 
-  public int getPosition() {
+  public double getPosition() {
     return belt.getSelectedSensorPosition();
   }
   

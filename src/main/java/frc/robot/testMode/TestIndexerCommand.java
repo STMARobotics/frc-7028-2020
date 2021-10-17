@@ -7,7 +7,7 @@ public class TestIndexerCommand extends TestCommand {
 
   private IndexerSubsystem indexer;
   private boolean reverse = false;
-  private int encoderStartPosition;
+  private double encoderStartPosition;
 
   private NetworkTableEntry ballCountIntake;
   private NetworkTableEntry ballCountReverse;
