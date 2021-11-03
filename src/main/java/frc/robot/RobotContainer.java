@@ -8,7 +8,6 @@
 package frc.robot;
 
 import static frc.robot.Constants.ControllerConstants.PORT_ID_DRIVER_CONTROLLER;
-import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -43,7 +42,6 @@ import frc.robot.commands.RumbleCommand;
 import frc.robot.commands.RunIntakeCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.TeleDriveCommand;
-import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.DriveTrainSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -82,7 +80,7 @@ public class RobotContainer {
   private final ClimbSubsystem climbSubsystem = new ClimbSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
-  private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
+  // private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
 
   private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
   private final IndexCommand indexCommand = new IndexCommand(indexerSubsystem);
@@ -160,17 +158,21 @@ public class RobotContainer {
             indexerSubsystem::isFull))
         .whenReleased(limelightIntakeReleased);
 
-    new POVButton(driverController, 0)
-        .whenPressed(new TurnToAngleCommand(0, driveTrainSubsystem));
+    // new POVButton(driverController, 0)
+    //     .whenPressed(new TurnToAngleCommand(0, driveTrainSubsystem));
 
-    new POVButton(driverController, 90)
-        .whenPressed(new TurnToAngleCommand(90, driveTrainSubsystem));
+    // new POVButton(driverController, 90)
+    //     .whenPressed(new TurnToAngleCommand(90, driveTrainSubsystem));
 
-    new POVButton(driverController, 180)
-        .whenPressed(new TurnToAngleCommand(180, driveTrainSubsystem));
+    // new POVButton(driverController, 180)
+    //     .whenPressed(new TurnToAngleCommand(180, driveTrainSubsystem));
 
+    // new POVButton(driverController, 270)
+    //     .whenPressed(new TurnToAngleCommand(-90, driveTrainSubsystem));
     new POVButton(driverController, 270)
-        .whenPressed(new TurnToAngleCommand(-90, driveTrainSubsystem));
+      .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
+    new POVButton(driverController, 90)
+      .whenPressed(makeLimelightProfileCommand(Profile.FAR));
 
     new JoystickButton(driverController, XboxController.Button.kStart.value)
         .toggleWhenPressed(new StartEndCommand(() -> {
@@ -182,11 +184,11 @@ public class RobotContainer {
           }));
 
     // Operator
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RightLeftButton.value)
-        .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
+    // new JoystickButton(operatorConsole, OperatorConsoleButton.RightLeftButton.value)
+    //     .whenPressed(makeLimelightProfileCommand(Profile.NEAR));
     
-    new JoystickButton(operatorConsole, OperatorConsoleButton.RightRightButton.value)
-        .whenPressed(makeLimelightProfileCommand(Profile.FAR));
+    // new JoystickButton(operatorConsole, OperatorConsoleButton.RightRightButton.value)
+    //     .whenPressed(makeLimelightProfileCommand(Profile.FAR));
 
     // new JoystickButton(operatorConsole, OperatorConsoleButton.LeftRightButton.value)
     //     .whenHeld(new SetColorCommand(controlPanelSubsystem));
