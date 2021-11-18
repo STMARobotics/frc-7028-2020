@@ -8,6 +8,7 @@
 package frc.robot;
 
 import static frc.robot.Constants.ControllerConstants.PORT_ID_DRIVER_CONTROLLER;
+import static frc.robot.Constants.ControllerConstants.PORT_ID_OPERATOR_CONSOLE;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -80,7 +81,7 @@ public class RobotContainer {
   private final ClimbSubsystem climbSubsystem = new ClimbSubsystem();
 
   private final XboxController driverController = new XboxController(PORT_ID_DRIVER_CONTROLLER);
-  // private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
+  private final XboxController operatorConsole = new XboxController(PORT_ID_OPERATOR_CONSOLE);
 
   private final TeleDriveCommand teleDriveCommand = new TeleDriveCommand(driverController, driveTrainSubsystem);
   private final IndexCommand indexCommand = new IndexCommand(indexerSubsystem);
@@ -202,21 +203,19 @@ public class RobotContainer {
     // new JoystickButton(operatorConsole, OperatorConsoleButton.LeftBottomButton.value)
     //     .whenPressed(new RunCommand(controlPanelSubsystem::lowerArm, controlPanelSubsystem));
     
-    // new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickUp.value)
-    //     .whenPressed(new RunCommand(() -> {
-    //       if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) { 
-    //         climbSubsystem.raiseClimb();  
-    //       }
-    //     }, climbSubsystem))
-    //     .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
+    new JoystickButton(operatorConsole, XboxController.Button.kX.value)
+        .whileHeld(climbSubsystem::raiseClimb, climbSubsystem)
+        .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
 
-    // new JoystickButton(operatorConsole, OperatorConsoleButton.JoystickDown.value)
-    //     .whenPressed(new RunCommand(() -> {
-    //       if(operatorConsole.getRawButton(OperatorConsoleButton.GuardedSwitch.value)) {
-    //         climbSubsystem.lowerClimb(); 
-    //       }
-    //     }, climbSubsystem))
-    //     .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
+    new JoystickButton(operatorConsole, XboxController.Button.kStart.value)
+        .whenPressed(new RunCommand(() -> {
+          if(operatorConsole.getBackButton()) {
+            climbSubsystem.lowerClimb();
+          } else {
+            climbSubsystem.stopClimb();
+          }
+        }, climbSubsystem))
+        .whenReleased(climbSubsystem::stopClimb, climbSubsystem);
 
     // new JoystickButton(operatorConsole, OperatorConsoleButton.RightTopButton.value)
     //     .whenHeld(new SpinUpShooterCommand(140, shooterSubsystem).alongWith(new InstantCommand(() -> {
