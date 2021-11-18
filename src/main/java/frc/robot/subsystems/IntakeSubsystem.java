@@ -8,6 +8,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.IntakeConstants;
 
 /**
  * IntakeSubsystem
@@ -25,9 +26,9 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void intake() {
     if (isIndexerReady.get()) {
-      intakeMotor.set(0.3);
+      intakeMotor.set(IntakeConstants.INTAKE_SPEED);
     } else {
-      stopIntake();
+      intakeMotor.set(IntakeConstants.INTAKE_SPEED * .5);
     }
   }
 
