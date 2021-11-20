@@ -108,23 +108,23 @@ public class AutoGenerator {
         startPose,
         Collections.emptyList(),
         trenchPose,
-        new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .7/*.5*/, TrajectoryConstants.MAX_ACCELERATION_AUTO * .7/*.5*/)
+        new TrajectoryConfig(TrajectoryConstants.MAX_SPEED_AUTO * .5, TrajectoryConstants.MAX_ACCELERATION_AUTO * .5)
             .setKinematics(DriveTrainConstants.DRIVE_KINEMATICS)
             .addConstraint(TrajectoryConstants.VOLTAGE_CONSTRAINT)
             .setEndVelocity(TrajectoryConstants.MAX_SPEED_AUTO * 0.2));
 
     var pickupAndSpinUp = makeLimelightAutoCommand()
-        .andThen(makeWaitForBallCount(3).withTimeout(.5))
+        .andThen(makeWaitForBallCount(3).withTimeout(3))
         .andThen(ballLimelightSubsystem::disable, ballLimelightSubsystem)
         .andThen(shooterLimelightSubsystem::enable, shooterLimelightSubsystem)
         .andThen(new PrintCommand("Done with ball pick up"))
-        .andThen(new TurnToAngleCommand(5, driveTrainSubsystem))
+        .andThen(new TurnToAngleCommand(10, driveTrainSubsystem))
         .andThen(new PrintCommand("Done turning to angle"))
         .deadlineWith(new SpinUpShooterCommand(180, shooterSubsystem));
 
-    var trenchPickup = makeLimelightAutoCommand().andThen(makeWaitForBallCount(1).withTimeout(.5))
+    var trenchPickup = makeLimelightAutoCommand().andThen(makeWaitForBallCount(1).withTimeout(1))
         .andThen(new PrintCommand("Picked one ball"))
-        .andThen(makeLimelightAutoCommand()).andThen(makeWaitForBallCount(2).withTimeout(.5))
+        .andThen(makeLimelightAutoCommand()).andThen(makeWaitForBallCount(2).withTimeout(3))
         .andThen(new PrintCommand("Picked two balls"))
         .andThen(pickupAndSpinUp)
         .deadlineWith(

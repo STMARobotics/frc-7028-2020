@@ -98,7 +98,11 @@ public class ShooterSubsystem extends SubsystemBase {
       timerRunning = true;
       spinUpTimer.start();
     }
-    setRange(distanceToTarget);
+    if (distanceToTarget > 150) {
+      targetSpeed = 3.05 * distanceToTarget + (2160.761 + farGain);
+    } else if (distanceToTarget <= 150) {
+      targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 75.833 * distanceToTarget + (8420 + nearGain);
+    }
     shooterPIDController.setReference(
         targetSpeed,
         ControlType.kVelocity,
@@ -126,15 +130,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public double getTargetSpeed() {
     return targetSpeed;
-  }
-
-  public void setRange(double distanceToTarget){
-
-    if (distanceToTarget > 150) {
-       targetSpeed = 3.05 * distanceToTarget + (2160.761 + farGain);
-    } else if (distanceToTarget <= 150) {
-      targetSpeed = .25 * Math.pow(distanceToTarget, 2) - 74.833 * distanceToTarget + (8420 + nearGain);
-    }
   }
 
 }

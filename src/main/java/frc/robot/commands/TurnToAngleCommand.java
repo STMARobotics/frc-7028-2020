@@ -1,9 +1,10 @@
 package frc.robot.commands;
 
+import static frc.robot.Constants.AimConstants.kD;
+
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrainSubsystem;
-
 
 /**
  * TurnToAngleCommand
@@ -11,11 +12,11 @@ import frc.robot.subsystems.DriveTrainSubsystem;
 public class TurnToAngleCommand extends CommandBase {
 
   private final DriveTrainSubsystem driveTrainSubsystem;
-  private final PIDController pidController = new PIDController(.1, 0.0, .025);
+  private final PIDController pidController = new PIDController(.75, 0.0, kD);
 
   public TurnToAngleCommand(double angle, DriveTrainSubsystem driveTrainSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;
-    this.pidController.setTolerance(5);
+    this.pidController.setTolerance(3);
     pidController.setSetpoint(angle);
     pidController.enableContinuousInput(-180, 180);
 
