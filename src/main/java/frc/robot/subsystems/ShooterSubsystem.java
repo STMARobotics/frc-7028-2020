@@ -6,17 +6,16 @@ import static frc.robot.Constants.ShooterConstants.DEVICE_ID_SHOOTER_SLAVE;
 
 import java.util.Map;
 
-import com.revrobotics.CANEncoder;
-import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.ControlType;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -30,8 +29,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final CANSparkMax shooterMaster = new CANSparkMax(DEVICE_ID_SHOOTER_MASTER, MotorType.kBrushless);
   private final CANSparkMax shooterSlave = new CANSparkMax(DEVICE_ID_SHOOTER_SLAVE, MotorType.kBrushless);
 
-  private final CANPIDController shooterPIDController = shooterMaster.getPIDController();
-  private final CANEncoder shooterEncoder = shooterMaster.getEncoder();
+  private final SparkMaxPIDController shooterPIDController = shooterMaster.getPIDController();
+  private final RelativeEncoder shooterEncoder = shooterMaster.getEncoder();
 
   private double nearGain = 0;
   private double farGain = 0;
@@ -105,7 +104,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
     shooterPIDController.setReference(
         targetSpeed,
-        ControlType.kVelocity,
+        CANSparkMax.ControlType.kVelocity,
         0,
         motorFeedForward.calculate(targetSpeed / 60, (targetSpeed - shooterEncoder.getVelocity()) / 60));
   }

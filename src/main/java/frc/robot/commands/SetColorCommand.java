@@ -48,7 +48,7 @@ public class SetColorCommand extends CommandBase {
 
   @Override
   public void initialize() {
-    var gameData = DriverStation.getInstance().getGameSpecificMessage();
+    var gameData = DriverStation.getGameSpecificMessage();
     targetColor = targetColorMap.get(gameData);
     if (targetColorWidget != null && assignedColorWidget != null) {
       targetColorWidget.withProperties(Map.of("colorWhenTrue", targetColor));

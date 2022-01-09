@@ -19,7 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.DriveTrainSubsystem;
@@ -73,7 +73,7 @@ public class ShootCommandTest {
     do {
       Timer.delay(.02);
       commandScheduler.run();
-    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    } while(!timer.hasElapsed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
     InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);
@@ -111,7 +111,7 @@ public class ShootCommandTest {
     do {
       Timer.delay(.02);
       commandScheduler.run();
-    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    } while(!timer.hasElapsed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
     InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);
@@ -155,7 +155,7 @@ public class ShootCommandTest {
     do {
       Timer.delay(.02);
       commandScheduler.run();
-    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    } while(!timer.hasElapsed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
     InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);
@@ -191,7 +191,7 @@ public class ShootCommandTest {
     do {
       commandScheduler.run();
       Timer.delay(.02);
-    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    } while(!timer.hasElapsed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
     InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);
@@ -229,7 +229,7 @@ public class ShootCommandTest {
     do {
       commandScheduler.run();
       Timer.delay(.02);
-    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    } while(!timer.hasElapsed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
     InOrder inOrder = inOrder(shooter, indexer, drivetrain, limelight);

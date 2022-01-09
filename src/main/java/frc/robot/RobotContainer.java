@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Map;
 
-import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -26,8 +26,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryUtil;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -95,7 +95,7 @@ public class RobotContainer {
 
   public RobotContainer() {
     LiveWindow.disableAllTelemetry();
-    camera = CameraServer.getInstance().startAutomaticCapture();
+    camera = CameraServer.startAutomaticCapture();
     try {
       camera.setFPS(15);
       camera.setResolution(160, 120);
@@ -130,7 +130,7 @@ public class RobotContainer {
     new JoystickButton(driverController, XboxController.Button.kA.value)
         .whenHeld(shootCommand.perpetually());
     
-    new JoystickButton(driverController, XboxController.Button.kBumperRight.value)
+    new JoystickButton(driverController, XboxController.Button.kRightBumper.value)
         .whenHeld(new RunCommand(() -> {
           intakeSubsystem.reverse();
           indexerSubsystem.reverse();
@@ -140,7 +140,7 @@ public class RobotContainer {
           indexerSubsystem.stopIndexer();
         }, intakeSubsystem, indexerSubsystem);
 
-    new JoystickButton(driverController, XboxController.Button.kBumperLeft.value)
+    new JoystickButton(driverController, XboxController.Button.kLeftBumper.value)
         .whileHeld(new ConditionalCommand(
             new RumbleCommand(driverController, RumbleType.kLeftRumble),
             new RunIntakeCommand(intakeSubsystem, indexerSubsystem::isFull),

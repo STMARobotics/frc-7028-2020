@@ -6,7 +6,6 @@ import static frc.robot.Constants.DriverConstants.ROTATION_MULTIPLIER;
 import static frc.robot.Constants.DriverConstants.SLOW_MODE_ROTATION_MULTIPLIER;
 import static frc.robot.Constants.DriverConstants.SLOW_MODE_SPEED_MULTIPLIER;
 
-import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.DeadbandFilter;
@@ -36,7 +35,7 @@ public class TeleDriveCommand extends CommandBase {
   }
 
   private double getSpeed() {
-    double speed = deadbandFilter.calculate(-driverController.getY(Hand.kLeft));
+    double speed = deadbandFilter.calculate(-driverController.getLeftY());
     if (isSlowMode()) {
       speed *= SLOW_MODE_SPEED_MULTIPLIER;
     }
@@ -47,7 +46,7 @@ public class TeleDriveCommand extends CommandBase {
   }
 
   private double getRotation() {
-    double rotation = deadbandFilter.calculate(driverController.getX(Hand.kRight)) * ROTATION_MULTIPLIER;
+    double rotation = deadbandFilter.calculate(driverController.getRightX()) * ROTATION_MULTIPLIER;
     if (isSlowMode()) {
       rotation *= SLOW_MODE_ROTATION_MULTIPLIER;
     }

@@ -57,7 +57,7 @@ public class JustShootCommandTest {
     do {
       Timer.delay(.02);
       commandScheduler.run();
-    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    } while(!timer.hasElapsed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
     InOrder inOrder = inOrder(shooter, indexer);
@@ -87,7 +87,7 @@ public class JustShootCommandTest {
     do {
       Timer.delay(.02);
       commandScheduler.run();
-    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    } while(!timer.hasElapsed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
     InOrder inOrder = inOrder(shooter, indexer);
@@ -121,7 +121,7 @@ public class JustShootCommandTest {
     do {
       Timer.delay(.02);
       commandScheduler.run();
-    } while(!timer.hasPeriodPassed(ShooterConstants.SHOOT_TIME));
+    } while(!timer.hasElapsed(ShooterConstants.SHOOT_TIME));
     commandScheduler.run();
 
     InOrder inOrder = inOrder(shooter, indexer);
