@@ -74,7 +74,6 @@ public class Robot extends TimedRobot {
     }
 
     scheduler.enable();
-    scheduler.schedule(robotContainer.getTestModeCommands());
   }
 
   @Override

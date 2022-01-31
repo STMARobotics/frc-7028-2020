@@ -6,12 +6,12 @@ import static frc.robot.Constants.LimeLightConstants.TARGET_X_MAX;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
-import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
