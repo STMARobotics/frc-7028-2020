@@ -10,8 +10,8 @@ public class JetsonBallCommand extends CommandBase {
   private final JetsonSubsystem jetson;
   private final DriveTrainSubsystem driveTrainSubsystem;
 
-  private final PIDController xPidController = new PIDController(.0005, 0, 0);
-  private final PIDController yPidController = new PIDController(.0005, 0, 0);
+  private final PIDController xPidController = new PIDController(.0007, 0, 0);
+  private final PIDController yPidController = new PIDController(.0007, 0, 0);
 
   public JetsonBallCommand(DriveTrainSubsystem driveTrainSubsystem, JetsonSubsystem jetsonSubsystem) {
     this.driveTrainSubsystem = driveTrainSubsystem;

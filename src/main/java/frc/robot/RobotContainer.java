@@ -16,12 +16,20 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryUtil;
+import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.networktables.TableEntryListener;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -52,6 +60,8 @@ public class RobotContainer {
 
   private final UsbCamera camera;
 
+  private SendableChooser<String> cargoColorChooser = new SendableChooser<>();
+
   public RobotContainer() {
     LiveWindow.disableAllTelemetry();
     camera = CameraServer.startAutomaticCapture();
@@ -68,6 +78,20 @@ public class RobotContainer {
     
     configureSubsystemDashboard();
     configureDriverDashboard();
+
+    cargoColorChooser.setDefaultOption("Both", "Both");
+    cargoColorChooser.addOption("RedCargo", "RedCargo");
+    cargoColorChooser.addOption("BlueCargo", "BlueCargo");
+    SmartDashboard.putData("Cargo Color", cargoColorChooser);
+    NetworkTableInstance.getDefault().getTable("SmartDashboard").getSubTable("Cargo Color")
+      .addEntryListener("selected", new TableEntryListener() {
+        @Override
+        public void valueChanged(NetworkTable table, String key, NetworkTableEntry entry, NetworkTableValue value,
+            int flags) {
+          jetsonSubsystem.setCargoColor(value.getString());
+        }
+      }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+
   }
 
   /**

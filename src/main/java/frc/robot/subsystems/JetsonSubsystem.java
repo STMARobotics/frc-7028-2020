@@ -19,10 +19,10 @@ public class JetsonSubsystem extends SubsystemBase {
   private ObjectMapper objectMapper = new ObjectMapper();
 
   public JetsonSubsystem() {
-    addLimelightUpdateListeners(networkTable, this::updateClosest, "Closest Detection");
+    addJetsonUpdateListener(networkTable, this::updateClosest, "Closest Detection");
   }
 
-  private void addLimelightUpdateListeners(NetworkTable limelightTable, TableEntryListener listener, String... keys) {
+  private void addJetsonUpdateListener(NetworkTable limelightTable, TableEntryListener listener, String... keys) {
     for (String key : keys) {
       networkTable.addEntryListener(key, listener, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
     }
@@ -45,5 +45,7 @@ public class JetsonSubsystem extends SubsystemBase {
   public JetsonDetection getClosestDetection() {
     return closestDetection;
   }
-  
+  public void setCargoColor(String color){
+    networkTable.getEntry("cargoColor").setString(color);
+  }
 }
